@@ -22,7 +22,7 @@ jobs:
           npm install
           npm run build
           npm run deploy
-          zip obsidian-solo-rpg-toolkit.zip dist
+          zip ./dist/obsidian-solo-rpg-toolkit.zip dist
 
       - name: Create release
         env:
