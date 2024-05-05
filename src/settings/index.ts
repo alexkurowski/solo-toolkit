@@ -2,10 +2,12 @@ import { App, Setting, Plugin, PluginSettingTab } from "obsidian";
 
 export interface SoloToolkitSettings {
   customTableRoot: string;
+  deckJokers: boolean;
 }
 
 export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   customTableRoot: "Tables",
+  deckJokers: false,
 };
 
 export class SoloToolkitSettingTab extends PluginSettingTab {
@@ -25,13 +27,24 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Custom tables folder")
-      .setDesc("Additional can be created in this folder")
+      .setDesc("Additional random tables can be added in this folder")
       .addText((text) =>
         text
           .setPlaceholder("Tables")
           .setValue(this.plugin.settings.customTableRoot)
           .onChange(async (value) => {
             this.plugin.settings.customTableRoot = value;
+            await this.plugin.saveSettings();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("Add jokers to the deck")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.deckJokers)
+          .onChange(async (value) => {
+            this.plugin.settings.deckJokers = value;
             await this.plugin.saveSettings();
           }),
       );

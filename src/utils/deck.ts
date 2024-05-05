@@ -28,6 +28,7 @@ type Card = [string, string];
 export class Deck {
   cards: Card[] = [];
   public drawn: Card[] = [];
+  addJokers: boolean = false;
 
   constructor() {
     this.shuffle();
@@ -50,14 +51,27 @@ export class Deck {
       }
     }
 
+    if (this.addJokers) {
+      this.cards.push(["Joker", "heart"]);
+      this.cards.push(["Joker", "spade"]);
+    }
+
     shuffle(this.cards);
   }
 
   size() {
-    return max - this.drawn.length;
+    return this.max() - this.drawn.length;
   }
 
   max() {
-    return max;
+    if (this.addJokers) {
+      return max + 2;
+    } else {
+      return max;
+    }
+  }
+
+  setJokers(value: boolean) {
+    this.addJokers = value;
   }
 }

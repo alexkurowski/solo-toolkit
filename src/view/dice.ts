@@ -1,4 +1,4 @@
-import { ButtonComponent } from "obsidian";
+import { ButtonComponent, ExtraButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { roll, rollIntervals } from "../utils";
 
@@ -18,13 +18,22 @@ export class DiceView {
     this.diceResultsEls = {};
     this.diceBtnsEl = this.view.tabViewEl.createDiv("dice-buttons");
     this.diceBtnsEl.empty();
-    this.createResetBtn();
+
+    if (this.view.isMobile) {
+      this.createResetBtn();
+    }
+
     this.createDiceBtn(4);
     this.createDiceBtn(6);
     this.createDiceBtn(8);
     this.createDiceBtn(10);
     this.createDiceBtn(12);
     this.createDiceBtn(20);
+
+    if (!this.view.isMobile) {
+      this.createResetBtn();
+    }
+
     this.repopulateResults();
   }
 
@@ -61,7 +70,7 @@ export class DiceView {
       `dice-variant dice-variant-reset`,
     );
 
-    new ButtonComponent(container)
+    new ExtraButtonComponent(container)
       .setIcon("refresh-ccw")
       .setTooltip("Reset")
       .onClick(() => {

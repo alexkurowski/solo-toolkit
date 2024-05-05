@@ -1,4 +1,9 @@
-import { ButtonComponent, setIcon, setTooltip } from "obsidian";
+import {
+  ButtonComponent,
+  ExtraButtonComponent,
+  setIcon,
+  setTooltip,
+} from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { Deck } from "../utils";
 
@@ -15,6 +20,8 @@ export class DeckView {
   }
 
   create() {
+    this.deck.setJokers(this.view.settings.deckJokers);
+
     if (this.view.isMobile) {
       this.deckResultsEl = this.view.tabViewEl.createDiv("deck-results");
     }
@@ -35,12 +42,18 @@ export class DeckView {
     if (immediate) elClass.push("shown");
     const el = this.deckResultsEl.createDiv(elClass.join(" "));
 
+    let tooltipValue = value;
+    if (value === "J") tooltipValue = "Jack";
+    if (value === "Q") tooltipValue = "Queen";
+    if (value === "K") tooltipValue = "King";
+    if (value === "A") tooltipValue = "Ace";
+    setTooltip(el, `${tooltipValue} of ${suit}s`);
+
     const valueEl = el.createSpan("deck-result-value");
     valueEl.setText(value);
 
     const typeEl = el.createSpan("deck-result-type");
     setIcon(typeEl, suit);
-    setTooltip(typeEl, `${value} of ${suit}s`);
 
     if (!immediate) {
       setTimeout(() => {
@@ -61,7 +74,7 @@ export class DeckView {
         this.updateCount();
       });
 
-    new ButtonComponent(this.deckBtnsEl)
+    new ExtraButtonComponent(this.deckBtnsEl)
       .setIcon("refresh-ccw")
       .setTooltip("Shuffle")
       .onClick(() => {

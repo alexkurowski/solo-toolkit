@@ -1,4 +1,4 @@
-import { TFile, ButtonComponent } from "obsidian";
+import { TFile, ButtonComponent, ExtraButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { generateWord, randomFrom } from "../utils";
 
@@ -65,7 +65,7 @@ export class WordView {
   }
 
   createResetBtn() {
-    new ButtonComponent(this.wordBtnsEl)
+    new ExtraButtonComponent(this.wordBtnsEl)
       .setIcon("refresh-ccw")
       .setTooltip("Remove all generated words")
       .onClick(() => {
