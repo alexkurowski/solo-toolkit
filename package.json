@@ -4,10 +4,9 @@
   "description": "Solo RPG toolkit for Obsidian (https://obsidian.md)",
   "main": "./dist/api.js",
   "scripts": {
-    "dev": "node esbuild.config.mjs",
-    "build": "tsc --noEmit -skipLibCheck && node esbuild.config.mjs production && npm run rollup",
-    "rollup": "tsc --emitDeclarationOnly --declaration --declarationMap --project tsconfig.json --outDir dist",
-    "version": "node version-bump.mjs && git add manifest.json versions.json"
+    "dev": "node esbuild.config.mjs watch",
+    "build": "tsc --noEmit -skipLibCheck && node esbuild.config.mjs",
+    "deploy": "rm -rf ./dist && mkdir dist && cp main.js dist && cp styles.css dist && cp manifest.json dist"
   },
   "keywords": [],
   "author": "Alex Kurowski",

@@ -90,33 +90,16 @@ const getSomeName = () => {
 const getJob = () => capitalize(randomFrom(dictionary.occupations));
 
 const getLooks = () => {
-  const age = randomFrom(dictionary.descriptors.age);
-  const height = randomFrom(dictionary.descriptors.height);
+  const basic = randomFrom(dictionary.descriptors.basic);
   const hairColor = randomFrom(dictionary.descriptors.hairColor);
   const hairLength = randomFrom(dictionary.descriptors.hairLength);
 
-  const basic: string[] = [];
-  const extra: string[] = [];
+  const hair =
+    hairLength === "no"
+      ? `${hairLength} hair`
+      : `${hairLength} ${hairColor} hair`;
 
-  if (age) basic.push(age);
-  if (height) basic.push(height);
-  if (hairLength === "no") {
-    extra.push(`${hairLength} hair`);
-  } else {
-    extra.push(`${hairLength} ${hairColor} hair`);
-  }
-
-  const basicStr = basic.join(", ");
-  const extraStr = extra.join(", ");
-  if (basic.length && extra.length) {
-    return capitalize(`${basicStr}, with ${extraStr}`);
-  } else if (basic.length && !extra.length) {
-    return capitalize(basicStr);
-  } else if (!basic.length && extra.length) {
-    return capitalize(extraStr);
-  } else {
-    return "Just some guy";
-  }
+  return capitalize(`${basic} looking, with ${hair}`);
 };
 
 const getTown = () =>
