@@ -16,6 +16,7 @@ main.js
 *.map
 
 # obsidian
+dist
 data.json
 
 # Exclude macOS Finder (System Explorer) View States

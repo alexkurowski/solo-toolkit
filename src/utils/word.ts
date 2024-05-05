@@ -2,10 +2,10 @@ import { dictionary } from "./dictionary";
 import { randomFrom } from "./dice";
 import { capitalize } from "./helpers";
 
-const getNoun = () => randomFrom(dictionary.default.nouns);
-const getVerb = () => randomFrom(dictionary.default.verbs);
-const getAdjective = () => randomFrom(dictionary.default.adjectives);
-const getAdverb = () => randomFrom(dictionary.default.adverbs);
+const getNoun = () => randomFrom(dictionary.nouns);
+const getVerb = () => randomFrom(dictionary.verbs);
+const getAdjective = () => randomFrom(dictionary.adjectives);
+const getAdverb = () => randomFrom(dictionary.adverbs);
 
 const getSubject = () => capitalize(`${getAdjective()} ${getNoun()}`);
 const getAction = () => capitalize(`${getVerb()} ${getAdverb()}`);
@@ -16,9 +16,9 @@ const getName1 = () => {
   let i, j;
   const syllables = randomFrom([1, 2, 2, 2, 2, 2, 2, 3, 3, 4]);
   for (let syllable = 0; syllable < syllables; syllable++) {
-    i = Math.floor(Math.random() * dictionary.names.length);
-    j = Math.floor(Math.random() * dictionary.names[i].length);
-    result += dictionary.names[i][j];
+    i = Math.floor(Math.random() * dictionary.names1.length);
+    j = Math.floor(Math.random() * dictionary.names1[i].length);
+    result += dictionary.names1[i][j];
   }
 
   return capitalize(result);
@@ -119,6 +119,11 @@ const getLooks = () => {
   }
 };
 
+const getTown = () =>
+  capitalize(
+    randomFrom(dictionary.settlement[0]) + randomFrom(dictionary.settlement[1]),
+  );
+
 export const generateWord = (type: string): string => {
   switch (type) {
     case "Subject":
@@ -131,6 +136,8 @@ export const generateWord = (type: string): string => {
       return getLooks();
     case "Job":
       return getJob();
+    case "Town":
+      return getTown();
     default:
       return "";
   }

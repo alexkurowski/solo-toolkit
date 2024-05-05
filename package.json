@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc --noEmit -skipLibCheck && node esbuild.config.mjs production && npm run rollup",
+    "rollup": "tsc --emitDeclarationOnly --declaration --declarationMap --project tsconfig.json --outDir dist",
     "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
   "keywords": [],

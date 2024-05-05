@@ -105,6 +105,7 @@ export class SoloToolkitView extends ItemView {
       this.createWord("Name");
       this.createWord("Looks");
       this.createWord("Job");
+      this.createWord("Town");
 
       if (this.settings.customTableRoot) {
         const files = this.app.vault.getMarkdownFiles();
