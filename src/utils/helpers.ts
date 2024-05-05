@@ -5,3 +5,14 @@ export const capitalize = (value: string): string => {
     return "";
   }
 };
+
+export const shuffle = <T>(arr: T[]) => {
+  let index = arr.length;
+  let random = 0;
+
+  while (index != 0) {
+    random = Math.floor(Math.random() * index);
+    index--;
+    [arr[index], arr[random]] = [arr[random], arr[index]];
+  }
+};

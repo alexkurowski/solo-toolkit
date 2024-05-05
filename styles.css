@@ -14,6 +14,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
+    flex-wrap: wrap-reverse;
     gap: var(--size-4-4);
     width: 100%;
     padding-top: var(--size-4-4);
@@ -32,7 +33,7 @@
     overflow: hidden;
   }
 
-  .dice-container {
+  .dice-buttons {
     display: flex;
     flex-direction: column;
     gap: var(--size-4-4);
@@ -56,12 +57,59 @@
     }
 
     .dice-result-value {
-      width: 32px;
+      min-width: 32px;
       text-align: center;
     }
   }
 
-  .word-container {
+  .deck-buttons {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--size-4-4);
+    white-space: nowrap;
+
+    .deck-size {
+      line-height: var(--input-height);
+    }
+  }
+
+  .deck-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--size-4-4);
+    width: 100%;
+    overflow: hidden;
+
+    .deck-result {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: var(--size-4-2);
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .deck-result:not(.shown) {
+      opacity: 0;
+    }
+
+    .deck-result-value {
+      display: inline-block;
+      min-width: 20px;
+      text-align: right;
+    }
+
+    .deck-result-type {
+      position: relative;
+      top: 2px;
+    }
+  }
+
+  .word-buttons {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -98,9 +146,6 @@
       text-align: right;
       margin-right: var(--size-4-4);
     }
-
-    .word-result-type {
-    }
   }
 
   &.srt-desktop-layout {
@@ -119,6 +164,11 @@
     .srt-tab {
       justify-content: flex-start;
       width: 100%;
+    }
+
+    .deck-results {
+      flex-direction: column-reverse;
+      margin-bottom: var(--size-4-6);
     }
 
     .word-results {
