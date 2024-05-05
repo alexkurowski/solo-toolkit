@@ -2,13 +2,17 @@ import { TFile, ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { generateWord, randomFrom } from "../utils";
 
+const MAX_REMEMBER_SIZE = 1000;
+
 export class WordView {
   view: View;
+  words: [string, string][];
   wordBtnsEl: HTMLElement;
   wordResultsEl: HTMLElement;
 
   constructor(view: View) {
     this.view = view;
+    this.words = [];
   }
 
   create() {
@@ -18,6 +22,7 @@ export class WordView {
 
     this.wordBtnsEl = this.view.tabViewEl.createDiv("word-buttons");
     this.wordBtnsEl.empty();
+    this.createResetBtn();
     this.createWordBtn("Subject");
     this.createWordBtn("Action");
     this.createWordBtn("Name");
@@ -37,17 +42,36 @@ export class WordView {
     if (!this.view.isMobile) {
       this.wordResultsEl = this.view.tabViewEl.createDiv("word-results");
     }
+
+    this.repopulateResults();
   }
 
-  addResult(type: string, value: string) {
-    const el = this.wordResultsEl.createDiv("word-result");
+  addResult(type: string, value: string, immediate = false) {
+    const elClass = ["word-result"];
+    if (immediate) elClass.push("shown");
+    const el = this.wordResultsEl.createDiv(elClass.join(" "));
+
     const typeEl = el.createSpan("word-result-type");
     typeEl.setText(type);
+
     const valueEl = el.createSpan("word-result-value");
     valueEl.setText(value);
-    setTimeout(() => {
-      el.classList.add("shown");
-    }, 30);
+
+    if (!immediate) {
+      setTimeout(() => {
+        el.classList.add("shown");
+      }, 30);
+    }
+  }
+
+  createResetBtn() {
+    new ButtonComponent(this.wordBtnsEl)
+      .setIcon("refresh-ccw")
+      .setTooltip("Remove all generated words")
+      .onClick(() => {
+        this.words = [];
+        this.wordResultsEl.empty();
+      });
   }
 
   createWordBtn(type: string) {
@@ -55,7 +79,9 @@ export class WordView {
       .setButtonText(type)
       .setTooltip(`Generate ${type.toLowerCase()}`)
       .onClick(() => {
-        this.addResult(type, generateWord(type));
+        const value = generateWord(type);
+        this.words.push([type, value]);
+        this.addResult(type, value);
       });
   }
 
@@ -77,7 +103,20 @@ export class WordView {
       .setTooltip(`Generate ${type.toLowerCase()}`)
       .onClick(() => {
         if (!values.length) return;
-        this.addResult(type, randomFrom(values));
+        const value = randomFrom(values);
+        this.words.push([type, value]);
+        this.addResult(type, value);
       });
+  }
+
+  repopulateResults() {
+    while (this.words.length > MAX_REMEMBER_SIZE) {
+      this.words.shift();
+    }
+
+    for (const word of this.words) {
+      const [type, value] = word;
+      this.addResult(type, value, true);
+    }
   }
 }

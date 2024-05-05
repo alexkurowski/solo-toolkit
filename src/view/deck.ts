@@ -34,11 +34,14 @@ export class DeckView {
     const elClass = ["deck-result"];
     if (immediate) elClass.push("shown");
     const el = this.deckResultsEl.createDiv(elClass.join(" "));
-    const result = el.createSpan("deck-result-value");
-    result.setText(value);
-    const type = el.createSpan("deck-result-type");
-    setIcon(type, suit);
-    setTooltip(type, `${value} of ${suit}s`);
+
+    const valueEl = el.createSpan("deck-result-value");
+    valueEl.setText(value);
+
+    const typeEl = el.createSpan("deck-result-type");
+    setIcon(typeEl, suit);
+    setTooltip(typeEl, `${value} of ${suit}s`);
+
     if (!immediate) {
       setTimeout(() => {
         el.classList.add("shown");
@@ -50,17 +53,20 @@ export class DeckView {
     this.countEl = this.deckBtnsEl.createDiv("deck-size");
     this.updateCount();
 
-    new ButtonComponent(this.deckBtnsEl).setButtonText("Shuffle").onClick(() => {
-      this.deck.shuffle();
-      this.deckResultsEl.empty();
-      this.updateCount();
-    });
-
     new ButtonComponent(this.deckBtnsEl)
       .setButtonText("Draw a card")
       .onClick(() => {
         const [value, suit] = this.deck.draw();
         this.addResult(value, suit);
+        this.updateCount();
+      });
+
+    new ButtonComponent(this.deckBtnsEl)
+      .setIcon("refresh-ccw")
+      .setTooltip("Shuffle")
+      .onClick(() => {
+        this.deck.shuffle();
+        this.deckResultsEl.empty();
         this.updateCount();
       });
   }
