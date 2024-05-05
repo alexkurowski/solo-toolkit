@@ -1,5 +1,5 @@
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
-import { registerIcons } from "./icons";
+import { registerIcons, unregisterIcons } from "./icons";
 import {
   SoloToolkitSettingTab,
   SoloToolkitSettings,
@@ -47,7 +47,9 @@ export default class SoloToolkitPlugin extends Plugin {
     this.addSettingTab(new SoloToolkitSettingTab(this.app, this));
   }
 
-  onunload() {}
+  onunload() {
+    unregisterIcons();
+  }
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
