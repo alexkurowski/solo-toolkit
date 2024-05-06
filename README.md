@@ -4,15 +4,15 @@ A plugin for Obsidian (https://obsidian.md) that adds helpful features for playi
 
 ## Features
 
-#### Dice roller
+### Dice roller
 
 Quickly roll a bunch of dice by clicking on a die icon.
 
-#### Deck of cards
+### Deck of cards
 
 A standard deck of 52 cards plus two optional joker cards.
 
-#### Random generators
+### Random generators
 
 A set of random word generators. Great for coming up with ideas on how to progress the story.
 
