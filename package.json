@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs watch",
     "build": "tsc --noEmit -skipLibCheck && node esbuild.config.mjs",
-    "deploy": "rm -rf ./dist && mkdir dist && cp main.js dist && cp styles.css dist && cp manifest.json dist",
+    "deploy": "rm -rf ./dist && mkdir -p dist/obsidian-solo-rpg-toolkit && cp main.js dist/obsidian-solo-rpg-toolkit && cp styles.css dist/obsidian-solo-rpg-toolkit && cp manifest.json dist/obsidian-solo-rpg-toolkit",
     "lint": "tsc --noEmit && eslint ./src"
   },
   "keywords": [],

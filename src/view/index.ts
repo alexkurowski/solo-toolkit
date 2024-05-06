@@ -1,6 +1,5 @@
 import {
   ItemView,
-  ButtonComponent,
   ExtraButtonComponent,
   WorkspaceLeaf,
   Platform,
@@ -91,33 +90,60 @@ export class SoloToolkitView extends ItemView {
 
     const btnsEl = this.tabPickerEl.createDiv("srt-tab-picker-tabs");
     const btns = {
-      word: new ButtonComponent(btnsEl).setButtonText(tabLabels.word),
-      deck: new ButtonComponent(btnsEl).setButtonText(tabLabels.deck),
-      dice: new ButtonComponent(btnsEl).setButtonText(tabLabels.dice),
+      word: new ExtraButtonComponent(btnsEl)
+        .setIcon("lightbulb")
+        .setTooltip(tabLabels.word),
+      deck: new ExtraButtonComponent(btnsEl)
+        .setIcon("heart")
+        .setTooltip(tabLabels.deck),
+      dice: new ExtraButtonComponent(btnsEl)
+        .setIcon("dices")
+        .setTooltip(tabLabels.dice),
     };
 
     const setCta = (btn: keyof typeof btns) => {
       for (const btn of Object.values(btns)) {
-        btn.removeCta();
+        btn.extraSettingsEl.classList.remove("highlight");
       }
-      btns[btn].setCta();
+      btns[btn].extraSettingsEl.classList.add("highlight");
     };
 
     setCta(this.tab);
 
+    let resetCount = 0;
+    const maybeReset = (btn: keyof typeof btns) => {
+      if (this.tab === btn) {
+        if (resetCount === 0) {
+          setTimeout(() => {
+            resetCount = 0;
+          }, 3000);
+        }
+        resetCount++;
+        if (resetCount >= 3) {
+          this[btn].reset();
+          resetCount = 0;
+        }
+      } else {
+        resetCount = 0;
+      }
+    };
+
     btns.word.onClick(() => {
+      maybeReset("word");
       this.tab = "word";
       setCta("word");
       this.createTab();
       updateResetBtnTooltip();
     });
     btns.deck.onClick(() => {
+      maybeReset("deck");
       this.tab = "deck";
       setCta("deck");
       this.createTab();
       updateResetBtnTooltip();
     });
     btns.dice.onClick(() => {
+      maybeReset("dice");
       this.tab = "dice";
       setCta("dice");
       this.createTab();

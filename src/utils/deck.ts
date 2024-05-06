@@ -25,7 +25,8 @@ export class Deck {
   max: number = 52;
   addJokers: boolean = false;
 
-  constructor() {
+  constructor(addJokers: boolean = false) {
+    this.addJokers = addJokers;
     this.shuffle();
   }
 

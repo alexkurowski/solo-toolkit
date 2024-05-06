@@ -1,4 +1,4 @@
-import { ButtonComponent } from "obsidian";
+import { ExtraButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { roll, rollIntervals } from "../utils";
 
@@ -48,12 +48,14 @@ export class DiceView {
 
     let i = 0;
     const reroll = () => {
-      value = roll(max, value);
-      this.rolls[max][rollIndex] = value;
-      el.setText(value.toString());
-      i++;
-      if (rollIntervals[i]) {
-        setTimeout(reroll, rollIntervals[i]);
+      if (this.rolls[max][rollIndex]) {
+        value = roll(max, value);
+        this.rolls[max][rollIndex] = value;
+        el.setText(value.toString());
+        i++;
+        if (rollIntervals[i]) {
+          setTimeout(reroll, rollIntervals[i]);
+        }
       }
     };
     setTimeout(reroll, rollIntervals[i]);
@@ -72,7 +74,7 @@ export class DiceView {
     const resultsEl = container.createDiv(`dice-results dice-results-${d}`);
     this.diceResultsEls[d] = resultsEl;
 
-    new ButtonComponent(container)
+    new ExtraButtonComponent(container)
       .setIcon(`srt-d${d}`)
       .setTooltip(`Roll d${d}`)
       .onClick(() => {

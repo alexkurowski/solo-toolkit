@@ -40,6 +40,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Add jokers to the deck")
+      .setDesc("Don't forget to shuffle after changing this")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.deckJokers)

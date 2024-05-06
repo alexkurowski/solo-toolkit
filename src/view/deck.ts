@@ -14,7 +14,7 @@ export class DeckView {
 
   constructor(view: View) {
     this.view = view;
-    this.deck = new Deck();
+    this.deck = new Deck(this.view.settings.deckJokers);
     this.drawn = [];
   }
 
