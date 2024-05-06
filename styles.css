@@ -13,13 +13,21 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     flex-wrap: wrap-reverse;
     gap: var(--size-4-4);
     width: 100%;
     padding-top: var(--size-4-4);
     margin-top: var(--size-4-4);
     border-top: 1px solid var(--color-base-40);
+
+    .srt-tab-picker-tabs {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--size-4-4);
+    }
   }
 
   .srt-tab {
@@ -64,7 +72,7 @@
 
   .deck-buttons {
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
@@ -91,21 +99,24 @@
       align-items: flex-start;
       gap: var(--size-4-2);
       transition: opacity 0.3s ease-in-out;
-    }
 
-    .deck-result:not(.shown) {
-      opacity: 0;
+      &.deck-result-red {
+        color: var(--color-red);
+      }
+
+      &:not(.shown) {
+        opacity: 0;
+      }
     }
 
     .deck-result-value {
       display: inline-block;
-      min-width: 20px;
       text-align: right;
     }
 
     .deck-result-type {
       position: relative;
-      top: 2px;
+      top: 1px;
     }
   }
 

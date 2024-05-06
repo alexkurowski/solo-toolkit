@@ -1,4 +1,4 @@
-import { TFile, ButtonComponent, ExtraButtonComponent } from "obsidian";
+import { TFile, ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { generateWord, randomFrom } from "../utils";
 
@@ -22,7 +22,6 @@ export class WordView {
 
     this.wordBtnsEl = this.view.tabViewEl.createDiv("word-buttons");
     this.wordBtnsEl.empty();
-    this.createResetBtn();
     this.createWordBtn("Subject");
     this.createWordBtn("Action");
     this.createWordBtn("Name");
@@ -46,6 +45,11 @@ export class WordView {
     this.repopulateResults();
   }
 
+  reset() {
+    this.words = [];
+    this.wordResultsEl.empty();
+  }
+
   addResult(type: string, value: string, immediate = false) {
     const elClass = ["word-result"];
     if (immediate) elClass.push("shown");
@@ -62,16 +66,6 @@ export class WordView {
         el.classList.add("shown");
       }, 30);
     }
-  }
-
-  createResetBtn() {
-    new ExtraButtonComponent(this.wordBtnsEl)
-      .setIcon("refresh-ccw")
-      .setTooltip("Remove all generated words")
-      .onClick(() => {
-        this.words = [];
-        this.wordResultsEl.empty();
-      });
   }
 
   createWordBtn(type: string) {

@@ -1,4 +1,4 @@
-import { App, Plugin, WorkspaceLeaf } from "obsidian";
+import { Plugin, WorkspaceLeaf } from "obsidian";
 import { registerIcons, unregisterIcons } from "./icons";
 import {
   SoloToolkitSettingTab,
@@ -20,29 +20,25 @@ export default class SoloToolkitPlugin extends Plugin {
       (leaf) => new SoloToolkitView(leaf, this.settings),
     );
 
-    const ribbonIconEl = this.addRibbonIcon(
-      "srt-ribbon",
-      "Solo RPG Toolkit",
-      async (evt: MouseEvent) => {
-        const { workspace } = this.app;
+    this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", async () => {
+      const { workspace } = this.app;
 
-        let leaf: WorkspaceLeaf | null = null;
-        const leaves = workspace.getLeavesOfType(VIEW_TYPE);
+      let leaf: WorkspaceLeaf | null = null;
+      const leaves = workspace.getLeavesOfType(VIEW_TYPE);
 
-        if (leaves.length > 0) {
-          leaf = leaves[0];
-        } else {
-          leaf = workspace.getRightLeaf(false);
-          if (leaf) {
-            await leaf.setViewState({ type: VIEW_TYPE, active: true });
-          }
-        }
-
+      if (leaves.length > 0) {
+        leaf = leaves[0];
+      } else {
+        leaf = workspace.getRightLeaf(false);
         if (leaf) {
-          workspace.revealLeaf(leaf);
+          await leaf.setViewState({ type: VIEW_TYPE, active: true });
         }
-      },
-    );
+      }
+
+      if (leaf) {
+        workspace.revealLeaf(leaf);
+      }
+    });
 
     this.addSettingTab(new SoloToolkitSettingTab(this.app, this));
   }

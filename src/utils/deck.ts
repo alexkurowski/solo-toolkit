@@ -1,4 +1,3 @@
-import { randomFrom } from "./dice";
 import { shuffle } from "./helpers";
 
 const values = [
@@ -19,15 +18,11 @@ const values = [
 
 const suits = ["heart", "diamond", "club", "spade"];
 
-const max = values.length * suits.length;
-
-export const drawCard = () => `${randomFrom(values)} of ${randomFrom(suits)}`;
-
 type Card = [string, string];
 
 export class Deck {
   cards: Card[] = [];
-  public drawn: Card[] = [];
+  max: number = 52;
   addJokers: boolean = false;
 
   constructor() {
@@ -37,13 +32,11 @@ export class Deck {
   draw(): Card {
     if (!this.cards.length) this.shuffle();
     const [value, suit] = this.cards.pop() as Card;
-    this.drawn.push([value, suit]);
     return [value, suit];
   }
 
   shuffle() {
     this.cards = [];
-    this.drawn = [];
 
     for (const value of values) {
       for (const suit of suits) {
@@ -52,23 +45,16 @@ export class Deck {
     }
 
     if (this.addJokers) {
-      this.cards.push(["Joker", "heart"]);
-      this.cards.push(["Joker", "spade"]);
+      this.cards.push(["Joker", "red"]);
+      this.cards.push(["Joker", "black"]);
     }
 
+    this.max = this.cards.length;
     shuffle(this.cards);
   }
 
-  size() {
-    return this.max() - this.drawn.length;
-  }
-
-  max() {
-    if (this.addJokers) {
-      return max + 2;
-    } else {
-      return max;
-    }
+  size(): [number, number] {
+    return [this.cards.length, this.max];
   }
 
   setJokers(value: boolean) {

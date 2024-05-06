@@ -1,26 +1,31 @@
 {
   "name": "@alexkurowski/solo-toolkit",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Solo RPG toolkit for Obsidian (https://obsidian.md)",
   "main": "./dist/api.js",
   "scripts": {
     "dev": "node esbuild.config.mjs watch",
     "build": "tsc --noEmit -skipLibCheck && node esbuild.config.mjs",
-    "deploy": "rm -rf ./dist && mkdir dist && cp main.js dist && cp styles.css dist && cp manifest.json dist"
+    "deploy": "rm -rf ./dist && mkdir dist && cp main.js dist && cp styles.css dist && cp manifest.json dist",
+    "lint": "tsc --noEmit && eslint ./src"
   },
   "keywords": [],
   "author": "Alex Kurowski",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.2.0",
     "@types/node": "^16.11.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",
     "@typescript-eslint/parser": "5.29.0",
     "builtin-modules": "3.3.0",
     "esbuild": "0.17.3",
     "esbuild-sass-plugin": "2.2.6",
+    "eslint": "^8.57.0",
+    "globals": "^15.1.0",
     "obsidian": "latest",
     "sass": "^1.76.0",
     "tslib": "2.4.0",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "typescript-eslint": "^7.8.0"
   }
 }

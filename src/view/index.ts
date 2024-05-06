@@ -1,4 +1,10 @@
-import { ItemView, ButtonComponent, WorkspaceLeaf, Platform } from "obsidian";
+import {
+  ItemView,
+  ButtonComponent,
+  ExtraButtonComponent,
+  WorkspaceLeaf,
+  Platform,
+} from "obsidian";
 import { DiceView } from "./dice";
 import { DeckView } from "./deck";
 import { WordView } from "./word";
@@ -6,17 +12,23 @@ import { SoloToolkitSettings } from "../settings";
 
 export const VIEW_TYPE = "MAIN_VIEW";
 
+const tabLabels = {
+  dice: "Dice",
+  deck: "Deck",
+  word: "Ideas",
+};
+
 export class SoloToolkitView extends ItemView {
   public settings: SoloToolkitSettings;
   public isMobile: boolean = false;
 
-  tab: "dice" | "deck" | "word" = "dice";
+  public tab: "dice" | "deck" | "word" = "dice";
   tabPickerEl: HTMLElement;
   public tabViewEl: HTMLElement;
 
-  dice: DiceView;
-  deck: DeckView;
-  word: WordView;
+  public dice: DiceView;
+  public deck: DeckView;
+  public word: WordView;
 
   constructor(leaf: WorkspaceLeaf, settings: SoloToolkitSettings) {
     super(leaf);
@@ -66,10 +78,22 @@ export class SoloToolkitView extends ItemView {
   createTabPicker() {
     this.tabPickerEl.empty();
 
+    const resetBtn = new ExtraButtonComponent(this.tabPickerEl)
+      .setIcon("refresh-ccw")
+      .setTooltip(`Reset ${tabLabels[this.tab].toLowerCase()}`)
+      .onClick(() => {
+        if (this.tab === "word") this.word.reset();
+        if (this.tab === "deck") this.deck.reset();
+        if (this.tab === "dice") this.dice.reset();
+      });
+    const updateResetBtnTooltip = () =>
+      resetBtn.setTooltip(`Reset ${tabLabels[this.tab].toLowerCase()}`);
+
+    const btnsEl = this.tabPickerEl.createDiv("srt-tab-picker-tabs");
     const btns = {
-      word: new ButtonComponent(this.tabPickerEl).setButtonText("Ideas"),
-      deck: new ButtonComponent(this.tabPickerEl).setButtonText("Deck"),
-      dice: new ButtonComponent(this.tabPickerEl).setButtonText("Dice"),
+      word: new ButtonComponent(btnsEl).setButtonText(tabLabels.word),
+      deck: new ButtonComponent(btnsEl).setButtonText(tabLabels.deck),
+      dice: new ButtonComponent(btnsEl).setButtonText(tabLabels.dice),
     };
 
     const setCta = (btn: keyof typeof btns) => {
@@ -85,16 +109,19 @@ export class SoloToolkitView extends ItemView {
       this.tab = "word";
       setCta("word");
       this.createTab();
+      updateResetBtnTooltip();
     });
     btns.deck.onClick(() => {
       this.tab = "deck";
       setCta("deck");
       this.createTab();
+      updateResetBtnTooltip();
     });
     btns.dice.onClick(() => {
       this.tab = "dice";
       setCta("dice");
       this.createTab();
+      updateResetBtnTooltip();
     });
   }
 
