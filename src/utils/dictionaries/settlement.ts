@@ -1,5 +1,0 @@
-// prettier-ignore
-export default [
-  ["all","aller","alver","ar","ashe","axe","bal","bard","bear","bell","black","blue","bone","coal","cold","cora","crown","crystal","dagger","dark","darrow","deep","dor","dragon","dry","durn","dust","east","edge","eld","ever","fey","frey","frost","gill","gold","grand","green","grey","grim","hammer","haw","high","hol","ice","iron","jewel","kel","kil","king","lan","leaf","lun","mal","marsh","mon","moon","mor","mur","nether","north","oak","old","pan","pel","rain","raven","red","rock","rom","roth","ruby","rune","salt","san","silver","south","star","stone","storm","strath","sun","tar","ten","tin","torr","tran","val","vine","west","white","wild","willow","wim","wind","winter","witch","wolfen","yar","zel"],
-  ["barrow","bay","bend","bridge","burgh","burough","bury","cliff","crest","cress","dale","don","dorf","end","far","fell","field","ford","gate","grave","guard","hall","haven","helm","hill","holme","land","meet","meadow","mill","moor","mount","point","pool","port","rest","shire","smith","song","spring","stead","stow","tree","town","iew","wall","watch","well","wich","wood"]
-]

@@ -33,4 +33,7 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            dist/obsidian-solo-rpg-toolkit.zip
+            dist/obsidian-solo-rpg-toolkit.zip \
+            dist/obsidian-solo-rpg-toolkit/main.js \
+            dist/obsidian-solo-rpg-toolkit/manifest.json \
+            dist/obsidian-solo-rpg-toolkit/styles.css

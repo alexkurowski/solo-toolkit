@@ -25,7 +25,7 @@ export class WordView {
     this.createWordBtn("Subject");
     this.createWordBtn("Action");
     this.createWordBtn("Name");
-    this.createWordBtn("Looks");
+    this.createWordBtn("Aspects");
     this.createWordBtn("Job");
     this.createWordBtn("Town");
 

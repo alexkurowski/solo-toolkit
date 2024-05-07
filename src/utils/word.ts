@@ -89,17 +89,22 @@ const getSomeName = () => {
 
 const getJob = () => capitalize(randomFrom(dictionary.occupations));
 
-const getLooks = () => {
-  const basic = randomFrom(dictionary.descriptors.basic);
-  const hairColor = randomFrom(dictionary.descriptors.hairColor);
-  const hairLength = randomFrom(dictionary.descriptors.hairLength);
+const getAspects = () => {
+  const word1 = randomFrom(dictionary.descriptors);
+  const word2 = randomFrom(dictionary.descriptors, word1);
 
-  const hair =
-    hairLength === "no"
-      ? `${hairLength} hair`
-      : `${hairLength} ${hairColor} hair`;
+  return capitalize(`${word1} and ${word2}`);
 
-  return capitalize(`${basic} looking, with ${hair}`);
+  // const basic = randomFrom(dictionary.descriptors.basic);
+  // const hairColor = randomFrom(dictionary.descriptors.hairColor);
+  // const hairLength = randomFrom(dictionary.descriptors.hairLength);
+
+  // const hair =
+  //   hairLength === "no"
+  //     ? `${hairLength} hair`
+  //     : `${hairLength} ${hairColor} hair`;
+
+  // return capitalize(`${basic} looking, with ${hair}`);
 };
 
 const getTown = () =>
@@ -115,8 +120,8 @@ export const generateWord = (type: string): string => {
       return getAction();
     case "Name":
       return getSomeName();
-    case "Looks":
-      return getLooks();
+    case "Aspects":
+      return getAspects();
     case "Job":
       return getJob();
     case "Town":

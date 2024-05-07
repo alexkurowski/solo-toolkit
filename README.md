@@ -36,7 +36,7 @@ npm run build
 npm run deploy
 ```
 
-You will find a newly generated folder `obsidian-solo-rpg-toolkit` inside folder `dist`. Move the `obsidian-solo-rpg-toolkit` folder into your vault's plugins folder: `<path-to-vault>/.obsidian/plugins/`.
+You will find a newly generated plugin folder `obsidian-solo-rpg-toolkit` inside folder `dist`. Move the `obsidian-solo-rpg-toolkit` plugin folder into your vault's plugins folder: `<path-to-vault>/.obsidian/plugins/`.
 
 Note that `.obsidian` folder in your vault may be hidden on Linux and MacOS.
 
