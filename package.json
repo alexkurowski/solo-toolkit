@@ -1,12 +1,12 @@
 {
   "name": "alexkurowski/solo-toolkit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Solo RPG toolkit for Obsidian (https://obsidian.md)",
   "main": "./dist/api.js",
   "scripts": {
     "dev": "node esbuild.config.mjs watch",
     "build": "tsc --noEmit -skipLibCheck && node esbuild.config.mjs",
-    "deploy": "rm -rf ./dist && mkdir -p dist/obsidian-solo-rpg-toolkit && cp main.js dist/obsidian-solo-rpg-toolkit && cp styles.css dist/obsidian-solo-rpg-toolkit && cp manifest.json dist/obsidian-solo-rpg-toolkit",
+    "deploy": "rm -rf ./dist && mkdir -p dist/solo-rpg-toolkit && cp main.js dist/solo-rpg-toolkit && cp styles.css dist/solo-rpg-toolkit && cp manifest.json dist/solo-rpg-toolkit",
     "lint": "tsc --noEmit && eslint ./src"
   },
   "keywords": [],

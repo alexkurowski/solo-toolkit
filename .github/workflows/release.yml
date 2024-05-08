@@ -22,7 +22,7 @@ jobs:
           npm install
           npm run build
           npm run deploy
-          zip ./dist/obsidian-solo-rpg-toolkit.zip dist/*
+          zip ./dist/solo-rpg-toolkit.zip dist/*
 
       - name: Create release
         env:
@@ -33,7 +33,7 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            dist/obsidian-solo-rpg-toolkit.zip \
-            dist/obsidian-solo-rpg-toolkit/main.js \
-            dist/obsidian-solo-rpg-toolkit/manifest.json \
-            dist/obsidian-solo-rpg-toolkit/styles.css
+            dist/solo-rpg-toolkit.zip \
+            dist/solo-rpg-toolkit/main.js \
+            dist/solo-rpg-toolkit/manifest.json \
+            dist/solo-rpg-toolkit/styles.css
