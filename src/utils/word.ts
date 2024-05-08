@@ -94,17 +94,25 @@ const getAspects = () => {
   const word2 = randomFrom(dictionary.descriptors, word1);
 
   return capitalize(`${word1} and ${word2}`);
+};
 
-  // const basic = randomFrom(dictionary.descriptors.basic);
-  // const hairColor = randomFrom(dictionary.descriptors.hairColor);
-  // const hairLength = randomFrom(dictionary.descriptors.hairLength);
+const getSkills = () => {
+  const good = randomFrom(dictionary.skills);
+  const bad = randomFrom(dictionary.skills, good);
 
-  // const hair =
-  //   hairLength === "no"
-  //     ? `${hairLength} hair`
-  //     : `${hairLength} ${hairColor} hair`;
+  const [goodSkill, goodType] = good;
+  const [badSkill, badType] = bad;
 
-  // return capitalize(`${basic} looking, with ${hair}`);
+  let goodStr = `good ${goodSkill}`;
+  if (goodType === 0) goodStr = `good ${goodSkill} skills`;
+  if (goodType === 1) goodStr = `good at ${goodSkill}`;
+  if (goodType === 2) goodStr = `good with ${goodSkill}`;
+  let badStr = `bad ${badSkill}`;
+  if (badType === 0) badStr = `bad ${badSkill} skills`;
+  if (badType === 1) badStr = `bad at ${badSkill}`;
+  if (badType === 2) badStr = `bad with ${badSkill}`;
+
+  return capitalize(`${goodStr} but ${badStr}`);
 };
 
 const getTown = () =>
@@ -122,6 +130,8 @@ export const generateWord = (type: string): string => {
       return getSomeName();
     case "Aspects":
       return getAspects();
+    case "Skills":
+      return getSkills();
     case "Job":
       return getJob();
     case "Town":

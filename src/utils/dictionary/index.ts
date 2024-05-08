@@ -7,6 +7,7 @@ import names2 from "./names2";
 import names3 from "./names3";
 import occupations from "./occupations";
 import descriptors from "./descriptors";
+import skills from "./skills";
 import hairs from "./hairs";
 import settlement from "./settlement";
 
@@ -20,5 +21,7 @@ export const dictionary = {
   names3,
   occupations,
   descriptors,
+  skills,
+  hairs,
   settlement,
 };

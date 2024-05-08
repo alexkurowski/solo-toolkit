@@ -11,6 +11,8 @@ import { SoloToolkitSettings } from "../settings";
 
 export const VIEW_TYPE = "MAIN_VIEW";
 
+const resetTimeout = 800;
+
 const tabLabels = {
   dice: "Dice",
   deck: "Deck",
@@ -101,54 +103,43 @@ export class SoloToolkitView extends ItemView {
         .setTooltip(tabLabels.dice),
     };
 
-    const setCta = (btn: keyof typeof btns) => {
+    const setCta = (tab: keyof typeof btns) => {
       for (const btn of Object.values(btns)) {
-        btn.extraSettingsEl.classList.remove("highlight");
+        if (btn === btns[tab]) {
+          btn.extraSettingsEl.classList.add("highlight");
+        } else {
+          btn.extraSettingsEl.classList.remove("highlight");
+        }
       }
-      btns[btn].extraSettingsEl.classList.add("highlight");
     };
 
     setCta(this.tab);
 
-    let resetCount = 0;
-    const maybeReset = (btn: keyof typeof btns) => {
-      if (this.tab === btn) {
-        if (resetCount === 0) {
-          setTimeout(() => {
-            resetCount = 0;
-          }, 3000);
-        }
-        resetCount++;
-        if (resetCount >= 3) {
-          this[btn].reset();
-          resetCount = 0;
+    let lastBtnClickAt = 0;
+    const maybeReset = (tab: keyof typeof btns) => {
+      if (this.tab === tab) {
+        const now = Date.now();
+        if (lastBtnClickAt && now - lastBtnClickAt <= resetTimeout) {
+          this[tab].reset();
+          lastBtnClickAt = 0;
+        } else {
+          lastBtnClickAt = now;
         }
       } else {
-        resetCount = 0;
+        lastBtnClickAt = 0;
       }
     };
 
-    btns.word.onClick(() => {
-      maybeReset("word");
-      this.tab = "word";
-      setCta("word");
+    const btnOnClick = (tab: keyof typeof btns) => () => {
+      maybeReset(tab);
+      this.tab = tab;
+      setCta(tab);
       this.createTab();
       updateResetBtnTooltip();
-    });
-    btns.deck.onClick(() => {
-      maybeReset("deck");
-      this.tab = "deck";
-      setCta("deck");
-      this.createTab();
-      updateResetBtnTooltip();
-    });
-    btns.dice.onClick(() => {
-      maybeReset("dice");
-      this.tab = "dice";
-      setCta("dice");
-      this.createTab();
-      updateResetBtnTooltip();
-    });
+    };
+    btns.word.onClick(btnOnClick("word"));
+    btns.deck.onClick(btnOnClick("deck"));
+    btns.dice.onClick(btnOnClick("dice"));
   }
 
   createTab() {
