@@ -22,7 +22,7 @@ Additionally you may add any number of your own random tables to roll on, by cre
 
 ### From GitHub Release
 
-Download obsidian-solo-rpg-toolkit.zip from the latest release, and extract the plugin folder into your vault's plugins folder: `<path-to-vault>/.obsidian/plugins/`.
+Download solo-rpg-toolkit.zip from the latest release, and extract the plugin folder into your vault's plugins folder: `<path-to-vault>/.obsidian/plugins/`.
 
 Note that `.obsidian` folder in your vault may be hidden on Linux and MacOS.
 

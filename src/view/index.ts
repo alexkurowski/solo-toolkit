@@ -1,4 +1,5 @@
 import {
+  App,
   ItemView,
   ExtraButtonComponent,
   WorkspaceLeaf,
@@ -8,6 +9,10 @@ import { DiceView } from "./dice";
 import { DeckView } from "./deck";
 import { WordView } from "./word";
 import { SoloToolkitSettings } from "../settings";
+
+interface DevApp extends App {
+  isMobile?: boolean;
+}
 
 export const VIEW_TYPE = "MAIN_VIEW";
 
@@ -56,7 +61,9 @@ export class SoloToolkitView extends ItemView {
     parent.empty();
 
     this.isMobile =
-      (this.app as any).isMobile || Platform.isIosApp || Platform.isAndroidApp;
+      (this.app as DevApp).isMobile ||
+      Platform.isIosApp ||
+      Platform.isAndroidApp;
 
     this.containerEl = parent.createDiv("srt-container");
     this.tabViewEl = this.containerEl.createDiv("srt-tab");

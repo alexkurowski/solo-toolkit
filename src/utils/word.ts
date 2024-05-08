@@ -42,7 +42,7 @@ const getName3 = () => {
   let result = "";
 
   let i = 0;
-  let toAdd: any;
+  let toAdd: [string, number];
   let type: "vowel" | "consonant" = "vowel";
   const syllables = randomFrom([
     1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9,
@@ -63,12 +63,11 @@ const getName3 = () => {
           // middle syllable
           if (toAdd[1] & 4) break;
         }
+        result += toAdd[0];
       } while (true);
     } catch (err) {
       console.log(err);
-      console.log({ type, i, toAdd });
     }
-    result += toAdd[0];
     type = type === "vowel" ? "consonant" : "vowel";
   }
 

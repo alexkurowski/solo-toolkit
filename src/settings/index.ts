@@ -1,4 +1,5 @@
-import { App, Setting, Plugin, PluginSettingTab } from "obsidian";
+import { App, Setting, PluginSettingTab } from "obsidian";
+import SoloToolkitPlugin from "../main";
 
 export interface SoloToolkitSettings {
   customTableRoot: string;
@@ -11,9 +12,9 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
 };
 
 export class SoloToolkitSettingTab extends PluginSettingTab {
-  plugin: any;
+  plugin: SoloToolkitPlugin;
 
-  constructor(app: App, plugin: Plugin) {
+  constructor(app: App, plugin: SoloToolkitPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }

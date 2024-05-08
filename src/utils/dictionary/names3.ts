@@ -1,3 +1,5 @@
+type TPair = [string, number];
+
 // prettier-ignore
 export default {
   vowel: [
@@ -43,4 +45,4 @@ export default {
     ["st", 7], ["str", 6],
     ["qu", 6],
   ],
-}
+} as { vowel: TPair[], consonant: TPair[] }

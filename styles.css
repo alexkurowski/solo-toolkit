@@ -207,4 +207,40 @@
       margin-bottom: var(--size-4-6);
     }
   }
+
+  &.srt-mobile-layout {
+    .srt-tab-picker {
+      .clickable-icon {
+        padding: var(--size-4-2) var(--size-4-4);
+
+        svg {
+          width: 30px;
+          height: 30px;
+        }
+      }
+
+      .srt-tab-picker-tabs {
+        gap: var(--size-4-4);
+      }
+    }
+
+    .dice-buttons {
+      .dice-variant {
+        .clickable-icon {
+          padding: var(--size-4-3);
+
+          svg {
+            width: 36px;
+            height: 36px;
+          }
+        }
+      }
+    }
+
+    .deck-buttons {
+      .deck-size {
+        padding-left: var(--size-4-5);
+      }
+    }
+  }
 }
