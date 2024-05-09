@@ -164,6 +164,11 @@
       display: flex;
       flex-direction: row;
       transition: opacity 0.3s ease-in-out;
+      text-decoration: none;
+
+      &:not(:hover) {
+        color: var(--text-normal);
+      }
     }
 
     .word-result:not(.shown) {
@@ -213,11 +218,11 @@
   &.srt-mobile-layout {
     .srt-tab-picker {
       .clickable-icon {
-        padding: var(--size-4-2) var(--size-4-4);
+        padding: var(--size-4-2);
 
         svg {
-          width: 30px;
-          height: 30px;
+          width: 28px;
+          height: 28px;
         }
       }
 

@@ -63,8 +63,8 @@ const getName3 = () => {
           // middle syllable
           if (toAdd[1] & 4) break;
         }
-        result += toAdd[0];
       } while (true);
+      result += toAdd[0];
     } catch (err) {
       console.log(err);
     }

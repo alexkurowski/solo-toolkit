@@ -3,6 +3,7 @@ export default [
   ["alertness", 0],
   ["artillery", 0],
   ["athletic", 0],
+  ["construction", 0],
   ["culture", 0],
   ["deceive", 0],
   ["driving", 0],
