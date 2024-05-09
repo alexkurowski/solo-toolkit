@@ -20,24 +20,12 @@ export default class SoloToolkitPlugin extends Plugin {
       (leaf) => new SoloToolkitView(leaf, this.settings),
     );
 
-    this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", async () => {
-      const { workspace } = this.app;
+    this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", () => this.openView());
 
-      let leaf: WorkspaceLeaf | null = null;
-      const leaves = workspace.getLeavesOfType(VIEW_TYPE);
-
-      if (leaves.length > 0) {
-        leaf = leaves[0];
-      } else {
-        leaf = workspace.getRightLeaf(false);
-        if (leaf) {
-          await leaf.setViewState({ type: VIEW_TYPE, active: true });
-        }
-      }
-
-      if (leaf) {
-        workspace.revealLeaf(leaf);
-      }
+    this.addCommand({
+      id: "open-toolkit",
+      name: "Open toolkit",
+      callback: () => this.openView(),
     });
 
     this.addSettingTab(new SoloToolkitSettingTab(this.app, this));
@@ -45,6 +33,26 @@ export default class SoloToolkitPlugin extends Plugin {
 
   onunload() {
     unregisterIcons();
+  }
+
+  async openView() {
+    const { workspace } = this.app;
+
+    let leaf: WorkspaceLeaf | null = null;
+    const leaves = workspace.getLeavesOfType(VIEW_TYPE);
+
+    if (leaves.length > 0) {
+      leaf = leaves[0];
+    } else {
+      leaf = workspace.getRightLeaf(false);
+      if (leaf) {
+        await leaf.setViewState({ type: VIEW_TYPE, active: true });
+      }
+    }
+
+    if (leaf) {
+      workspace.revealLeaf(leaf);
+    }
   }
 
   async loadSettings() {

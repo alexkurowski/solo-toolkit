@@ -100,7 +100,9 @@
     white-space: nowrap;
 
     .deck-size {
+      min-width: 50px;
       line-height: var(--input-height);
+      text-align: right;
     }
   }
 
