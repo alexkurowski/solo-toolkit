@@ -1,6 +1,6 @@
 import { ButtonComponent, setIcon, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { Deck, capitalize } from "../utils";
+import { Deck, capitalize, clickToCopy } from "../utils";
 
 const MAX_REMEMBER_SIZE = 1000;
 
@@ -46,13 +46,17 @@ export class DeckView {
 
   addResult(value: string, suit: string, immediate = false) {
     const isRed = suit === "heart" || suit === "diamond" || suit === "red";
-    // const isBlack = suit === "club" || suit === "spade" || suit === "black";
+    const isBlack = suit === "club" || suit === "spade" || suit === "black";
     const isSuit = suit !== "red" && suit !== "black";
 
-    const elClass = ["deck-result"];
-    if (immediate) elClass.push("shown");
+    const parentElClass = ["deck-result"];
+    if (immediate) parentElClass.push("nofade");
+    const parentEl = this.deckResultsEl.createDiv(parentElClass.join(" "));
+
+    const elClass = ["deck-result-content"];
     if (isRed) elClass.push("deck-result-red");
-    const el = this.deckResultsEl.createDiv(elClass.join(" "));
+    if (isBlack) elClass.push("deck-result-black");
+    const el = parentEl.createDiv(elClass.join(" "));
 
     let tooltipValue = value;
     if (value === "J") tooltipValue = "Jack";
@@ -60,11 +64,11 @@ export class DeckView {
     if (value === "K") tooltipValue = "King";
     if (value === "A") tooltipValue = "Ace";
     if (value === "Joker") tooltipValue = "joker";
-    if (isSuit) {
-      setTooltip(el, `${tooltipValue} of ${suit}s`);
-    } else {
-      setTooltip(el, `${capitalize(suit)} ${tooltipValue}`);
-    }
+    const tooltipText = isSuit
+      ? `${tooltipValue} of ${suit}s`
+      : `${capitalize(suit)} ${tooltipValue}`;
+    setTooltip(parentEl, tooltipText);
+    parentEl.onclick = clickToCopy(tooltipText);
 
     const valueEl = el.createSpan("deck-result-value");
     valueEl.setText(value);
@@ -72,12 +76,6 @@ export class DeckView {
     if (isSuit) {
       const typeEl = el.createSpan("deck-result-type");
       setIcon(typeEl, suit);
-    }
-
-    if (!immediate) {
-      setTimeout(() => {
-        el.classList.add("shown");
-      }, 30);
     }
   }
 

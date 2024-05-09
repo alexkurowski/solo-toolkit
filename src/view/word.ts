@@ -1,6 +1,6 @@
-import { TFile, ButtonComponent, Notice } from "obsidian";
+import { TFile, ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { generateWord, randomFrom } from "../utils";
+import { generateWord, randomFrom, clickToCopy } from "../utils";
 
 const MAX_REMEMBER_SIZE = 1000;
 
@@ -53,25 +53,15 @@ export class WordView {
 
   addResult(type: string, value: string, immediate = false) {
     const elClass = ["word-result"];
-    if (immediate) elClass.push("shown");
+    if (immediate) elClass.push("nofade");
     const el = this.wordResultsEl.createEl("a", { cls: elClass.join(" ") });
-    el.onclick = function (event: any) {
-      event.preventDefault();
-      navigator.clipboard.writeText(value);
-      new Notice("Copied to clipboard");
-    };
+    el.onclick = clickToCopy(value);
 
     const typeEl = el.createSpan("word-result-type");
     typeEl.setText(type);
 
     const valueEl = el.createSpan("word-result-value");
     valueEl.setText(value);
-
-    if (!immediate) {
-      setTimeout(() => {
-        el.classList.add("shown");
-      }, 30);
-    }
   }
 
   createWordBtn(type: string) {
