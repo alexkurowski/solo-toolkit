@@ -16,8 +16,6 @@ interface DevApp extends App {
 
 export const VIEW_TYPE = "MAIN_VIEW";
 
-const resetTimeout = 800;
-
 const tabLabels = {
   dice: "Dice",
   deck: "Deck",
@@ -122,24 +120,9 @@ export class SoloToolkitView extends ItemView {
 
     setCta(this.tab);
 
-    let lastBtnClickAt = 0;
-    const maybeReset = (tab: keyof typeof btns) => {
-      if (this.tab === tab) {
-        const now = Date.now();
-        if (lastBtnClickAt && now - lastBtnClickAt <= resetTimeout) {
-          this[tab].reset();
-          lastBtnClickAt = 0;
-        } else {
-          lastBtnClickAt = now;
-        }
-      } else {
-        lastBtnClickAt = 0;
-      }
-    };
-
     const btnOnClick = (tab: keyof typeof btns) => () => {
-      maybeReset(tab);
       this.tab = tab;
+      if (tab === "dice") this.dice.reset();
       setCta(tab);
       this.createTab();
       updateResetBtnTooltip();

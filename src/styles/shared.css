@@ -1,0 +1,14 @@
+.srt-container {
+  .nofade {
+    animation: none !important;
+  }
+}
+
+@keyframes srt-fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

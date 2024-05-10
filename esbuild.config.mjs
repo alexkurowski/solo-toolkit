@@ -15,7 +15,7 @@ const context = await esbuild.context({
   banner: {
     js: banner,
   },
-  entryPoints: ["src/main.ts"],
+  entryPoints: ["src/main.ts", "src/styles.css"],
   bundle: true,
   external: [
     "obsidian",
@@ -46,11 +46,11 @@ const context = await esbuild.context({
   ],
   format: "cjs",
   target: "es2022",
-  logLevel: "info",
+  logLevel: watch ? "info" : "error",
   sourcemap: watch ? "inline" : false,
   minify: true,
   treeShaking: true,
-  outfile: "main.js",
+  outdir: "dist",
   logOverride: { "empty-import-meta": "silent" },
 });
 

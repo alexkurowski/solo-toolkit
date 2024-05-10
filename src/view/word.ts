@@ -4,6 +4,17 @@ import { generateWord, randomFrom, clickToCopy } from "../utils";
 
 const MAX_REMEMBER_SIZE = 1000;
 
+const wordLabels: { [word: string]: string } = {
+  Oracle: "yes/no answer",
+  Subject: "a subject",
+  Action: "an action",
+  Name: "a name",
+  Aspects: "character aspects",
+  Skills: "character skills",
+  Job: "occupation",
+  Town: "a town name",
+};
+
 export class WordView {
   view: View;
   words: [string, string][];
@@ -22,6 +33,7 @@ export class WordView {
 
     this.wordBtnsEl = this.view.tabViewEl.createDiv("word-buttons");
     this.wordBtnsEl.empty();
+    this.createWordBtn("Oracle");
     this.createWordBtn("Subject");
     this.createWordBtn("Action");
     this.createWordBtn("Name");
@@ -67,7 +79,7 @@ export class WordView {
   createWordBtn(type: string) {
     new ButtonComponent(this.wordBtnsEl)
       .setButtonText(type)
-      .setTooltip(`Generate ${type.toLowerCase()}`)
+      .setTooltip(`Generate ${wordLabels[type] || type.toLowerCase()}`)
       .onClick(() => {
         const value = generateWord(type);
         this.words.push([type, value]);

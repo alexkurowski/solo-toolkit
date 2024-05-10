@@ -1,0 +1,49 @@
+.srt-container {
+  .word-buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--size-4-4);
+  }
+
+  .word-results {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: var(--size-4-4);
+    width: 100%;
+    overflow: hidden;
+
+    .word-result {
+      display: flex;
+      flex-direction: row;
+      text-decoration: none;
+      cursor: pointer;
+      animation: 0.5s ease-in-out srt-fadein;
+
+      &:not(:hover) {
+        color: var(--text-normal);
+      }
+    }
+
+    .word-result-type {
+      display: inline-block;
+      min-width: 60px;
+      font-size: 0.75em;
+      line-height: 2em;
+      color: var(--color-base-60);
+      text-align: right;
+      margin-right: var(--size-4-4);
+    }
+  }
+
+  &.srt-desktop-layout {
+    .word-results {
+      flex-direction: column-reverse;
+      margin-bottom: var(--size-4-6);
+    }
+  }
+}

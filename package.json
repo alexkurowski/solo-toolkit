@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs watch",
     "build": "tsc --noEmit -skipLibCheck && node esbuild.config.mjs",
-    "deploy": "rm -rf ./dist && mkdir -p dist/solo-rpg-toolkit && cp main.js dist/solo-rpg-toolkit && cp styles.css dist/solo-rpg-toolkit && cp manifest.json dist/solo-rpg-toolkit",
+    "deploy": "rm -rf ./dist/solo-rpg-toolkit && mkdir -p dist/solo-rpg-toolkit && cp dist/main.js dist/solo-rpg-toolkit && cp dist/styles.css dist/solo-rpg-toolkit && cp manifest.json dist/solo-rpg-toolkit",
     "lint": "tsc --noEmit && eslint ./src",
     "version": "ruby tasks/version.rb",
     "release": "ruby tasks/release.rb"
@@ -15,6 +15,7 @@
   "author": "Alex Kurowski",
   "license": "MIT",
   "devDependencies": {
+    "@codemirror/language": "^6.10.1",
     "@eslint/js": "^9.2.0",
     "@types/node": "^16.11.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",

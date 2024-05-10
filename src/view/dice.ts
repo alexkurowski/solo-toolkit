@@ -25,6 +25,7 @@ export class DiceView {
     this.createDiceBtn(10);
     this.createDiceBtn(12);
     this.createDiceBtn(20);
+    this.createDiceBtn(100);
 
     this.repopulateResults();
   }
