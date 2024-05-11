@@ -47,14 +47,18 @@ export class TrackWidget extends WidgetType {
   }
 
   focusOnNode(view: EditorView) {
-    const pos =
-      this.node.from +
-      this.value.toString().length +
-      1 +
-      this.max.toString().length;
+    const pos = this.node.to;
     view.dispatch({
       selection: { anchor: pos, head: pos },
     });
+    // FIXME: for some reason this.node.to results in: `1/10`|
+    //        while this.node.to - 1 results in: `1/1|0`
+    //        thus a timeout fix :(
+    setTimeout(() => {
+      view.dispatch({
+        selection: { anchor: pos, head: pos },
+      });
+    }, 33);
   }
 
   updateDoc(view: EditorView) {
