@@ -1,7 +1,7 @@
 {
     "id": "solo-rpg-toolkit",
     "name": "Solo RPG Toolkit",
-    "version": "0.1.7",
+    "version": "0.2.0",
     "minAppVersion": "0.12.15",
     "description": "Solo RPG toolkit for Obsidian.md",
     "author": "Alex Kurowski",

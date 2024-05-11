@@ -6,6 +6,7 @@ import {
   DEFAULT_SETTINGS,
 } from "./settings";
 import { SoloToolkitView, VIEW_TYPE } from "./view";
+import { soloToolkitExtension } from "./extension";
 
 export default class SoloToolkitPlugin extends Plugin {
   settings: SoloToolkitSettings;
@@ -19,6 +20,8 @@ export default class SoloToolkitPlugin extends Plugin {
       VIEW_TYPE,
       (leaf) => new SoloToolkitView(leaf, this.settings),
     );
+
+    this.registerEditorExtension(soloToolkitExtension(this));
 
     this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", () => this.openView());
 

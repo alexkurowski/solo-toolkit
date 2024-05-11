@@ -4,11 +4,13 @@ import SoloToolkitPlugin from "../main";
 export interface SoloToolkitSettings {
   customTableRoot: string;
   deckJokers: boolean;
+  inlineCounters: boolean;
 }
 
 export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   customTableRoot: "Tables",
   deckJokers: false,
+  inlineCounters: false,
 };
 
 export class SoloToolkitSettingTab extends PluginSettingTab {
@@ -47,6 +49,20 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.deckJokers)
           .onChange(async (value) => {
             this.plugin.settings.deckJokers = value;
+            await this.plugin.saveSettings();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("Enable inline counters")
+      .setDesc(
+        "Typing `1+-` will render a dynamic counter, typing `1/5+-` will render a progress tracker",
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.inlineCounters)
+          .onChange(async (value) => {
+            this.plugin.settings.inlineCounters = value;
             await this.plugin.saveSettings();
           }),
       );

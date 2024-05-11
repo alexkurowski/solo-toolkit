@@ -39,7 +39,7 @@
 
   &.srt-mobile-layout {
     .dice-buttons {
-      gap: var(--size-4-1);
+      gap: 0;
 
       .dice-variant {
         .clickable-icon {

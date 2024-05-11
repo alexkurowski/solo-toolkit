@@ -1,0 +1,54 @@
+.srt-count {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--size-4-1);
+  font-weight: 500;
+  vertical-align: middle;
+
+  .clickable-icon {
+    padding: var(--size-2-2);
+    cursor: pointer;
+  }
+}
+
+.srt-track {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+  vertical-align: middle;
+
+  .srt-track-btn {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--text-normal);
+    border-radius: var(--radius-s);
+    background-color: transparent;
+    cursor: pointer;
+    transition: border-color 0.3s;
+
+    &:hover {
+      border-color: var(--interactive-accent);
+    }
+
+    &.active {
+      border-color: var(--interactive-accent);
+      background-color: var(--interactive-accent);
+    }
+  }
+
+  .srt-track-edit {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    cursor: pointer;
+
+    svg {
+      color: var(--text-faint);
+    }
+  }
+}
