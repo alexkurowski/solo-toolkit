@@ -18,6 +18,18 @@ A set of random word generators. Great for coming up with ideas on how to progre
 
 Additionally you may add any number of your own random tables to roll on, by creating notes inside a special folder in your vault (folder "Tables" by default).
 
+### Inline dynamic counters
+
+Code blocks with a single number in it (e.g. `` `5` ``) will be rendered with - and + buttons for quick adjustment.
+
+Note that this feature is disabled by default and can be enabled in plugin settings.
+
+### Inline progress trackers
+
+Similar to counters, code blocks with two numbers separated by a slash (e.g. `` `1/5` ``) will be rendered as a set of checkable boxes. For PbtA-style clocks and general progress tracking.
+
+Note that this feature is disabled by default and can be enabled in plugin settings.
+
 ## Installation
 
 ### From GitHub Release

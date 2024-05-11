@@ -2,7 +2,7 @@ import { setIcon } from "obsidian";
 import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
 
-export const TRACK_REGEX = /^`[+-]?\d+\/\d+\+-`$/;
+export const TRACK_REGEX = /^`[+-]?\d+\/\d+`$/;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
@@ -31,7 +31,7 @@ export class TrackWidget extends WidgetType {
   }
 
   parseValue(text: string): [number, number] {
-    const split = text.replace(/`/g, "").replace("+-", "").split("/");
+    const split = text.replace(/`/g, "").split("/");
     return [parseInt(split[0]) || 0, parseInt(split[1]) || 0];
   }
 
@@ -63,7 +63,7 @@ export class TrackWidget extends WidgetType {
         {
           from: this.node.from,
           to: this.node.to,
-          insert: `${this.value}/${this.max}+-`,
+          insert: `${this.value}/${this.max}`,
         },
       ],
     });

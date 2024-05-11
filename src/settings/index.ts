@@ -56,7 +56,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Enable inline counters")
       .setDesc(
-        "Typing `1+-` will render a dynamic counter, typing `1/5+-` will render a progress tracker",
+        "Typing `1` will render a dynamic counter, typing `1/5` will render a progress tracker",
       )
       .addToggle((toggle) =>
         toggle
