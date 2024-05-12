@@ -1,4 +1,4 @@
-import { TFile, ButtonComponent } from "obsidian";
+import { TFile, TFolder, ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { generateWord, randomFrom, clickToCopy } from "../utils";
 
@@ -42,14 +42,14 @@ export class WordView {
     this.createWordBtn("Skills");
     this.createWordBtn("Job");
     this.createWordBtn("Town");
-    this.createWordBtn("Place");
+    this.createWordBtn("Describe");
 
     if (this.view.settings.customTableRoot) {
-      const files = this.view.app.vault.getMarkdownFiles();
-      for (const file of files) {
-        if (file.parent?.path === this.view.settings.customTableRoot) {
-          this.createCustomWordBtn(file);
-        }
+      const folder = this.view.app.vault.getFolderByPath(
+        this.view.settings.customTableRoot,
+      );
+      if (folder) {
+        this.createCustomWordBtns(folder);
       }
     }
 
@@ -87,6 +87,19 @@ export class WordView {
         this.words.push([type, value]);
         this.addResult(type, value);
       });
+  }
+
+  createCustomWordBtns(folder: TFolder) {
+    for (const child of folder.children) {
+      if (child instanceof TFile) {
+        if (child.extension === "md") {
+          this.createCustomWordBtn(child);
+        }
+      }
+      if (child instanceof TFolder) {
+        this.createCustomWordBtns(child);
+      }
+    }
   }
 
   createCustomWordBtn(file: TFile) {

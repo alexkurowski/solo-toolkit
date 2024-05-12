@@ -149,7 +149,7 @@ export const generateWord = (type: string): string => {
       return getJob();
     case "Town":
       return getTown();
-    case "Place":
+    case "Describe":
       return getPlace();
     default:
       return "";

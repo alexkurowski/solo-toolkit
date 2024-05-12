@@ -26,8 +26,6 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl("h1", { text: "Solo RPG Toolkit settings" });
-
     new Setting(containerEl)
       .setName("Custom tables folder")
       .setDesc("Additional random tables can be added in this folder")
