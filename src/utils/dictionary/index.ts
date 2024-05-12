@@ -1,4 +1,3 @@
-import oracle from './oracle';
 import adjectives from "./adjectives";
 import adverbs from "./adverbs";
 import nouns from "./nouns";
@@ -13,7 +12,6 @@ import hairs from "./hairs";
 import settlement from "./settlement";
 
 export const dictionary = {
-  oracle,
   adjectives,
   adverbs,
   nouns,

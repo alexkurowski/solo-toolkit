@@ -1,16 +1,10 @@
+import { Oracle } from "./oracle";
 import { dictionary } from "./dictionary";
 import { randomFrom } from "./dice";
 import { capitalize } from "./helpers";
 
-const getOracle = () => {
-  const answer1 = randomFrom(dictionary.oracle[0]);
-  const answer2 = randomFrom(dictionary.oracle[1]);
-  if (answer2) {
-    return capitalize(`${answer1}, ${answer2}`);
-  } else {
-    return capitalize(answer1);
-  }
-};
+const oracle = new Oracle();
+const getOracle = () => capitalize(oracle.getAnswer());
 
 const getNoun = () => randomFrom(dictionary.nouns);
 const getVerb = () => randomFrom(dictionary.verbs);

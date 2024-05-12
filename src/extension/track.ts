@@ -82,7 +82,7 @@ export class TrackWidget extends WidgetType {
       const btnEl = document.createElement("button");
       btnEl.classList.add("clickable-icon", "srt-track-btn");
       btnEl.onclick = () => {
-        if (this.value === i + 1) {
+        if (this.value >= i + 1) {
           this.value = i;
         } else {
           this.value = i + 1;

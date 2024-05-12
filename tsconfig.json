@@ -19,5 +19,5 @@
     ]
   },
   "include": ["src/**/*"],
-  "exclude": ["./dist/api.d.ts"]
+  "exclude": ["node_modules"]
 }
