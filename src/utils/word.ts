@@ -120,8 +120,16 @@ const getSkills = () => {
 
 const getTown = () =>
   capitalize(
-    randomFrom(dictionary.settlement[0]) + randomFrom(dictionary.settlement[1]),
+    randomFrom(dictionary.settlements[0]) +
+      randomFrom(dictionary.settlements[1]),
   );
+
+const getPlace = () => {
+  const word1 = randomFrom(dictionary.adjectives);
+  const word2 = randomFrom(dictionary.adjectives, word1);
+
+  return capitalize(`${word1} and ${word2}`);
+};
 
 export const generateWord = (type: string): string => {
   switch (type) {
@@ -141,6 +149,8 @@ export const generateWord = (type: string): string => {
       return getJob();
     case "Town":
       return getTown();
+    case "Place":
+      return getPlace();
     default:
       return "";
   }

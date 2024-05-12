@@ -13,6 +13,7 @@ const wordLabels: { [word: string]: string } = {
   Skills: "character skills",
   Job: "occupation",
   Town: "a town name",
+  Place: "a place description",
 };
 
 export class WordView {
@@ -41,6 +42,7 @@ export class WordView {
     this.createWordBtn("Skills");
     this.createWordBtn("Job");
     this.createWordBtn("Town");
+    this.createWordBtn("Place");
 
     if (this.view.settings.customTableRoot) {
       const files = this.view.app.vault.getMarkdownFiles();

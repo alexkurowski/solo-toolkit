@@ -9,7 +9,7 @@ import occupations from "./occupations";
 import descriptors from "./descriptors";
 import skills from "./skills";
 import hairs from "./hairs";
-import settlement from "./settlement";
+import settlements from "./settlements";
 
 export const dictionary = {
   adjectives,
@@ -23,5 +23,5 @@ export const dictionary = {
   descriptors,
   skills,
   hairs,
-  settlement,
+  settlements,
 };

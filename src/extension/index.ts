@@ -104,7 +104,7 @@ class TrackPlugin implements PluginValue {
       });
     }
 
-    if (!this.isChanged(buildMeta)) return;
+    if (!this.isMetaChanged(buildMeta)) return;
     this.previousBuildMeta = buildMeta;
 
     this.decorations = builder.finish();
@@ -120,7 +120,7 @@ class TrackPlugin implements PluginValue {
     );
   }
 
-  isChanged(buildMeta: string[]): boolean {
+  isMetaChanged(buildMeta: string[]): boolean {
     if (!buildMeta.length) return true;
     if (buildMeta.length !== this.previousBuildMeta.length) return true;
     for (const index in buildMeta) {

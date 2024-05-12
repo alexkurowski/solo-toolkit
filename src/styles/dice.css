@@ -43,7 +43,7 @@
 
       .dice-variant {
         .clickable-icon {
-          padding: var(--size-4-3);
+          padding: var(--size-4-2);
 
           svg {
             width: 36px;

@@ -33,11 +33,20 @@
 
     &:hover {
       border-color: var(--interactive-accent);
+
+      &:nth-child(5n) {
+        border-color: var(--interactive-accent-hover);
+      }
     }
 
     &.active {
       border-color: var(--interactive-accent);
       background-color: var(--interactive-accent);
+
+      &:nth-child(5n) {
+        border-color: var(--interactive-accent-hover);
+        background-color: var(--interactive-accent-hover);
+      }
     }
   }
 

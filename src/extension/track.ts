@@ -1,4 +1,4 @@
-import { setIcon } from "obsidian";
+import { setIcon, setTooltip } from "obsidian";
 import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
 
@@ -81,6 +81,7 @@ export class TrackWidget extends WidgetType {
     for (let i = 0; i < this.max; i++) {
       const btnEl = document.createElement("button");
       btnEl.classList.add("clickable-icon", "srt-track-btn");
+      setTooltip(btnEl, (i + 1).toString());
       btnEl.onclick = () => {
         if (this.value >= i + 1) {
           this.value = i;
