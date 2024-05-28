@@ -5,7 +5,6 @@ import { generateWord, randomFrom, clickToCopy } from "../utils";
 const MAX_REMEMBER_SIZE = 1000;
 
 const wordLabels: { [word: string]: string } = {
-  Oracle: "yes/no answer",
   Subject: "a subject",
   Action: "an action",
   Name: "a name",
@@ -34,7 +33,6 @@ export class WordView {
 
     this.wordBtnsEl = this.view.tabViewEl.createDiv("word-buttons");
     this.wordBtnsEl.empty();
-    this.createWordBtn("Oracle");
     this.createWordBtn("Subject");
     this.createWordBtn("Action");
     this.createWordBtn("Name");

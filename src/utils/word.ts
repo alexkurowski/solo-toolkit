@@ -1,10 +1,6 @@
-import { Oracle } from "./oracle";
 import { dictionary } from "./dictionary";
 import { randomFrom } from "./dice";
 import { capitalize } from "./helpers";
-
-const oracle = new Oracle();
-const getOracle = () => capitalize(oracle.getAnswer());
 
 const getNoun = () => randomFrom(dictionary.nouns);
 const getVerb = () => randomFrom(dictionary.verbs);
@@ -121,7 +117,7 @@ const getSkills = () => {
 const getTown = () =>
   capitalize(
     randomFrom(dictionary.settlements[0]) +
-      randomFrom(dictionary.settlements[1]),
+      randomFrom(dictionary.settlements[1])
   );
 
 const getPlace = () => {
@@ -133,8 +129,6 @@ const getPlace = () => {
 
 export const generateWord = (type: string): string => {
   switch (type) {
-    case "Oracle":
-      return getOracle();
     case "Subject":
       return getSubject();
     case "Action":

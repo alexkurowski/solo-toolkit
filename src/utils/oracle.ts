@@ -1,4 +1,5 @@
 import { random } from "./dice";
+import { capitalize } from "./helpers";
 
 const FACTOR_CHANGE = 20;
 const YES_NO_CHANCE = 50;
@@ -8,8 +9,8 @@ const EXTREME_CHANCE = 16;
 export class Oracle {
   factor = 0;
 
-  getAnswer(): string {
-    const yn = this.yesNo();
+  getAnswer(chance: number): string {
+    const yn = this.yesNo(chance);
     const ab = this.andBut();
     const ex = this.extreme();
 
@@ -19,8 +20,8 @@ export class Oracle {
     return result.trim();
   }
 
-  yesNo(): string {
-    if (this.roll(YES_NO_CHANCE + this.factor)) {
+  yesNo(chance: number): string {
+    if (this.roll(chance + this.factor)) {
       this.factor -= FACTOR_CHANGE;
       if (this.factor <= 0) this.factor = 0;
       return "yes";
@@ -54,3 +55,14 @@ export class Oracle {
     return random(1, 100) <= target;
   }
 }
+
+const oracle = new Oracle();
+const getAnswer = (chance: number = YES_NO_CHANCE) =>
+  capitalize(oracle.getAnswer(chance));
+
+export const generateAnswer = (variant: string) => {
+  if (variant === "Unlikely") return getAnswer(20);
+  if (variant === "Fair") return getAnswer(50);
+  if (variant === "Likely") return getAnswer(80);
+  return "";
+};

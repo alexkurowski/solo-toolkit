@@ -34,6 +34,7 @@
     .dice-result-value {
       min-width: 32px;
       text-align: center;
+      font-weight: 600;
     }
   }
 

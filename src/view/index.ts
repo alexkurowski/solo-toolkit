@@ -8,6 +8,7 @@ import {
 import { DiceView } from "./dice";
 import { DeckView } from "./deck";
 import { WordView } from "./word";
+import { OracleView } from "./oracle";
 import { SoloToolkitSettings } from "../settings";
 
 interface DevApp extends App {
@@ -19,6 +20,7 @@ export const VIEW_TYPE = "MAIN_VIEW";
 const tabLabels = {
   dice: "Dice",
   deck: "Deck",
+  oracle: "Oracle",
   word: "Ideas",
 };
 
@@ -26,13 +28,14 @@ export class SoloToolkitView extends ItemView {
   public settings: SoloToolkitSettings;
   public isMobile: boolean = false;
 
-  public tab: "dice" | "deck" | "word" = "dice";
+  public tab: "dice" | "deck" | "oracle" | "word" = "dice";
   tabPickerEl: HTMLElement;
   public tabViewEl: HTMLElement;
 
   public dice: DiceView;
   public deck: DeckView;
   public word: WordView;
+  public oracle: OracleView;
 
   constructor(leaf: WorkspaceLeaf, settings: SoloToolkitSettings) {
     super(leaf);
@@ -40,6 +43,7 @@ export class SoloToolkitView extends ItemView {
     this.dice = new DiceView(this);
     this.deck = new DeckView(this);
     this.word = new WordView(this);
+    this.oracle = new OracleView(this);
   }
 
   getViewType() {
@@ -89,6 +93,7 @@ export class SoloToolkitView extends ItemView {
       .setTooltip(`Reset ${tabLabels[this.tab].toLowerCase()}`)
       .onClick(() => {
         if (this.tab === "word") this.word.reset();
+        if (this.tab === "oracle") this.oracle.reset();
         if (this.tab === "deck") this.deck.reset();
         if (this.tab === "dice") this.dice.reset();
       });
@@ -100,6 +105,9 @@ export class SoloToolkitView extends ItemView {
       word: new ExtraButtonComponent(btnsEl)
         .setIcon("lightbulb")
         .setTooltip(tabLabels.word),
+      oracle: new ExtraButtonComponent(btnsEl)
+        .setIcon("eye")
+        .setTooltip(tabLabels.oracle),
       deck: new ExtraButtonComponent(btnsEl)
         .setIcon("heart")
         .setTooltip(tabLabels.deck),
@@ -128,6 +136,7 @@ export class SoloToolkitView extends ItemView {
       updateResetBtnTooltip();
     };
     btns.word.onClick(btnOnClick("word"));
+    btns.oracle.onClick(btnOnClick("oracle"));
     btns.deck.onClick(btnOnClick("deck"));
     btns.dice.onClick(btnOnClick("dice"));
   }
@@ -137,11 +146,11 @@ export class SoloToolkitView extends ItemView {
 
     if (this.tab === "word") {
       this.word.create();
-    }
-    if (this.tab === "deck") {
+    } else if (this.tab === "oracle") {
+      this.oracle.create();
+    } else if (this.tab === "deck") {
       this.deck.create();
-    }
-    if (this.tab === "dice") {
+    } else if (this.tab === "dice") {
       this.dice.create();
     }
   }
