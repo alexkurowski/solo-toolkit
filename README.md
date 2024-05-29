@@ -52,12 +52,12 @@ You will find a newly generated plugin folder `solo-rpg-toolkit` inside folder `
 
 Note that `.obsidian` folder in your vault may be hidden on Linux and MacOS.
 
-## Feature and content requests
-
-If you have an idea for a new feature or new content, feel free to create an "issue" on github or reach me at kurowski.dev@gmail.com!
-
 ### Updating
 
 Simply replace `<path-to-vault>/.obsidian/plugins/solo-rpg-toolkit` folder with a new one.
 
 Note that plugin settings are stored in the file `<path-to-vault>/.obsidian/plugins/solo-rpg-toolkit/data.json`. You may want to keep it after updating to a newer version.
+
+## Feature and content requests
+
+If you have an idea for a new feature or new content, feel free to create an "issue" on github or reach me at kurowski.dev@gmail.com!
