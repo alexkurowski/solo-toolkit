@@ -43,7 +43,10 @@ class TrackPlugin implements PluginValue {
     const builder = new RangeSetBuilder<Decoration>();
     const buildMeta: string[] = [];
 
-    if (!pluginRef?.settings?.inlineCounters) {
+    const shouldDisable =
+      !pluginRef?.settings?.inlineCounters ||
+      !view.dom.closest(".is-live-preview");
+    if (shouldDisable) {
       this.previousBuildMeta = [];
       this.decorations = builder.finish();
       return;
@@ -82,7 +85,7 @@ class TrackPlugin implements PluginValue {
                   originalText: text,
                   dirty,
                 }),
-              }),
+              })
             );
           }
 
@@ -97,7 +100,7 @@ class TrackPlugin implements PluginValue {
                   originalText: text,
                   dirty,
                 }),
-              }),
+              })
             );
           }
         },
@@ -113,10 +116,10 @@ class TrackPlugin implements PluginValue {
   isRangeSelected(
     from: number,
     to: number,
-    selection: EditorSelection,
+    selection: EditorSelection
   ): boolean {
     return !!selection.ranges.find(
-      (range: SelectionRange) => range.from <= to && range.to >= from,
+      (range: SelectionRange) => range.from <= to && range.to >= from
     );
   }
 
