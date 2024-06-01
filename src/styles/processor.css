@@ -1,0 +1,6 @@
+.srt-sheet {
+  display: flex;
+  direction: column;
+  gap: 1em;
+  padding: var(--table-add-button-size);
+}

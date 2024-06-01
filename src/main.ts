@@ -7,6 +7,7 @@ import {
 } from "./settings";
 import { SoloToolkitView, VIEW_TYPE } from "./view";
 import { soloToolkitExtension } from "./extension";
+import { sheetProcessor } from './processor'
 
 export default class SoloToolkitPlugin extends Plugin {
   settings: SoloToolkitSettings;
@@ -22,6 +23,7 @@ export default class SoloToolkitPlugin extends Plugin {
     );
 
     this.registerEditorExtension(soloToolkitExtension(this));
+    // this.registerMarkdownCodeBlockProcessor("+-", sheetProcessor(this));
 
     this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", () => this.openView());
 
