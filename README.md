@@ -16,7 +16,46 @@ A standard deck of 52 cards plus two optional joker cards.
 
 A set of random word generators. Great for coming up with ideas on how to progress the story.
 
-Additionally you may add any number of your own random tables to roll on, by creating notes inside a special folder in your vault (folder "Tables" by default).
+### Custom random tables
+
+In addition to default random word generators, you can may add any number of your own random tables, by creating notes inside a special folder in your vault (default folder name is "Tables", you can change it in plugin settings).
+
+### Custom table templates
+
+By default a custom random table roll will return a random line from the note. You can further customize this behavior with templates.
+
+You can add one or multiple templates as properties of the note (simply type `---` at the start of the note). The value of a property can contain regular text as well as keywords inside curly brackets (`{keyword}`), those keywords will be replace with a random word from that section of the note.
+
+Example of a note with templates:
+
+```markdown
+---
+loves: "{name} loves {food} ({how much})"
+hates: "{name} hates {food} ({how much})"
+---
+
+## Names
+James
+Louie
+Quinn
+Drew
+Melissa
+Martha
+Elsa
+Emily
+
+## Food
+pizza
+sushi
+burgers
+tacos
+tea
+coffee
+
+## How much
+very much
+a little
+```
 
 ### Inline dynamic counters
 
