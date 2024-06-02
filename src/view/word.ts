@@ -3,6 +3,7 @@ import { SoloToolkitView as View } from "./index";
 import { generateWord, randomFrom, clickToCopy } from "../utils";
 
 const MAX_REMEMBER_SIZE = 1000;
+const DEFAULT = "DEFAULT";
 
 const wordLabels: { [word: string]: string } = {
   Subject: "a subject",
@@ -44,7 +45,7 @@ export class WordView {
 
     if (this.view.settings.customTableRoot) {
       const folder = this.view.app.vault.getFolderByPath(
-        this.view.settings.customTableRoot,
+        this.view.settings.customTableRoot
       );
       if (folder) {
         this.createCustomWordBtns(folder);
@@ -102,23 +103,92 @@ export class WordView {
 
   createCustomWordBtn(file: TFile) {
     const type = file.basename;
-    let values: string[] = [];
+    const templates: string[] = [];
+    const values: Record<string, string[]> = { [DEFAULT]: [] };
 
     this.view.app.vault.cachedRead(file).then((content: string) => {
       if (!content) return;
 
-      values = content
+      const lines = content
         .split("\n")
         .map((line: string) => line.trim())
         .filter((line: string) => line);
+
+      let currentKey = "";
+      let readingProperties = false;
+
+      for (const i in lines) {
+        const line = lines[i];
+
+        // Switch properties parsing mode
+        if (i == "0" && line === "---") {
+          readingProperties = true;
+          continue;
+        } else if (readingProperties && line === "---") {
+          readingProperties = false;
+          continue;
+        }
+
+        // New template
+        if (readingProperties) {
+          templates.push(
+            line
+              .substring(line.indexOf(":") + 1)
+              .trim()
+              .replace(/^"|"$/g, "")
+              .toLowerCase()
+          );
+          continue;
+        }
+
+        // Treat headers as template keys
+        if (line.startsWith("#")) {
+          currentKey = line.replace(/#/g, "").trim().toLowerCase();
+          values[currentKey] = [];
+          continue;
+        }
+
+        values[DEFAULT].push(line);
+        if (currentKey) values[currentKey].push(line);
+      }
+
+      console.log(type, { templates, values });
     });
+
+    const getValuesForKey = (key: string): string[] => {
+      return (
+        values[key] ||
+        values[key + "s"] ||
+        values[key.replace(/y$/, "ies")] || [`{${key}}`]
+      );
+    };
+
+    const generateCustomWord = (): string => {
+      if (templates.length) {
+        const template = randomFrom(templates);
+        const lastSubs: Record<string, string> = {};
+        return template
+          .replace(/{+ ?[^}]+ ?}+/g, (wkey: string) => {
+            const key = wkey.replace(/{|}/g, "").trim().toLowerCase();
+            console.log({ wkey, key });
+            if (!key) return "";
+            return (lastSubs[key] = randomFrom(
+              getValuesForKey(key),
+              lastSubs[key] || null
+            ));
+          })
+          .trim();
+      } else {
+        return randomFrom(values[DEFAULT]);
+      }
+    };
 
     new ButtonComponent(this.wordBtnsEl)
       .setButtonText(type)
       .setTooltip(`Generate ${type.toLowerCase()}`)
       .onClick(() => {
-        if (!values.length) return;
-        const value = randomFrom(values);
+        const value = generateCustomWord();
+        if (!value) return;
         this.words.push([type, value]);
         this.addResult(type, value);
       });

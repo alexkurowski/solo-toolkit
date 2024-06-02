@@ -11,7 +11,9 @@ export const random = (min: number, max: number, not = -1): number => {
 export const roll = (max: number, not = -1): number => random(1, max, not);
 
 export const randomFrom = <T>(values: T[], not: T | null = null): T => {
-  if (!values.length) {
+  if (!values?.length) {
+    return values[0];
+  } else if (values.length <= 1) {
     return values[0];
   } else if (not === null) {
     return values[random(0, values.length - 1)];

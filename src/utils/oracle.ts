@@ -1,7 +1,6 @@
 import { random } from "./dice";
 import { capitalize } from "./helpers";
 
-const MINOR_FACTOR_CHANGE = 5;
 const FACTOR_CHANGE = 20;
 const YES_NO_CHANCE = 50;
 const AND_BUT_CHANCE = 16;
