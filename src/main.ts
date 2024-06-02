@@ -7,6 +7,7 @@ import {
 } from "./settings";
 import { SoloToolkitView, VIEW_TYPE } from "./view";
 import { soloToolkitExtension } from "./extension";
+import { MapgenModal } from "./modal";
 
 export default class SoloToolkitPlugin extends Plugin {
   settings: SoloToolkitSettings;
@@ -18,7 +19,7 @@ export default class SoloToolkitPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE,
-      (leaf) => new SoloToolkitView(leaf, this.settings),
+      (leaf) => new SoloToolkitView(leaf, this.settings)
     );
 
     this.registerEditorExtension(soloToolkitExtension(this));
@@ -29,6 +30,13 @@ export default class SoloToolkitPlugin extends Plugin {
       id: "open-toolkit",
       name: "Open toolkit",
       callback: () => this.openView(),
+    });
+    this.addCommand({
+      id: "generate-tomb",
+      name: "Generate a tomb",
+      callback: () => {
+        new MapgenModal(this.app).open();
+      },
     });
 
     this.addSettingTab(new SoloToolkitSettingTab(this.app, this));
