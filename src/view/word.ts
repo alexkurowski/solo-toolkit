@@ -151,8 +151,6 @@ export class WordView {
         values[DEFAULT].push(line);
         if (currentKey) values[currentKey].push(line);
       }
-
-      console.log(type, { templates, values });
     });
 
     const getValuesForKey = (key: string): string[] => {
@@ -170,7 +168,6 @@ export class WordView {
         return template
           .replace(/{+ ?[^}]+ ?}+/g, (wkey: string) => {
             const key = wkey.replace(/{|}/g, "").trim().toLowerCase();
-            console.log({ wkey, key });
             if (!key) return "";
             return (lastSubs[key] = randomFrom(
               getValuesForKey(key),
