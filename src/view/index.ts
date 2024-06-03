@@ -1,19 +1,16 @@
 import {
-  App,
   ItemView,
   ExtraButtonComponent,
   WorkspaceLeaf,
   Platform,
 } from "obsidian";
+import { PluginApp } from "../main";
 import { DiceView } from "./dice";
 import { DeckView } from "./deck";
 import { WordView } from "./word";
 import { OracleView } from "./oracle";
+import { MapView } from "./map";
 import { SoloToolkitSettings } from "../settings";
-
-interface DevApp extends App {
-  isMobile?: boolean;
-}
 
 export const VIEW_TYPE = "MAIN_VIEW";
 
@@ -22,13 +19,14 @@ const tabLabels = {
   deck: "Deck",
   oracle: "Oracle",
   word: "Ideas",
+  map: "Maps",
 };
 
 export class SoloToolkitView extends ItemView {
   public settings: SoloToolkitSettings;
   public isMobile: boolean = false;
 
-  public tab: "dice" | "deck" | "oracle" | "word" = "dice";
+  public tab: "dice" | "deck" | "oracle" | "word" | "map" = "dice";
   tabPickerEl: HTMLElement;
   public tabViewEl: HTMLElement;
 
@@ -36,6 +34,7 @@ export class SoloToolkitView extends ItemView {
   public deck: DeckView;
   public word: WordView;
   public oracle: OracleView;
+  public map: MapView;
 
   constructor(leaf: WorkspaceLeaf, settings: SoloToolkitSettings) {
     super(leaf);
@@ -44,6 +43,7 @@ export class SoloToolkitView extends ItemView {
     this.deck = new DeckView(this);
     this.word = new WordView(this);
     this.oracle = new OracleView(this);
+    this.map = new MapView(this);
   }
 
   getViewType() {
@@ -63,7 +63,7 @@ export class SoloToolkitView extends ItemView {
     parent.empty();
 
     this.isMobile =
-      (this.app as DevApp).isMobile ||
+      (this.app as PluginApp).isMobile ||
       Platform.isIosApp ||
       Platform.isAndroidApp;
 
@@ -92,6 +92,7 @@ export class SoloToolkitView extends ItemView {
       .setIcon("refresh-ccw")
       .setTooltip(`Reset ${tabLabels[this.tab].toLowerCase()}`)
       .onClick(() => {
+        if (this.tab === "map") this.map.reset();
         if (this.tab === "word") this.word.reset();
         if (this.tab === "oracle") this.oracle.reset();
         if (this.tab === "deck") this.deck.reset();
@@ -102,6 +103,9 @@ export class SoloToolkitView extends ItemView {
 
     const btnsEl = this.tabPickerEl.createDiv("srt-tab-picker-tabs");
     const btns = {
+      map: new ExtraButtonComponent(btnsEl)
+        .setIcon("map")
+        .setTooltip(tabLabels.map),
       word: new ExtraButtonComponent(btnsEl)
         .setIcon("lightbulb")
         .setTooltip(tabLabels.word),
@@ -135,6 +139,7 @@ export class SoloToolkitView extends ItemView {
       this.createTab();
       updateResetBtnTooltip();
     };
+    btns.map.onClick(btnOnClick("map"));
     btns.word.onClick(btnOnClick("word"));
     btns.oracle.onClick(btnOnClick("oracle"));
     btns.deck.onClick(btnOnClick("deck"));
@@ -144,7 +149,9 @@ export class SoloToolkitView extends ItemView {
   createTab() {
     this.tabViewEl.empty();
 
-    if (this.tab === "word") {
+    if (this.tab === "map") {
+      this.map.create();
+    } else if (this.tab === "word") {
       this.word.create();
     } else if (this.tab === "oracle") {
       this.oracle.create();

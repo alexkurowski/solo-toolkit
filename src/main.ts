@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { App, Plugin, WorkspaceLeaf } from "obsidian";
 import { registerIcons, unregisterIcons } from "./icons";
 import {
   SoloToolkitSettingTab,
@@ -8,6 +8,13 @@ import {
 import { SoloToolkitView, VIEW_TYPE } from "./view";
 import { soloToolkitExtension } from "./extension";
 import { MapgenModal } from "./modal";
+
+export interface PluginApp extends App {
+  isMobile?: boolean;
+  commands?: {
+    executeCommandById(id: string): void;
+  };
+}
 
 export default class SoloToolkitPlugin extends Plugin {
   settings: SoloToolkitSettings;
@@ -31,6 +38,7 @@ export default class SoloToolkitPlugin extends Plugin {
       name: "Open toolkit",
       callback: () => this.openView(),
     });
+
     this.addCommand({
       id: "generate-tomb",
       name: "Generate a tomb",

@@ -13,7 +13,7 @@ const wordLabels: { [word: string]: string } = {
   Skills: "character skills",
   Job: "occupation",
   Town: "a town name",
-  Place: "a place description",
+  Describe: "a generic description",
 };
 
 export class WordView {

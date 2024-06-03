@@ -10,7 +10,7 @@ export class MapgenModal extends Modal {
   }
 
   onOpen() {
-    let { contentEl } = this;
+    const { contentEl } = this;
 
     const canvas = contentEl.createEl("canvas");
     canvas.width = 1152;
@@ -30,7 +30,7 @@ export class MapgenModal extends Modal {
   }
 
   onClose() {
-    let { contentEl } = this;
+    const { contentEl } = this;
     contentEl.empty();
   }
 }

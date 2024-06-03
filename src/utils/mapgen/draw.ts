@@ -1,9 +1,5 @@
-import { MAP_WIDTH, MAP_HEIGHT } from "./shared";
+import { Map, MAP_WIDTH, MAP_HEIGHT } from "./shared";
 import { random } from "../dice";
-
-interface Map {
-  at(x: number, y: number): number;
-}
 
 const TILE_WIDTH = 48;
 const TILE_HEIGHT = 48;
