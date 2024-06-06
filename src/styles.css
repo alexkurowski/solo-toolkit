@@ -3,4 +3,5 @@
 @import "./styles/deck";
 @import "./styles/dice";
 @import "./styles/word";
+@import "./styles/oracle";
 @import "./styles/plugin";

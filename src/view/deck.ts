@@ -2,15 +2,15 @@ import { ButtonComponent, setIcon, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { Deck, capitalize, clickToCopy } from "../utils";
 
-const MAX_REMEMBER_SIZE = 1000;
+const MAX_REMEMBER_SIZE = 100;
 
 export class DeckView {
   view: View;
   deck: Deck;
   drawn: [string, string][];
   countEl: HTMLElement;
-  deckBtnsEl: HTMLElement;
-  deckResultsEl: HTMLElement;
+  btnsEl: HTMLElement;
+  resultsEl: HTMLElement;
 
   constructor(view: View) {
     this.view = view;
@@ -22,16 +22,16 @@ export class DeckView {
     this.deck.setJokers(this.view.settings.deckJokers);
 
     if (this.view.isMobile) {
-      this.deckResultsEl = this.view.tabViewEl.createDiv("deck-results");
+      this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
     }
 
-    this.deckBtnsEl = this.view.tabViewEl.createDiv("deck-buttons");
-    this.deckBtnsEl.empty();
+    this.btnsEl = this.view.tabViewEl.createDiv("deck-buttons");
+    this.btnsEl.empty();
     this.createDeckBtns();
     this.createCounter();
 
     if (!this.view.isMobile) {
-      this.deckResultsEl = this.view.tabViewEl.createDiv("deck-results");
+      this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
     }
 
     this.repopulateResults();
@@ -40,7 +40,7 @@ export class DeckView {
   reset() {
     this.deck.shuffle();
     this.drawn = [];
-    this.deckResultsEl.empty();
+    this.resultsEl.empty();
     this.updateCount();
   }
 
@@ -51,7 +51,7 @@ export class DeckView {
 
     const parentElClass = ["deck-result"];
     if (immediate) parentElClass.push("nofade");
-    const parentEl = this.deckResultsEl.createDiv(parentElClass.join(" "));
+    const parentEl = this.resultsEl.createDiv(parentElClass.join(" "));
 
     const elClass = ["deck-result-content"];
     if (isRed) elClass.push("deck-result-red");
@@ -80,7 +80,7 @@ export class DeckView {
   }
 
   createDeckBtns() {
-    new ButtonComponent(this.deckBtnsEl)
+    new ButtonComponent(this.btnsEl)
       .setButtonText("Draw a card")
       .onClick(() => {
         const [value, suit] = this.deck.draw();
@@ -89,16 +89,14 @@ export class DeckView {
         this.updateCount();
       });
 
-    new ButtonComponent(this.deckBtnsEl)
-      .setButtonText("Shuffle")
-      .onClick(() => {
-        this.deck.shuffle();
-        this.updateCount();
-      });
+    new ButtonComponent(this.btnsEl).setButtonText("Shuffle").onClick(() => {
+      this.deck.shuffle();
+      this.updateCount();
+    });
   }
 
   createCounter() {
-    this.countEl = this.deckBtnsEl.createDiv("deck-size");
+    this.countEl = this.btnsEl.createDiv("deck-size");
     this.updateCount();
   }
 

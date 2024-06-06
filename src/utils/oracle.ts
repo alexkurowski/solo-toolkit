@@ -69,8 +69,8 @@ const getAnswer = (chance: number = YES_NO_CHANCE) =>
   capitalize(oracle.getAnswer(chance, chance === YES_NO_CHANCE));
 
 export const generateAnswer = (variant: string) => {
-  if (variant === "Unlikely") return getAnswer(20);
+  if (variant === "Unlikely") return getAnswer(30);
   if (variant === "Fair") return getAnswer(50);
-  if (variant === "Likely") return getAnswer(80);
+  if (variant === "Likely") return getAnswer(70);
   return "";
 };

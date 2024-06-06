@@ -31,7 +31,7 @@
       height: 104px;
       padding: var(--size-4-1) var(--size-4-2);
       background: #fcfcfc;
-      border-radius: var(--radius-m);
+      border-radius: 8px;
       border: var(--size-2-1) solid var(--text-faint);
       cursor: pointer;
       transition: border-color 0.3s ease-in-out;

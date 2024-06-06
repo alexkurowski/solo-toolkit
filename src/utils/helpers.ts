@@ -24,3 +24,11 @@ export const clickToCopy = (value: string) => (event: MouseEvent) => {
   navigator.clipboard.writeText(value);
   new Notice("Copied to clipboard");
 };
+
+export function first<T>(arr: T[]): T {
+  return arr[0];
+}
+
+export function last<T>(arr: T[]): T {
+  return arr[arr.length - 1];
+}
