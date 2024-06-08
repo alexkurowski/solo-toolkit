@@ -1,20 +1,22 @@
 import { ButtonComponent, setIcon, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { Deck, capitalize, clickToCopy } from "../utils";
+import { Deck, Tarot, capitalize, clickToCopy, last } from "../utils";
 
-const MAX_REMEMBER_SIZE = 1000;
+const MAX_REMEMBER_SIZE = 100;
 
 export class DeckView {
   view: View;
   deck: Deck;
-  drawn: [string, string][];
-  countEl: HTMLElement;
-  deckBtnsEl: HTMLElement;
-  deckResultsEl: HTMLElement;
+  tarot: Tarot;
+  drawn: [string, string, number?][];
+  countEls: HTMLElement[];
+  btnsEls: HTMLElement[];
+  resultsEl: HTMLElement;
 
   constructor(view: View) {
     this.view = view;
     this.deck = new Deck(this.view.settings.deckJokers);
+    this.tarot = new Tarot();
     this.drawn = [];
   }
 
@@ -22,65 +24,82 @@ export class DeckView {
     this.deck.setJokers(this.view.settings.deckJokers);
 
     if (this.view.isMobile) {
-      this.deckResultsEl = this.view.tabViewEl.createDiv("deck-results");
+      this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
     }
 
-    this.deckBtnsEl = this.view.tabViewEl.createDiv("deck-buttons");
-    this.deckBtnsEl.empty();
+    this.btnsEls = [];
+    this.countEls = [];
+
+    this.btnsEls.push(this.view.tabViewEl.createDiv("deck-buttons"));
     this.createDeckBtns();
-    this.createCounter();
+    this.createDeckCounter();
+    this.btnsEls.push(this.view.tabViewEl.createDiv("deck-buttons"));
+    this.createTarotBtns();
+    this.createTarotCounter();
 
     if (!this.view.isMobile) {
-      this.deckResultsEl = this.view.tabViewEl.createDiv("deck-results");
+      this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
     }
 
+    this.updateCount();
     this.repopulateResults();
   }
 
   reset() {
     this.deck.shuffle();
     this.drawn = [];
-    this.deckResultsEl.empty();
+    this.resultsEl.empty();
     this.updateCount();
   }
 
-  addResult(value: string, suit: string, immediate = false) {
-    const isRed = suit === "heart" || suit === "diamond" || suit === "red";
-    const isBlack = suit === "club" || suit === "spade" || suit === "black";
-    const isSuit = suit !== "red" && suit !== "black";
-
+  addResult(value: string, suit: string, index?: number, immediate = false) {
     const parentElClass = ["deck-result"];
     if (immediate) parentElClass.push("nofade");
-    const parentEl = this.deckResultsEl.createDiv(parentElClass.join(" "));
+    const parentEl = this.resultsEl.createDiv(parentElClass.join(" "));
 
-    const elClass = ["deck-result-content"];
-    if (isRed) elClass.push("deck-result-red");
-    if (isBlack) elClass.push("deck-result-black");
-    const el = parentEl.createDiv(elClass.join(" "));
+    if (typeof index === "number") {
+      // Tarot
+      const elClass = ["tarot-result-content"];
+      const el = parentEl.createDiv(elClass.join(" "));
 
-    let tooltipValue = value;
-    if (value === "J") tooltipValue = "Jack";
-    if (value === "Q") tooltipValue = "Queen";
-    if (value === "K") tooltipValue = "King";
-    if (value === "A") tooltipValue = "Ace";
-    if (value === "Joker") tooltipValue = "joker";
-    const tooltipText = isSuit
-      ? `${tooltipValue} of ${suit}s`
-      : `${capitalize(suit)} ${tooltipValue}`;
-    setTooltip(parentEl, tooltipText);
-    parentEl.onclick = clickToCopy(tooltipText);
+      setTooltip(parentEl, `${value}: ${suit}`);
+      el.createSpan("tarot-result-index").setText(index.toString());
+      el.createSpan("tarot-result-value").setText(value);
+    } else {
+      // Deck
+      const isRed = suit === "heart" || suit === "diamond" || suit === "red";
+      const isBlack = suit === "club" || suit === "spade" || suit === "black";
+      const isSuit = suit !== "red" && suit !== "black";
 
-    const valueEl = el.createSpan("deck-result-value");
-    valueEl.setText(value);
+      const elClass = ["deck-result-content"];
+      if (isRed) elClass.push("deck-result-red");
+      if (isBlack) elClass.push("deck-result-black");
+      const el = parentEl.createDiv(elClass.join(" "));
 
-    if (isSuit) {
-      const typeEl = el.createSpan("deck-result-type");
-      setIcon(typeEl, suit);
+      let tooltipValue = value;
+      if (value === "J") tooltipValue = "Jack";
+      if (value === "Q") tooltipValue = "Queen";
+      if (value === "K") tooltipValue = "King";
+      if (value === "A") tooltipValue = "Ace";
+      if (value === "Joker") tooltipValue = "joker";
+      const tooltipText = isSuit
+        ? `${tooltipValue} of ${suit}s`
+        : `${capitalize(suit)} ${tooltipValue}`;
+      setTooltip(parentEl, tooltipText);
+      parentEl.onclick = clickToCopy(tooltipText);
+
+      const valueEl = el.createSpan("deck-result-value");
+      valueEl.setText(value);
+
+      if (isSuit) {
+        const typeEl = el.createSpan("deck-result-type");
+        setIcon(typeEl, suit);
+      }
     }
   }
 
   createDeckBtns() {
-    new ButtonComponent(this.deckBtnsEl)
+    new ButtonComponent(last(this.btnsEls))
       .setButtonText("Draw a card")
       .onClick(() => {
         const [value, suit] = this.deck.draw();
@@ -89,7 +108,7 @@ export class DeckView {
         this.updateCount();
       });
 
-    new ButtonComponent(this.deckBtnsEl)
+    new ButtonComponent(last(this.btnsEls))
       .setButtonText("Shuffle")
       .onClick(() => {
         this.deck.shuffle();
@@ -97,14 +116,39 @@ export class DeckView {
       });
   }
 
-  createCounter() {
-    this.countEl = this.deckBtnsEl.createDiv("deck-size");
-    this.updateCount();
+  createDeckCounter() {
+    this.countEls[0] = last(this.btnsEls).createDiv("deck-size");
+  }
+
+  createTarotBtns() {
+    new ButtonComponent(last(this.btnsEls))
+      .setButtonText("Draw a tarot")
+      .onClick(() => {
+        const [value, suit, index] = this.tarot.draw();
+        this.drawn.push([value, suit, index]);
+        this.addResult(value, suit, index);
+        this.updateCount();
+      });
+
+    new ButtonComponent(last(this.btnsEls))
+      .setButtonText("Shuffle")
+      .onClick(() => {
+        this.tarot.shuffle();
+        this.updateCount();
+      });
+  }
+
+  createTarotCounter() {
+    this.countEls[1] = last(this.btnsEls).createDiv("deck-size");
   }
 
   updateCount() {
-    const [current, max] = this.deck.size();
-    if (this.countEl) this.countEl.setText(`${current} / ${max}`);
+    const [deckCurrent, deckMax] = this.deck.size();
+    if (this.countEls[0])
+      this.countEls[0].setText(`${deckCurrent} / ${deckMax}`);
+    const [tarotCurrent, tarotMax] = this.tarot.size();
+    if (this.countEls[1])
+      this.countEls[1].setText(`${tarotCurrent} / ${tarotMax}`);
   }
 
   repopulateResults() {
@@ -113,8 +157,8 @@ export class DeckView {
     }
 
     for (const drawn of this.drawn) {
-      const [value, suit] = drawn;
-      this.addResult(value, suit, true);
+      const [value, suit, index] = drawn;
+      this.addResult(value, suit, index, true);
     }
   }
 }

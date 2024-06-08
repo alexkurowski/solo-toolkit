@@ -1,5 +1,5 @@
 .srt-container {
-  .word-buttons {
+  .oracle-buttons {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -7,12 +7,12 @@
     justify-content: center;
     gap: var(--size-2-2);
 
-    & + .word-buttons {
+    & + .oracle-buttons {
       margin-top: calc(var(--size-4-3) * -1);
     }
   }
 
-  .word-results {
+  .oracle-results {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -21,7 +21,7 @@
     width: 100%;
     overflow: hidden;
 
-    .word-result {
+    .oracle-result {
       display: flex;
       flex-direction: row;
       text-decoration: none;
@@ -33,7 +33,7 @@
       }
     }
 
-    .word-result-type {
+    .oracle-result-type {
       display: inline-block;
       min-width: 60px;
       font-size: 0.75em;
@@ -45,7 +45,7 @@
   }
 
   &.srt-desktop-layout {
-    .word-results {
+    .oracle-results {
       flex-direction: column-reverse;
       margin-bottom: var(--size-4-6);
     }

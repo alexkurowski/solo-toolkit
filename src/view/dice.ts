@@ -1,4 +1,4 @@
-import { ExtraButtonComponent } from "obsidian";
+import { ExtraButtonComponent, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { roll, rollIntervals } from "../utils";
 
@@ -7,17 +7,17 @@ const MAX_REMEMBER_SIZE = 100;
 export class DiceView {
   view: View;
   rolls: { [key: number]: number[] } = {};
-  diceBtnsEl: HTMLElement;
-  diceResultsEls: { [key: number]: HTMLElement } = [];
+  btnsEl: HTMLElement;
+  resultEls: { [key: number]: HTMLElement } = [];
 
   constructor(view: View) {
     this.view = view;
   }
 
   create() {
-    this.diceResultsEls = {};
-    this.diceBtnsEl = this.view.tabViewEl.createDiv("dice-buttons");
-    this.diceBtnsEl.empty();
+    this.resultEls = {};
+    this.btnsEl = this.view.tabViewEl.createDiv("dice-buttons");
+    this.btnsEl.empty();
 
     this.createDiceBtn(4);
     this.createDiceBtn(6);
@@ -31,7 +31,7 @@ export class DiceView {
   }
 
   reset() {
-    for (const el of Object.values(this.diceResultsEls)) {
+    for (const el of Object.values(this.resultEls)) {
       el.empty();
     }
     this.rolls = {};
@@ -56,6 +56,14 @@ export class DiceView {
         i++;
         if (rollIntervals[i]) {
           setTimeout(reroll, rollIntervals[i]);
+        } else {
+          setTooltip(
+            container,
+            `Total: ${this.rolls[max].reduce(
+              (result, value) => result + (value || 0),
+              0
+            )}`
+          );
         }
       }
     };
@@ -68,12 +76,10 @@ export class DiceView {
   }
 
   createDiceBtn(d: number) {
-    const container = this.diceBtnsEl.createDiv(
-      `dice-variant dice-variant-${d}`,
-    );
+    const container = this.btnsEl.createDiv(`dice-variant dice-variant-${d}`);
 
     const resultsEl = container.createDiv(`dice-results dice-results-${d}`);
-    this.diceResultsEls[d] = resultsEl;
+    this.resultEls[d] = resultsEl;
 
     new ExtraButtonComponent(container)
       .setIcon(`srt-d${d}`)
@@ -90,7 +96,7 @@ export class DiceView {
       }
 
       for (const value of this.rolls[key]) {
-        this.addImmediateResult(this.diceResultsEls[key], value);
+        this.addImmediateResult(this.resultEls[key], value);
       }
     }
   }

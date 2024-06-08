@@ -1,14 +1,19 @@
 import { ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { generateAnswer, clickToCopy } from "../utils";
+import { generateAnswer, generateWord, clickToCopy, last } from "../utils";
 
-const MAX_REMEMBER_SIZE = 1000;
+const MAX_REMEMBER_SIZE = 100;
+
+const wordLabels: { [word: string]: string } = {
+  Subject: "a subject",
+  Action: "an action",
+};
 
 export class OracleView {
   view: View;
   answers: [string, string][];
-  answerBtnsEl: HTMLElement;
-  answerResultsEl: HTMLElement;
+  btnsEls: HTMLElement[];
+  resultsEl: HTMLElement;
 
   constructor(view: View) {
     this.view = view;
@@ -17,17 +22,21 @@ export class OracleView {
 
   create() {
     if (this.view.isMobile) {
-      this.answerResultsEl = this.view.tabViewEl.createDiv("word-results");
+      this.resultsEl = this.view.tabViewEl.createDiv("oracle-results");
     }
 
-    this.answerBtnsEl = this.view.tabViewEl.createDiv("word-buttons");
-    this.answerBtnsEl.empty();
+    this.btnsEls = [];
+
+    this.btnsEls.push(this.view.tabViewEl.createDiv("oracle-buttons"));
     this.createAnswerBtn("Unlikely");
     this.createAnswerBtn("Fair");
     this.createAnswerBtn("Likely");
+    this.btnsEls.push(this.view.tabViewEl.createDiv("oracle-buttons"));
+    this.createOracleBtn("Subject");
+    this.createOracleBtn("Action");
 
     if (!this.view.isMobile) {
-      this.answerResultsEl = this.view.tabViewEl.createDiv("word-results");
+      this.resultsEl = this.view.tabViewEl.createDiv("oracle-results");
     }
 
     this.repopulateResults();
@@ -35,24 +44,24 @@ export class OracleView {
 
   reset() {
     this.answers = [];
-    this.answerResultsEl.empty();
+    this.resultsEl.empty();
   }
 
   addResult(type: string, value: string, immediate = false) {
-    const elClass = ["word-result"];
+    const elClass = ["oracle-result"];
     if (immediate) elClass.push("nofade");
-    const el = this.answerResultsEl.createEl("a", { cls: elClass.join(" ") });
+    const el = this.resultsEl.createEl("a", { cls: elClass.join(" ") });
     el.onclick = clickToCopy(value);
 
-    const typeEl = el.createSpan("word-result-type");
+    const typeEl = el.createSpan("oracle-result-type");
     typeEl.setText(type);
 
-    const valueEl = el.createSpan("word-result-value");
+    const valueEl = el.createSpan("oracle-result-value");
     valueEl.setText(value);
   }
 
   createAnswerBtn(type: string) {
-    new ButtonComponent(this.answerBtnsEl)
+    new ButtonComponent(last(this.btnsEls))
       .setButtonText(type)
       .setTooltip(
         `Generate a${
@@ -61,6 +70,17 @@ export class OracleView {
       )
       .onClick(() => {
         const value = generateAnswer(type);
+        this.answers.push([type, value]);
+        this.addResult(type, value);
+      });
+  }
+
+  createOracleBtn(type: string) {
+    new ButtonComponent(last(this.btnsEls))
+      .setButtonText(type)
+      .setTooltip(`Generate ${wordLabels[type] || type.toLowerCase()}`)
+      .onClick(() => {
+        const value = generateWord(type);
         this.answers.push([type, value]);
         this.addResult(type, value);
       });
