@@ -37,10 +37,8 @@ export class WordView {
     this.createWordBtn("Aspects");
     this.createWordBtn("Skills");
     this.createWordBtn("Job");
-    this.btnsEls.push(this.view.tabViewEl.createDiv("word-buttons"));
     this.createWordBtn("Town");
     this.createWordBtn("Describe");
-    this.btnsEls.push(this.view.tabViewEl.createDiv("word-buttons"));
 
     if (this.view.settings.customTableRoot) {
       const folder = this.view.app.vault.getFolderByPath(

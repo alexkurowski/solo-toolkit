@@ -1,6 +1,6 @@
 {
   "name": "alexkurowski/solo-toolkit",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "Solo RPG toolkit for Obsidian (https://obsidian.md)",
   "main": "./dist/api.js",
   "scripts": {
