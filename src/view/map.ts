@@ -1,10 +1,14 @@
 import { ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { PluginApp } from "../main";
-import { clickToCopy } from "../utils";
+import { clickToCopy, generateMap } from "../utils";
+import { MapBlueprint } from "src/utils/mapgen/shared";
+import { drawMap } from "src/utils/mapgen/draw";
+
+const MAX_REMEMBER_SIZE = 20;
 
 export class MapView {
   view: View;
+  maps: MapBlueprint[] = [];
   mapBtnsEl: HTMLElement;
   mapResultsEl: HTMLElement;
 
@@ -19,9 +23,8 @@ export class MapView {
 
     this.mapBtnsEl = this.view.tabViewEl.createDiv("map-buttons");
     this.mapBtnsEl.empty();
-    this.createMapBtn("Tomb");
+    this.createMapBtn("Room");
     this.createMapBtn("Cave");
-    this.createMapBtn("Town");
 
     if (!this.view.isMobile) {
       this.mapResultsEl = this.view.tabViewEl.createDiv("map-results");
@@ -35,17 +38,22 @@ export class MapView {
     this.mapResultsEl.empty();
   }
 
-  addResult(type: string, value: string, immediate = false) {
+  addResult(map: MapBlueprint, immediate = false) {
     const elClass = ["map-result"];
     if (immediate) elClass.push("nofade");
     const el = this.mapResultsEl.createEl("a", { cls: elClass.join(" ") });
-    el.onclick = clickToCopy(value);
 
-    const typeEl = el.createSpan("map-result-type");
-    typeEl.setText(type);
+    // TODO:
+    // el.onclick = clickToCopy(value);
 
-    const valueEl = el.createSpan("map-result-value");
-    valueEl.setText(value);
+    const canvasEl = el.createEl("canvas");
+    canvasEl.width = 1000;
+    canvasEl.height = 1000;
+    canvasEl.style.width = "300px";
+    canvasEl.style.height = "300px";
+
+    const ctx = canvasEl.getContext("2d");
+    if (ctx) drawMap(ctx, map);
   }
 
   createMapBtn(type: string) {
@@ -53,25 +61,18 @@ export class MapView {
       .setButtonText(type)
       .setTooltip(`Generate a ${type.toLowerCase()}`)
       .onClick(() => {
-        const app = this.view.app as PluginApp;
-        if (app?.commands?.executeCommandById) {
-          app.commands.executeCommandById(
-            `solo-rpg-toolkit:generate-${type.toLowerCase()}`
-          );
-        }
-        // const value = generateMap(type);
-        // this.maps.push([type, value]);
-        // this.addResult(type, value);
+        const value = generateMap(type);
+        this.maps.push(value);
+        this.addResult(value);
       });
   }
 
   repopulateResults() {
-    // while (this.maps.length > MAX_REMEMBER_SIZE) {
-    //   this.maps.shift();
-    // }
-    // for (const map of this.maps) {
-    //   const [type, value] = map;
-    //   this.addResult(type, value, true);
-    // }
+    while (this.maps.length > MAX_REMEMBER_SIZE) {
+      this.maps.shift();
+    }
+    for (const map of this.maps) {
+      this.addResult(map, true);
+    }
   }
 }

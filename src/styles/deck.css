@@ -10,7 +10,7 @@
 
     .deck-size {
       min-width: 50px;
-      margin-left: var(--size-2-2);
+      padding-left: var(--size-2-2);
       line-height: var(--input-height);
       text-align: right;
     }

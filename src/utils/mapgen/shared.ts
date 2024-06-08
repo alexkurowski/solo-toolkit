@@ -1,5 +1,5 @@
-export const MAP_WIDTH = 24;
-export const MAP_HEIGHT = 24;
+export const ROOM_WIDTH = 12;
+export const ROOM_HEIGHT = 12;
 
 export type Cell = {
   x: number;
@@ -17,6 +17,8 @@ export type Connection = {
   ida: number;
   idb: number;
 };
+
+export type MapBlueprint = number[][];
 
 export abstract class Map {
   abstract at(x: number, y: number): number;

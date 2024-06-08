@@ -1,13 +1,24 @@
-import { Map, MAP_WIDTH, MAP_HEIGHT } from "./shared";
+import { MapBlueprint } from "./shared";
 import { random } from "../dice";
 
-const TILE_WIDTH = 48;
-const TILE_HEIGHT = 48;
+let mapWidth = 0;
+let mapHeight = 0;
+let tileWidth = 0;
+let tileHeight = 0;
+
 const LINE_WALL = 3;
 const LINE_FLOOR = 0.25;
 const LINE_JAG = 2;
 
-const drawTile = (opts: {
+const at = (map: MapBlueprint, x: number, y: number): number => {
+  if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+    return 0;
+  } else {
+    return map[x][y];
+  }
+};
+
+const drawFloor = (opts: {
   ctx: CanvasRenderingContext2D;
   x: number;
   y: number;
@@ -15,7 +26,7 @@ const drawTile = (opts: {
   const { ctx, x, y } = opts;
 
   ctx.fillStyle = "#ffffffee";
-  ctx.fillRect(x * TILE_WIDTH, y * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+  ctx.fillRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
 };
 
 const drawHorizontalLine = (opts: {
@@ -29,15 +40,15 @@ const drawHorizontalLine = (opts: {
 
   const ctx = opts.ctx;
 
-  const x1 = (opts.x1 < opts.x2 ? opts.x1 : opts.x2) * TILE_WIDTH;
-  const x2 = (opts.x1 < opts.x2 ? opts.x2 : opts.x1) * TILE_WIDTH;
-  const y = opts.y * TILE_HEIGHT;
+  const x1 = (opts.x1 < opts.x2 ? opts.x1 : opts.x2) * tileWidth;
+  const x2 = (opts.x1 < opts.x2 ? opts.x2 : opts.x1) * tileWidth;
+  const y = opts.y * tileHeight;
 
   ctx.lineWidth = opts.width;
   ctx.beginPath();
   ctx.moveTo(x1, y);
 
-  const step = TILE_WIDTH;
+  const step = tileWidth;
   const hstep = step / 2;
 
   for (let i = x1; i < x2; i += step) {
@@ -63,15 +74,15 @@ const drawVerticalLine = (opts: {
 
   const ctx = opts.ctx;
 
-  const x = opts.x * TILE_WIDTH;
-  const y1 = (opts.y1 < opts.y2 ? opts.y1 : opts.y2) * TILE_HEIGHT;
-  const y2 = (opts.y1 < opts.y2 ? opts.y2 : opts.y1) * TILE_HEIGHT;
+  const x = opts.x * tileWidth;
+  const y1 = (opts.y1 < opts.y2 ? opts.y1 : opts.y2) * tileHeight;
+  const y2 = (opts.y1 < opts.y2 ? opts.y2 : opts.y1) * tileHeight;
 
   ctx.lineWidth = opts.width;
   ctx.beginPath();
   ctx.moveTo(x, y1);
 
-  const step = TILE_HEIGHT;
+  const step = tileHeight;
   const hstep = step / 2;
 
   for (let i = y1; i < y2; i += step) {
@@ -86,13 +97,18 @@ const drawVerticalLine = (opts: {
   ctx.stroke();
 };
 
-export const drawMap = (ctx: CanvasRenderingContext2D, map: Map) => {
+export const drawMap = (ctx: CanvasRenderingContext2D, map: MapBlueprint) => {
+  mapWidth = map.length;
+  mapHeight = map[0].length;
+  tileWidth = Math.floor(ctx.canvas.width / mapWidth);
+  tileHeight = Math.floor(ctx.canvas.height / mapHeight);
+
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  for (let x = 0; x < MAP_WIDTH; x++) {
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-      if (map.at(x, y) === 1) {
-        drawTile({
+  for (let x = 0; x < mapWidth; x++) {
+    for (let y = 0; y < mapHeight; y++) {
+      if (at(map, x, y) === 1) {
+        drawFloor({
           ctx,
           x,
           y,
@@ -101,11 +117,11 @@ export const drawMap = (ctx: CanvasRenderingContext2D, map: Map) => {
     }
   }
 
-  for (let x = 0; x < MAP_WIDTH; x++) {
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-      if (map.at(x, y) === 1) {
+  for (let x = 0; x < mapWidth; x++) {
+    for (let y = 0; y < mapHeight; y++) {
+      if (at(map, x, y) === 1) {
         // Left wall
-        if (map.at(x - 1, y) === 0) {
+        if (at(map, x - 1, y) === 0) {
           drawVerticalLine({
             ctx,
             x: x,
@@ -114,8 +130,8 @@ export const drawMap = (ctx: CanvasRenderingContext2D, map: Map) => {
             width: LINE_WALL,
           });
         }
-        // Right wall & floor
-        if (map.at(x + 1, y) === 0) {
+        // Right wall & floor line
+        if (at(map, x + 1, y) === 0) {
           drawVerticalLine({
             ctx,
             x: x + 1,
@@ -133,7 +149,7 @@ export const drawMap = (ctx: CanvasRenderingContext2D, map: Map) => {
           });
         }
         // Up wall
-        if (map.at(x, y - 1) === 0) {
+        if (at(map, x, y - 1) === 0) {
           drawHorizontalLine({
             ctx,
             x1: x,
@@ -142,8 +158,8 @@ export const drawMap = (ctx: CanvasRenderingContext2D, map: Map) => {
             width: LINE_WALL,
           });
         }
-        // Down wall & floor
-        if (map.at(x, y + 1) === 0) {
+        // Down wall & floor line
+        if (at(map, x, y + 1) === 0) {
           drawHorizontalLine({
             ctx,
             x1: x,
