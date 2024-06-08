@@ -33,9 +33,12 @@ export class DeckView {
     this.btnsEls.push(this.view.tabViewEl.createDiv("deck-buttons"));
     this.createDeckBtns();
     this.createDeckCounter();
-    this.btnsEls.push(this.view.tabViewEl.createDiv("deck-buttons"));
-    this.createTarotBtns();
-    this.createTarotCounter();
+
+    if (this.view.settings.deckTarot) {
+      this.btnsEls.push(this.view.tabViewEl.createDiv("deck-buttons"));
+      this.createTarotBtns();
+      this.createTarotCounter();
+    }
 
     if (!this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
