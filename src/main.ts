@@ -7,6 +7,7 @@ import {
 } from "./settings";
 import { SoloToolkitView, VIEW_TYPE } from "./view";
 import { soloToolkitExtension } from "./extension";
+import { hexcrawl } from "./postprocessors/hexcrawl";
 
 export default class SoloToolkitPlugin extends Plugin {
   settings: SoloToolkitSettings;
@@ -18,12 +19,14 @@ export default class SoloToolkitPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE,
-      (leaf) => new SoloToolkitView(leaf, this.settings),
+      (leaf) => new SoloToolkitView(leaf, this.settings)
     );
 
     this.registerEditorExtension(soloToolkitExtension(this));
 
     this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", () => this.openView());
+
+    this.registerMarkdownCodeBlockProcessor("hexcrawl", hexcrawl);
 
     this.addCommand({
       id: "open-toolkit",
