@@ -10,7 +10,7 @@ Quickly roll a bunch of dice by clicking on a die icon.
 
 ### Deck of cards
 
-A standard deck of 52 cards plus two optional joker cards.
+A standard deck of 52 cards plus two optional joker cards. An optional deck of oracle major arcana cards is also available.
 
 ### Random generators
 
@@ -18,7 +18,7 @@ A set of random word generators. Great for coming up with ideas on how to progre
 
 ### Custom random tables
 
-In addition to default random word generators, you can may add any number of your own random tables, by creating notes inside a special folder in your vault (default folder name is "Tables", you can change it in plugin settings).
+In addition to default random word generators, you can may add any number of your own random tables by creating notes inside a special folder in your vault (default folder name is "Tables", you can change it in plugin settings).
 
 ### Custom table templates
 
@@ -74,10 +74,6 @@ Similar to counters, code blocks with two numbers separated by a slash (e.g. `` 
 #### Tab stops
 
 Code blocks with only spaces (e.g. `` ` ` ``) will be rendered as a blank space with a set width. Useful when you need a table-like formatting without an actual table.
-
-### Inline tab stops
-
-Note that this feature is disabled by default and can be enabled in plugin settings.
 
 ## Installation
 
