@@ -75,6 +75,13 @@ Similar to counters, code blocks with two numbers separated by a slash (e.g. `` 
 
 Code blocks with only spaces (e.g. `` ` ` ``) will be rendered as a blank space with a set width. Useful when you need a table-like formatting without an actual table.
 
+Example of a formatted stats counter:
+
+```markdown
+Wounds ` ` `1`
+Stress `  ` `2`
+```
+
 ## Installation
 
 ### From GitHub Release
