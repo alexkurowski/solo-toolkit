@@ -73,7 +73,7 @@ Similar to counters, code blocks with two numbers separated by a slash (e.g. `` 
 
 #### Tab stops
 
-Code blocks with only spaces (e.g. `` ` ` ``) will be rendered as a blank space with a set width. Useful when you need a table-like formatting with an actual table.
+Code blocks with only spaces (e.g. `` ` ` ``) will be rendered as a blank space with a set width. Useful when you need a table-like formatting without an actual table.
 
 ### Inline tab stops
 
