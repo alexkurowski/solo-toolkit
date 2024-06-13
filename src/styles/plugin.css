@@ -7,6 +7,12 @@
   font-weight: 500;
   vertical-align: middle;
 
+  span {
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+  }
+
   .clickable-icon {
     padding: var(--size-2-2);
     cursor: pointer;
@@ -60,4 +66,9 @@
       color: var(--text-faint);
     }
   }
+}
+
+.srt-space {
+  display: inline-block;
+  height: calc(var(--line-height-normal) * 0.7em);
 }

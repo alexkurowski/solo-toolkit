@@ -57,15 +57,25 @@ very much
 a little
 ```
 
-### Inline dynamic counters
+### Inline elements
+
+This plugin also adds a few inline elements that can be helpful when playing TTRPGs.
+
+Note that these elements are disabled by default and can be enabled in plugin settings.
+
+#### Dynamic counters
 
 Code blocks with a single number in it (e.g. `` `5` ``) will be rendered with - and + buttons for quick adjustment.
 
-Note that this feature is disabled by default and can be enabled in plugin settings.
+#### Progress trackers
 
-### Inline progress trackers
+Similar to counters, code blocks with two numbers separated by a slash (e.g. `` `1/5` ``) will be rendered as a set of checkable boxes. Useful for PbtA-style clocks and general progress tracking.
 
-Similar to counters, code blocks with two numbers separated by a slash (e.g. `` `1/5` ``) will be rendered as a set of checkable boxes. For PbtA-style clocks and general progress tracking.
+#### Tab stops
+
+Code blocks with only spaces (e.g. `` ` ` ``) will be rendered as a blank space with a set width. Useful when you need a table-like formatting with an actual table.
+
+### Inline tab stops
 
 Note that this feature is disabled by default and can be enabled in plugin settings.
 

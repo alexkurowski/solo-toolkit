@@ -15,6 +15,7 @@ import {
 } from "@codemirror/view";
 import { CountWidget, COUNT_REGEX } from "./count";
 import { TrackWidget, TRACK_REGEX } from "./track";
+import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../main";
 
 let pluginRef: Plugin;
@@ -23,6 +24,7 @@ class TrackPlugin implements PluginValue {
   decorations: DecorationSet;
   considerNextSelectionChange: boolean = false;
   previousBuildMeta: string[] = [];
+  spaceStore: Record<string, number> = {};
 
   constructor(view: EditorView) {
     this.buildDecorations(view);
@@ -98,6 +100,25 @@ class TrackPlugin implements PluginValue {
                 widget: new TrackWidget({
                   originalNode: node.node,
                   originalText: text,
+                  dirty,
+                }),
+              })
+            );
+          }
+
+          if (SPACE_REGEX.test(text)) {
+            buildMeta.push(meta);
+            builder.add(
+              from,
+              to,
+              Decoration.replace({
+                widget: new SpaceWidget({
+                  originalNode: node.node,
+                  originalText: text,
+                  initialWidth: this.spaceStore[meta] || 0,
+                  updateInitialWidth: (width: number) => {
+                    this.spaceStore[meta] = width;
+                  },
                   dirty,
                 }),
               })
