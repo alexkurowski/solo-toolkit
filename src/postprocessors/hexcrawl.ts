@@ -1,19 +1,12 @@
 import { MarkdownPostProcessorContext } from "obsidian";
+import { random } from "src/utils";
+import { MAP_WIDTH, MAP_HEIGHT, Hex } from "./hexcrawl.shared";
+import { parseSource } from "./hexcrawl.source";
 
-type Hex = {
-  ox: string;
-  oy: string;
-  x: number;
-  y: number;
-  color: string;
-  name: string;
-  type: string;
-};
-
-const MAP_WIDTH = 1024;
-const MAP_HEIGHT = 1024;
-
-const knownTypes = [""];
+const MAP_PADDING = 16;
+const TILE_HEIGHT_FACTOR = 0.875;
+const FONT_SIZE_COORDS = 16;
+const FONT_SIZE_NAME = 18;
 
 export const hexcrawl = (
   source: string,
@@ -26,99 +19,61 @@ export const hexcrawl = (
   canvasEl.width = MAP_WIDTH;
   canvasEl.height = MAP_HEIGHT;
   canvasEl.style.width = "100%";
+  // canvasEl.onmousemove
 
   const canvasCtx = canvasEl.getContext("2d");
   if (canvasCtx) drawMap(canvasCtx, hexes, width, height);
 };
 
-const parseSource = (
-  source: string
-): { hexes: Hex[]; width: number; height: number } => {
-  let forceWidth = 0;
-  let forceHeight = 0;
+const drawHex = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+) => {
+  ctx.lineWidth = 3;
 
-  const hexes: Hex[] = source
-    .split("\n")
-    .map((line) => line.trim())
-    .map((line): Hex | null => {
-      if (line.startsWith("size:")) {
-        const size = line.replace("size:", "").trim();
-        const [width, height] = size.split(/[x|:]/);
-        forceWidth = parseInt(width);
-        forceHeight = parseInt(height);
-        return null;
-      }
+  ctx.beginPath();
+  drawLine(ctx, x + w / 4, y, x + w / 4 + w / 2, y);
+  drawLine(ctx, x + w / 4 + w / 2, y, x + w, y + h / 2);
+  drawLine(ctx, x + w, y + h / 2, x + w / 4 + w / 2, y + h);
+  drawLine(ctx, x + w / 4 + w / 2, y + h, x + w / 4, y + h);
+  drawLine(ctx, x + w / 4, y + h, x, y + h / 2);
+  drawLine(ctx, x, y + h / 2, x + w / 4, y);
+  ctx.stroke();
+  // ctx.moveTo(x + w / 4, y);
+  // ctx.lineTo(x + w / 2 + w / 4, y);
+  // ctx.lineTo(x + w, y + h / 2);
+  // ctx.lineTo(x + w / 2 + w / 4, y + h);
+  // ctx.lineTo(x + w / 4, y + h);
+  // ctx.lineTo(x, y + h / 2);
+  // ctx.lineTo(x + w / 4, y);
+};
 
-      const values = line
-        .split(/ (?=(?:[^"]*"[^"]*")*$)/g)
-        .map((value) => value.trim())
-        .filter((value) => value);
+const drawLine = (
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+) => {
+  const hx = (x2 - x1) / 2;
+  const hy = (y2 - y1) / 2;
 
-      const posStr = values.shift();
-      if (!posStr?.length) return null;
-      const posMiddle = Math.floor(posStr.length / 2);
-      const ox = posStr.substring(0, posMiddle);
-      const oy = posStr.substring(posMiddle);
-      const x = parseInt(ox);
-      const y = parseInt(oy);
-      if (Number.isNaN(x) || Number.isNaN(y)) return null;
-
-      let color = "";
-      let name = "";
-      let type = "";
-
-      const params = values;
-      for (const param of params) {
-        if (param.startsWith("#")) {
-          color = param;
-        } else if (param.startsWith('"') || param.startsWith("'")) {
-          name = param.replace(/^["']|["']$/g, "");
-        } else if (knownTypes.includes(param)) {
-          type = param;
-        }
-      }
-
-      return { x, y, ox, oy, color, name, type };
-    })
-    .filter((line) => line) as Hex[];
-
-  if (forceWidth && forceHeight) {
-    for (let x = 1; x <= forceWidth; x++) {
-      for (let y = 1; y <= forceHeight; y++) {
-        if (!hexes.find((hex) => hex.x === x && hex.y === y)) {
-          hexes.push({
-            ox: x < 10 ? `0${x}` : `${x}`,
-            oy: y < 10 ? `0${y}` : `${y}`,
-            x,
-            y,
-            color: "",
-            name: "",
-            type: "",
-          });
-        }
-      }
-    }
-  }
-
-  let minX = Number.MAX_SAFE_INTEGER;
-  let minY = Number.MAX_SAFE_INTEGER;
-  let maxX = Number.MIN_SAFE_INTEGER;
-  let maxY = Number.MIN_SAFE_INTEGER;
-  for (const hex of hexes) {
-    if (hex.x > maxX) maxX = hex.x;
-    if (hex.x < minX) minX = hex.x;
-    if (hex.y > maxY) maxY = hex.y;
-    if (hex.y < minY) minY = hex.y;
-  }
-  const width = maxX - minX + 1;
-  const height = maxY - minY + 1;
-
-  for (const hex of hexes) {
-    hex.x -= minX;
-    hex.y -= minY;
-  }
-
-  return { hexes, width, height };
+  ctx.moveTo(x1, y1);
+  ctx.quadraticCurveTo(
+    x1 + hx / 2 + random(-2, 2),
+    y1 + hy / 2 + random(-2, 2),
+    x1 + hx,
+    y1 + hy
+  );
+  ctx.quadraticCurveTo(
+    x1 + hx + hx / 2 + random(-2, 2),
+    y1 + hy + hy / 2 + random(-2, 2),
+    x2,
+    y2
+  );
 };
 
 const wrapText = (
@@ -126,13 +81,13 @@ const wrapText = (
   text: string,
   maxWidth: number
 ): string[] => {
-  var words = text.split(" ");
-  var lines = [];
-  var currentLine = words[0];
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = words[0];
 
-  for (var i = 1; i < words.length; i++) {
-    var word = words[i];
-    var width = ctx.measureText(currentLine + " " + word).width;
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
+    const width = ctx.measureText(currentLine + " " + word).width;
     if (width < maxWidth) {
       currentLine += " " + word;
     } else {
@@ -141,7 +96,27 @@ const wrapText = (
     }
   }
   lines.push(currentLine);
+
   return lines;
+};
+
+const drawText = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  color: string = "#000000",
+  bcolor: string = "#ffffff"
+) => {
+  ctx.fillStyle = bcolor;
+  for (let i = -1; i <= 1; i++) {
+    for (let j = -1; j <= 1; j++) {
+      if (i === 0 && j === 0) continue;
+      ctx.fillText(text, x + i, y + j);
+    }
+  }
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
 };
 
 const drawMap = (
@@ -150,62 +125,62 @@ const drawMap = (
   width: number,
   height: number
 ) => {
-  const padding = 32;
-  const hfactor = 0.875;
-  const canvasWidth = ctx.canvas.width - padding * 2;
-  const canvasHeight = ctx.canvas.height - padding * 2;
-  const maxTileWidth = canvasWidth / (width * 0.75 + 0.25);
-  const maxTileHeight = canvasHeight / ((height + 0.5) * hfactor);
+  const canvasWidth = ctx.canvas.width - MAP_PADDING * 2;
+  const canvasHeight = ctx.canvas.height - MAP_PADDING * 2;
+  const allTilesWidth = width * 0.75 + 0.25;
+  const allTilesHeight = (height + 0.5) * TILE_HEIGHT_FACTOR;
+  const maxTileWidth = canvasWidth / allTilesWidth;
+  const maxTileHeight = canvasHeight / allTilesHeight;
   const tileWidth = Math.min(maxTileWidth, maxTileHeight);
   const tileWidth2 = tileWidth / 2;
-  const tileWidth4 = tileWidth / 4;
-  const tileHeight = tileWidth * hfactor;
+  const tileHeight = tileWidth * TILE_HEIGHT_FACTOR;
   const tileHeight2 = tileHeight / 2;
 
-  const fontSize = Math.ceil(tileHeight / 10);
-  const lineHeight = fontSize + 1;
+  const shouldOffsetX = maxTileWidth > maxTileHeight;
+  const shouldOffsetY = maxTileWidth < maxTileHeight;
+  const offsetX = shouldOffsetX
+    ? (canvasWidth - tileWidth * allTilesWidth) / 2
+    : 0;
+  const offsetY = shouldOffsetY
+    ? (canvasHeight - tileHeight * allTilesHeight) / 2
+    : 0;
 
   const getXY = (hex: Hex) => ({
-    x: hex.x * tileWidth - (hex.x / 2) * tileWidth2 + padding,
-    y: hex.y * tileHeight + (hex.x % 2 == 1 ? tileHeight2 : 0) + padding,
+    x: hex.x * tileWidth - (hex.x / 2) * tileWidth2 + MAP_PADDING,
+    y: hex.y * tileHeight + (hex.x % 2 == 1 ? tileHeight2 : 0) + MAP_PADDING,
   });
 
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   for (const hex of hexes) {
-    const { x, y } = getXY(hex);
+    let { x, y } = getXY(hex);
+    x += offsetX;
+    y += offsetY;
 
-    let fillColor = hex.color || "#fff";
-    let name = hex.name || "";
+    const fillColor = hex.color || "#fff";
+    const name = hex.name || "";
 
-    ctx.lineWidth = 4;
-
-    ctx.beginPath();
-    ctx.moveTo(x + tileWidth4, y);
-    ctx.lineTo(x + tileWidth2 + tileWidth4, y);
-    ctx.lineTo(x + tileWidth, y + tileHeight2);
-    ctx.lineTo(x + tileWidth2 + tileWidth4, y + tileHeight);
-    ctx.lineTo(x + tileWidth4, y + tileHeight);
-    ctx.lineTo(x, y + tileHeight2);
-    ctx.lineTo(x + tileWidth4, y);
-    ctx.stroke();
+    drawHex(ctx, x, y, tileWidth, tileHeight);
 
     ctx.fillStyle = fillColor;
     ctx.fill();
 
     ctx.fillStyle = "#000000";
     const coor = `${hex.ox}${hex.oy}`;
-    ctx.font = `${fontSize}px sans-serif`;
+    ctx.font = `${FONT_SIZE_COORDS}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.fillText(coor, x + tileWidth2, y + 4);
 
     if (name) {
+      const lineHeight = FONT_SIZE_NAME + 2;
       const lines = wrapText(ctx, name, tileWidth2);
+      ctx.font = `${FONT_SIZE_NAME}px sans-serif`;
       ctx.textBaseline = "bottom";
       for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(
+        drawText(
+          ctx,
           lines[i],
           x + tileWidth2,
           y + tileHeight - 4 - (lines.length - i - 1) * lineHeight
