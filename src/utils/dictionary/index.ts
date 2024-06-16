@@ -10,6 +10,8 @@ import descriptors from "./descriptors";
 import skills from "./skills";
 import hairs from "./hairs";
 import settlements from "./settlements";
+import buildings from "./buildings";
+import locations from "./locations";
 
 export const dictionary = {
   adjectives,
@@ -24,4 +26,6 @@ export const dictionary = {
   skills,
   hairs,
   settlements,
+  buildings,
+  locations,
 };

@@ -1,12 +1,22 @@
 import { ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { generateAnswer, generateWord, clickToCopy, last } from "../utils";
+import {
+  generateAnswer,
+  generateWord,
+  clickToCopy,
+  last,
+  capitalize,
+} from "../utils";
 
 const MAX_REMEMBER_SIZE = 100;
 
 const wordLabels: { [word: string]: string } = {
-  Subject: "a subject",
-  Action: "an action",
+  subject: "Subject",
+  action: "Action",
+};
+const wordTooltips: { [word: string]: string } = {
+  subject: "a subject",
+  action: "an action",
 };
 
 export class OracleView {
@@ -32,8 +42,8 @@ export class OracleView {
     this.createAnswerBtn("Fair");
     this.createAnswerBtn("Likely");
     this.btnsEls.push(this.view.tabViewEl.createDiv("oracle-buttons"));
-    this.createOracleBtn("Subject");
-    this.createOracleBtn("Action");
+    this.createOracleBtn("subject");
+    this.createOracleBtn("action");
 
     if (!this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("oracle-results");
@@ -76,13 +86,14 @@ export class OracleView {
   }
 
   createOracleBtn(type: string) {
+    const label = wordLabels[type] || capitalize(type);
     new ButtonComponent(last(this.btnsEls))
-      .setButtonText(type)
-      .setTooltip(`Generate ${wordLabels[type] || type.toLowerCase()}`)
+      .setButtonText(label)
+      .setTooltip(`Generate ${wordTooltips[type] || type.toLowerCase()}`)
       .onClick(() => {
         const value = generateWord(type);
-        this.answers.push([type, value]);
-        this.addResult(type, value);
+        this.answers.push([label, value]);
+        this.addResult(label, value);
       });
   }
 

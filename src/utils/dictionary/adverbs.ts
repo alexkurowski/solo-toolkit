@@ -7,6 +7,7 @@ export default [
   "aggressively",
   "ambitiously",
   "amorously",
+  "ancient",
   "angrily",
   "anxiously",
   "arrogantly",
@@ -117,6 +118,7 @@ export default [
   "mechanically",
   "miserably",
   "mockingly",
+  "modern",
   "mournfully",
   "mysteriously",
   "naturally",
@@ -177,5 +179,5 @@ export default [
   "wildly",
   "wistfully",
   "wittyly",
-  "yieldingly"
-]
+  "yieldingly",
+];

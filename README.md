@@ -57,6 +57,8 @@ very much
 a little
 ```
 
+It's also possible to utilize built-in dictionaries by using the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`.
+
 ### Inline elements
 
 This plugin also adds a few inline elements that can be helpful when playing TTRPGs.

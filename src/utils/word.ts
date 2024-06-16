@@ -114,13 +114,23 @@ const getSkills = () => {
   return capitalize(`${goodStr} but ${badStr}`);
 };
 
-const getTown = () =>
+const getTownName = () =>
   capitalize(
     randomFrom(dictionary.settlements[0]) +
       randomFrom(dictionary.settlements[1])
   );
 
-const getPlace = () => {
+const getBuilding = () =>
+  capitalize(
+    `${randomFrom(dictionary.adjectives)} ${randomFrom(dictionary.buildings)}`
+  );
+
+const getWilderness = () =>
+  capitalize(
+    `${randomFrom(dictionary.adjectives)} ${randomFrom(dictionary.locations)}`
+  );
+
+const getLocationDescription = () => {
   const word1 = randomFrom(dictionary.adjectives);
   const word2 = randomFrom(dictionary.adjectives, word1);
 
@@ -129,23 +139,59 @@ const getPlace = () => {
 
 export const generateWord = (type: string): string => {
   switch (type) {
-    case "Subject":
+    case "subject":
       return getSubject();
-    case "Action":
+    case "action":
       return getAction();
-    case "Name":
+
+    case "npcName":
       return getSomeName();
-    case "Aspects":
+    case "npcAspects":
       return getAspects();
-    case "Skills":
+    case "npcSkills":
       return getSkills();
-    case "Job":
+    case "npcJob":
       return getJob();
-    case "Town":
-      return getTown();
-    case "Describe":
-      return getPlace();
+
+    case "locName":
+      return getTownName();
+    case "locBuilding":
+      return getBuilding();
+    case "locWilderness":
+      return getWilderness();
+    case "locDescription":
+      return getLocationDescription();
+
     default:
       return "";
+  }
+};
+
+export const getCustomDictionary = (type: string): string[] | undefined => {
+  switch (type) {
+    case "noun":
+      return dictionary.nouns;
+    case "verb":
+      return dictionary.verbs;
+    case "adjective":
+      return dictionary.adjectives;
+    case "adverb":
+      return dictionary.adverbs;
+    case "job":
+      return dictionary.occupations;
+    case "occupation":
+      return dictionary.occupations;
+    case "aspect":
+      return dictionary.descriptors;
+    case "descriptor":
+      return dictionary.descriptors;
+    case "town name":
+      return [getTownName()];
+    case "in wild":
+      return dictionary.locations;
+    case "in town":
+      return dictionary.buildings;
+    default:
+      return undefined;
   }
 };
