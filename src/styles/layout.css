@@ -18,7 +18,7 @@
     gap: var(--size-4-4);
     width: 100%;
     padding-top: var(--size-4-4);
-    margin-top: var(--size-4-4);
+    margin-top: var(--size-4-2);
     border-top: 1px solid var(--color-base-40);
 
     .srt-tab-picker-tabs {
@@ -29,9 +29,7 @@
       gap: var(--size-4-2);
 
       .clickable-icon {
-        transition:
-          color 0.3s,
-          background 0.3s;
+        transition: color 0.3s, background 0.3s;
 
         &.highlight {
           color: var(--text-on-accent);
@@ -60,7 +58,7 @@
       margin-top: 0;
       padding-top: 0;
       padding-bottom: var(--size-4-4);
-      margin-bottom: var(--size-4-4);
+      margin-bottom: var(--size-4-2);
       border-top: none;
       border-bottom: 1px solid var(--color-base-40);
     }
@@ -68,6 +66,7 @@
     .srt-tab {
       justify-content: flex-start;
       width: 100%;
+      padding-top: var(--size-4-2);
     }
   }
 
@@ -85,6 +84,10 @@
       .srt-tab-picker-tabs {
         gap: var(--size-4-4);
       }
+    }
+
+    .srt-tab {
+      padding-bottom: var(--size-4-2);
     }
   }
 }

@@ -1,4 +1,10 @@
-import { TFile, TFolder, ButtonComponent, DropdownComponent } from "obsidian";
+import {
+  TFile,
+  TFolder,
+  ButtonComponent,
+  DropdownComponent,
+  ExtraButtonComponent,
+} from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import {
   generateWord,
@@ -38,6 +44,7 @@ export class WordView {
   view: View;
   words: [string, string][];
   tab: string;
+  tabSelectContainerEl: HTMLElement;
   tabSelect: DropdownComponent;
   tabContainerEl: HTMLElement;
   tabEls: Record<string, HTMLElement>;
@@ -53,9 +60,16 @@ export class WordView {
     if (this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("word-results");
     } else {
-      this.tabSelect = new DropdownComponent(
-        this.view.tabViewEl.createDiv("word-select")
-      );
+      this.tabSelectContainerEl = this.view.tabViewEl.createDiv("word-select");
+      new ExtraButtonComponent(this.tabSelectContainerEl)
+        .setIcon("chevron-left")
+        .setTooltip("Previous category")
+        .onClick(this.setPrevTab.bind(this));
+      this.tabSelect = new DropdownComponent(this.tabSelectContainerEl);
+      new ExtraButtonComponent(this.tabSelectContainerEl)
+        .setIcon("chevron-right")
+        .setTooltip("Next category")
+        .onClick(this.setNextTab.bind(this));
     }
 
     this.tabContainerEl = this.view.tabViewEl.createDiv(
@@ -66,20 +80,29 @@ export class WordView {
     if (!this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("word-results");
     } else {
-      this.tabSelect = new DropdownComponent(
-        this.view.tabViewEl.createDiv("word-select")
-      );
+      this.tabSelectContainerEl = this.view.tabViewEl.createDiv("word-select");
+      new ExtraButtonComponent(this.tabSelectContainerEl)
+        .setIcon("chevron-left")
+        .setTooltip("Previous category")
+        .onClick(this.setPrevTab.bind(this));
+      this.tabSelect = new DropdownComponent(this.tabSelectContainerEl);
+      new ExtraButtonComponent(this.tabSelectContainerEl)
+        .setIcon("chevron-right")
+        .setTooltip("Next category")
+        .onClick(this.setNextTab.bind(this));
     }
 
     // Populate layout
-    this.createWordBtn("Characters", "npcName");
-    this.createWordBtn("Characters", "npcAspects");
-    this.createWordBtn("Characters", "npcSkills");
-    this.createWordBtn("Characters", "npcJob");
-    this.createWordBtn("Locations", "locName");
-    this.createWordBtn("Locations", "locDescription");
-    this.createWordBtn("Locations", "locBuilding");
-    this.createWordBtn("Locations", "locWilderness");
+    if (!this.view.settings.disableDefaultWords) {
+      this.createWordBtn("Characters", "npcName");
+      this.createWordBtn("Characters", "npcAspects");
+      this.createWordBtn("Characters", "npcSkills");
+      this.createWordBtn("Characters", "npcJob");
+      this.createWordBtn("Locations", "locName");
+      this.createWordBtn("Locations", "locDescription");
+      this.createWordBtn("Locations", "locBuilding");
+      this.createWordBtn("Locations", "locWilderness");
+    }
 
     if (this.view.settings.customTableRoot) {
       const folder = this.view.app.vault.getFolderByPath(
@@ -90,14 +113,26 @@ export class WordView {
       }
     }
 
+    const tabElsCount = Object.keys(this.tabEls).length;
     const defaultTab = Object.keys(this.tabEls)[0];
     this.tabSelect.onChange(this.setTab.bind(this));
     this.tabSelect.setValue(this.tab || defaultTab);
     this.setTab(this.tab || defaultTab);
 
-    if (Object.keys(this.tabEls).length == 1) {
+    if (tabElsCount === 1) {
       this.tabEls[defaultTab].classList.add("shown");
-      this.tabSelect.selectEl.style.display = "none";
+      this.tabSelectContainerEl.style.display = "none";
+    } else if (tabElsCount === 0) {
+      this.tabEls["blank"] = this.tabContainerEl.createDiv(
+        "word-buttons shown blank"
+      );
+      this.tabEls["blank"].createDiv().setText(`No random tables found`);
+      this.tabEls["blank"]
+        .createDiv()
+        .setText(
+          `(enable default random tables or add your own in '${this.view.settings.customTableRoot}' folder)`
+        );
+      this.tabSelectContainerEl.style.display = "none";
     }
 
     this.repopulateResults();
@@ -116,6 +151,30 @@ export class WordView {
       } else {
         this.tabEls[tabName].classList.remove("shown");
       }
+    }
+  }
+
+  setPrevTab() {
+    let prevIndex = this.tabSelect.selectEl.selectedIndex - 1;
+    if (prevIndex < 0) prevIndex = this.tabSelect.selectEl.children.length - 1;
+    const newTab = (
+      this.tabSelect.selectEl.children[prevIndex] as HTMLOptionElement
+    )?.value;
+    if (newTab) {
+      this.tabSelect.setValue(newTab);
+      this.setTab(newTab);
+    }
+  }
+
+  setNextTab() {
+    let nextIndex = this.tabSelect.selectEl.selectedIndex + 1;
+    if (nextIndex > this.tabSelect.selectEl.children.length - 1) nextIndex = 0;
+    const newTab = (
+      this.tabSelect.selectEl.children[nextIndex] as HTMLOptionElement
+    )?.value;
+    if (newTab) {
+      this.tabSelect.setValue(newTab);
+      this.setTab(newTab);
     }
   }
 

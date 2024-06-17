@@ -1,15 +1,21 @@
 import { App, Setting, PluginSettingTab } from "obsidian";
 import SoloToolkitPlugin from "../main";
 
+export type ViewType = "dice" | "deck" | "oracle" | "word";
+
 export interface SoloToolkitSettings {
+  defaultView: ViewType;
   customTableRoot: string;
+  disableDefaultWords: boolean;
   deckJokers: boolean;
   deckTarot: boolean;
   inlineCounters: boolean;
 }
 
 export const DEFAULT_SETTINGS: SoloToolkitSettings = {
+  defaultView: "dice",
   customTableRoot: "Tables",
+  disableDefaultWords: false,
   deckJokers: false,
   deckTarot: false,
   inlineCounters: false,
@@ -29,6 +35,21 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
+      .setName("Default sidebar view")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("dice", "Dice")
+          .addOption("deck", "Deck")
+          .addOption("oracle", "Oracle")
+          .addOption("word", "Ideas");
+        dropdown.setValue(this.plugin.settings.defaultView || "dice");
+        dropdown.onChange(async (value: ViewType) => {
+          this.plugin.settings.defaultView = value;
+          await this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
       .setName("Custom tables folder")
       .setDesc("Additional random tables can be added in this folder")
       .addText((text) =>
@@ -42,13 +63,15 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Enable additional tarot deck")
-      .setDesc("22 cards of the major arcana")
+      .setName("Hide default random generators")
+      .setDesc(
+        "Make sure to add your own custom tables to the folder specified in the above option"
+      )
       .addToggle((toggle) =>
         toggle
-          .setValue(this.plugin.settings.deckTarot)
+          .setValue(this.plugin.settings.disableDefaultWords)
           .onChange(async (value) => {
-            this.plugin.settings.deckTarot = value;
+            this.plugin.settings.disableDefaultWords = value;
             await this.plugin.saveSettings();
           })
       );
@@ -61,6 +84,18 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.deckJokers)
           .onChange(async (value) => {
             this.plugin.settings.deckJokers = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Enable additional tarot deck")
+      .setDesc("22 cards of the major arcana")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.deckTarot)
+          .onChange(async (value) => {
+            this.plugin.settings.deckTarot = value;
             await this.plugin.saveSettings();
           })
       );

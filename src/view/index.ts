@@ -9,7 +9,7 @@ import { DiceView } from "./dice";
 import { DeckView } from "./deck";
 import { WordView } from "./word";
 import { OracleView } from "./oracle";
-import { SoloToolkitSettings } from "../settings";
+import { SoloToolkitSettings, ViewType } from "../settings";
 
 interface DevApp extends App {
   isMobile?: boolean;
@@ -28,7 +28,7 @@ export class SoloToolkitView extends ItemView {
   public settings: SoloToolkitSettings;
   public isMobile: boolean = false;
 
-  public tab: "dice" | "deck" | "oracle" | "word" = "dice";
+  public tab: ViewType;
   tabPickerEl: HTMLElement;
   public tabViewEl: HTMLElement;
 
@@ -40,6 +40,7 @@ export class SoloToolkitView extends ItemView {
   constructor(leaf: WorkspaceLeaf, settings: SoloToolkitSettings) {
     super(leaf);
     this.settings = settings;
+    this.tab = settings.defaultView || "deck";
     this.dice = new DiceView(this);
     this.deck = new DeckView(this);
     this.word = new WordView(this);

@@ -1,6 +1,11 @@
 .srt-container {
   .word-select {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
     select {
+      flex: 1;
       width: 100%;
     }
   }
@@ -15,6 +20,12 @@
 
     &:not(.shown) {
       display: none;
+    }
+
+    &.blank {
+      flex-direction: column;
+      text-align: center;
+      color: var(--text-muted);
     }
   }
 
