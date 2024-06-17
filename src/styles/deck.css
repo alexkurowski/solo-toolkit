@@ -14,10 +14,6 @@
       line-height: var(--input-height);
       text-align: right;
     }
-
-    & + .deck-buttons {
-      margin-top: calc(var(--size-4-3) * -1);
-    }
   }
 
   .deck-results {

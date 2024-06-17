@@ -39,6 +39,17 @@
     }
   }
 
+  .srt-category-picker {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    select {
+      flex: 1;
+      width: 100%;
+    }
+  }
+
   .srt-tab {
     flex: 1;
     display: flex;

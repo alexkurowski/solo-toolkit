@@ -111,7 +111,7 @@ export class SoloToolkitView extends ItemView {
         .setIcon("eye")
         .setTooltip(tabLabels.oracle),
       deck: new ExtraButtonComponent(btnsEl)
-        .setIcon("heart")
+        .setIcon("srt-deck")
         .setTooltip(tabLabels.deck),
       dice: new ExtraButtonComponent(btnsEl)
         .setIcon("dices")

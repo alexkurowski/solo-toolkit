@@ -1,6 +1,7 @@
 import { ButtonComponent, setIcon, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { Deck, Tarot, capitalize, clickToCopy, last } from "../utils";
+import { Deck, Tarot, capitalize, clickToCopy } from "../utils";
+import { TabSelect } from "./shared/tabselect";
 
 const MAX_REMEMBER_SIZE = 100;
 
@@ -9,8 +10,11 @@ export class DeckView {
   deck: Deck;
   tarot: Tarot;
   drawn: [string, string, number?][];
-  countEls: HTMLElement[];
-  btnsEls: HTMLElement[];
+
+  tab: string;
+  tabSelect: TabSelect;
+  tabContainerEl: HTMLElement;
+  tabContentEls: Record<string, HTMLElement>;
   resultsEl: HTMLElement;
 
   constructor(view: View) {
@@ -21,37 +25,59 @@ export class DeckView {
   }
 
   create() {
+    // Create layout
     this.deck.setJokers(this.view.settings.deckJokers);
 
     if (this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
+    } else {
+      this.tabSelect = new TabSelect(
+        this.view.tabViewEl,
+        this.setTab.bind(this)
+      );
     }
 
-    this.btnsEls = [];
-    this.countEls = [];
-
-    this.btnsEls.push(this.view.tabViewEl.createDiv("deck-buttons"));
-    this.createDeckBtns();
-    this.createDeckCounter();
-
-    if (this.view.settings.deckTarot) {
-      this.btnsEls.push(this.view.tabViewEl.createDiv("deck-buttons"));
-      this.createTarotBtns();
-      this.createTarotCounter();
-    }
+    this.tabContainerEl = this.view.tabViewEl.createDiv(
+      "deck-buttons-container"
+    );
+    this.tabContentEls = {};
 
     if (!this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
+    } else {
+      this.tabSelect = new TabSelect(
+        this.view.tabViewEl,
+        this.setTab.bind(this)
+      );
     }
 
-    this.updateCount();
+    // Populate layout
+    this.createDeckBtns();
+    this.createTarotBtns();
+
+    const defaultTab = Object.keys(this.tabContentEls)[0];
+    this.tabSelect.setValue(this.tab || defaultTab);
+
     this.repopulateResults();
   }
 
   reset() {
     this.deck.shuffle();
+    this.tarot.shuffle();
     this.drawn = [];
     this.resultsEl.empty();
+    this.updateCount();
+  }
+
+  setTab(newTab: string) {
+    this.tab = newTab;
+    for (const tabName in this.tabContentEls) {
+      if (tabName === newTab) {
+        this.tabContentEls[tabName].show();
+      } else {
+        this.tabContentEls[tabName].hide();
+      }
+    }
     this.updateCount();
   }
 
@@ -102,7 +128,11 @@ export class DeckView {
   }
 
   createDeckBtns() {
-    new ButtonComponent(last(this.btnsEls))
+    const tabName = "Standard";
+    this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
+    this.tabSelect.addOption(tabName, tabName);
+
+    new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw a card")
       .onClick(() => {
         const [value, suit] = this.deck.draw();
@@ -111,21 +141,23 @@ export class DeckView {
         this.updateCount();
       });
 
-    new ButtonComponent(last(this.btnsEls))
+    new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Shuffle")
       .onClick(() => {
         this.deck.shuffle();
         this.updateCount();
       });
-  }
 
-  createDeckCounter() {
-    this.countEls[0] = last(this.btnsEls).createDiv("deck-size");
+    this.tabContentEls[tabName].createDiv("deck-size");
   }
 
   createTarotBtns() {
-    new ButtonComponent(last(this.btnsEls))
-      .setButtonText("Draw a tarot")
+    const tabName = "Tarot";
+    this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
+    this.tabSelect.addOption(tabName, tabName);
+
+    new ButtonComponent(this.tabContentEls[tabName])
+      .setButtonText("Draw a card")
       .onClick(() => {
         const [value, suit, index] = this.tarot.draw();
         this.drawn.push([value, suit, index]);
@@ -133,25 +165,30 @@ export class DeckView {
         this.updateCount();
       });
 
-    new ButtonComponent(last(this.btnsEls))
+    new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Shuffle")
       .onClick(() => {
         this.tarot.shuffle();
         this.updateCount();
       });
-  }
 
-  createTarotCounter() {
-    this.countEls[1] = last(this.btnsEls).createDiv("deck-size");
+    this.tabContentEls[tabName].createDiv("deck-size");
   }
 
   updateCount() {
-    const [deckCurrent, deckMax] = this.deck.size();
-    if (this.countEls[0])
-      this.countEls[0].setText(`${deckCurrent} / ${deckMax}`);
-    const [tarotCurrent, tarotMax] = this.tarot.size();
-    if (this.countEls[1])
-      this.countEls[1].setText(`${tarotCurrent} / ${tarotMax}`);
+    const sizeEl =
+      this.tabContentEls[this.tab]?.children?.[
+        (this.tabContentEls[this.tab]?.children?.length || 0) - 1
+      ];
+
+    if (!sizeEl) return;
+    if (this.tab === "Standard") {
+      const [current, max] = this.deck.size();
+      sizeEl.setText(`${current} / ${max}`);
+    } else if (this.tab === "Tarot") {
+      const [current, max] = this.tarot.size();
+      sizeEl.setText(`${current} / ${max}`);
+    }
   }
 
   repopulateResults() {

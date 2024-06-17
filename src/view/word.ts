@@ -1,10 +1,4 @@
-import {
-  TFile,
-  TFolder,
-  ButtonComponent,
-  DropdownComponent,
-  ExtraButtonComponent,
-} from "obsidian";
+import { TFile, TFolder, ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import {
   generateWord,
@@ -13,6 +7,7 @@ import {
   getCustomDictionary,
   capitalize,
 } from "../utils";
+import { TabSelect } from "./shared/tabselect";
 
 const MAX_REMEMBER_SIZE = 100;
 const DEFAULT = "DEFAULT";
@@ -43,11 +38,11 @@ const wordTooltips: { [word: string]: string } = {
 export class WordView {
   view: View;
   words: [string, string][];
+
   tab: string;
-  tabSelectContainerEl: HTMLElement;
-  tabSelect: DropdownComponent;
+  tabSelect: TabSelect;
   tabContainerEl: HTMLElement;
-  tabEls: Record<string, HTMLElement>;
+  tabContentEls: Record<string, HTMLElement>;
   resultsEl: HTMLElement;
 
   constructor(view: View) {
@@ -60,36 +55,24 @@ export class WordView {
     if (this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("word-results");
     } else {
-      this.tabSelectContainerEl = this.view.tabViewEl.createDiv("word-select");
-      new ExtraButtonComponent(this.tabSelectContainerEl)
-        .setIcon("chevron-left")
-        .setTooltip("Previous category")
-        .onClick(this.setPrevTab.bind(this));
-      this.tabSelect = new DropdownComponent(this.tabSelectContainerEl);
-      new ExtraButtonComponent(this.tabSelectContainerEl)
-        .setIcon("chevron-right")
-        .setTooltip("Next category")
-        .onClick(this.setNextTab.bind(this));
+      this.tabSelect = new TabSelect(
+        this.view.tabViewEl,
+        this.setTab.bind(this)
+      );
     }
 
     this.tabContainerEl = this.view.tabViewEl.createDiv(
-      "Word-buttons-container"
+      "word-buttons-container"
     );
-    this.tabEls = {};
+    this.tabContentEls = {};
 
     if (!this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("word-results");
     } else {
-      this.tabSelectContainerEl = this.view.tabViewEl.createDiv("word-select");
-      new ExtraButtonComponent(this.tabSelectContainerEl)
-        .setIcon("chevron-left")
-        .setTooltip("Previous category")
-        .onClick(this.setPrevTab.bind(this));
-      this.tabSelect = new DropdownComponent(this.tabSelectContainerEl);
-      new ExtraButtonComponent(this.tabSelectContainerEl)
-        .setIcon("chevron-right")
-        .setTooltip("Next category")
-        .onClick(this.setNextTab.bind(this));
+      this.tabSelect = new TabSelect(
+        this.view.tabViewEl,
+        this.setTab.bind(this)
+      );
     }
 
     // Populate layout
@@ -113,26 +96,21 @@ export class WordView {
       }
     }
 
-    const tabElsCount = Object.keys(this.tabEls).length;
-    const defaultTab = Object.keys(this.tabEls)[0];
-    this.tabSelect.onChange(this.setTab.bind(this));
+    const tabElsCount = Object.keys(this.tabContentEls).length;
+    const defaultTab = Object.keys(this.tabContentEls)[0];
     this.tabSelect.setValue(this.tab || defaultTab);
-    this.setTab(this.tab || defaultTab);
 
-    if (tabElsCount === 1) {
-      this.tabEls[defaultTab].classList.add("shown");
-      this.tabSelectContainerEl.style.display = "none";
-    } else if (tabElsCount === 0) {
-      this.tabEls["blank"] = this.tabContainerEl.createDiv(
+    if (tabElsCount === 0) {
+      this.tabContentEls["blank"] = this.tabContainerEl.createDiv(
         "word-buttons shown blank"
       );
-      this.tabEls["blank"].createDiv().setText(`No random tables found`);
-      this.tabEls["blank"]
+      this.tabContentEls["blank"].createDiv().setText(`No random tables found`);
+      this.tabContentEls["blank"]
         .createDiv()
         .setText(
           `(enable default random tables or add your own in '${this.view.settings.customTableRoot}' folder)`
         );
-      this.tabSelectContainerEl.style.display = "none";
+      this.tabSelect.hide();
     }
 
     this.repopulateResults();
@@ -145,36 +123,12 @@ export class WordView {
 
   setTab(newTab: string) {
     this.tab = newTab;
-    for (const tabName in this.tabEls) {
+    for (const tabName in this.tabContentEls) {
       if (tabName === newTab) {
-        this.tabEls[tabName].classList.add("shown");
+        this.tabContentEls[tabName].show();
       } else {
-        this.tabEls[tabName].classList.remove("shown");
+        this.tabContentEls[tabName].hide();
       }
-    }
-  }
-
-  setPrevTab() {
-    let prevIndex = this.tabSelect.selectEl.selectedIndex - 1;
-    if (prevIndex < 0) prevIndex = this.tabSelect.selectEl.children.length - 1;
-    const newTab = (
-      this.tabSelect.selectEl.children[prevIndex] as HTMLOptionElement
-    )?.value;
-    if (newTab) {
-      this.tabSelect.setValue(newTab);
-      this.setTab(newTab);
-    }
-  }
-
-  setNextTab() {
-    let nextIndex = this.tabSelect.selectEl.selectedIndex + 1;
-    if (nextIndex > this.tabSelect.selectEl.children.length - 1) nextIndex = 0;
-    const newTab = (
-      this.tabSelect.selectEl.children[nextIndex] as HTMLOptionElement
-    )?.value;
-    if (newTab) {
-      this.tabSelect.setValue(newTab);
-      this.setTab(newTab);
     }
   }
 
@@ -192,13 +146,14 @@ export class WordView {
   }
 
   createWordBtn(tabName: string, type: string) {
-    if (!this.tabEls[tabName]) {
-      this.tabEls[tabName] = this.tabContainerEl.createDiv("word-buttons");
+    if (!this.tabContentEls[tabName]) {
+      this.tabContentEls[tabName] =
+        this.tabContainerEl.createDiv("word-buttons");
       this.tabSelect.addOption(tabName, tabName);
     }
 
     const label = wordLabels[type] || capitalize(type);
-    new ButtonComponent(this.tabEls[tabName])
+    new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText(label)
       .setTooltip(`Generate ${wordTooltips[type] || type.toLowerCase()}`)
       .onClick(() => {
@@ -314,12 +269,13 @@ export class WordView {
       }
     };
 
-    if (!this.tabEls[tabName]) {
-      this.tabEls[tabName] = this.tabContainerEl.createDiv("word-buttons");
+    if (!this.tabContentEls[tabName]) {
+      this.tabContentEls[tabName] =
+        this.tabContainerEl.createDiv("word-buttons");
       this.tabSelect.addOption(tabName, tabName);
     }
 
-    new ButtonComponent(this.tabEls[tabName])
+    new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText(type)
       .setTooltip(`Generate ${type.toLowerCase()}`)
       .onClick(() => {

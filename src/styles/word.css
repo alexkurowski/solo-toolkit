@@ -1,15 +1,4 @@
 .srt-container {
-  .word-select {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-
-    select {
-      flex: 1;
-      width: 100%;
-    }
-  }
-
   .word-buttons {
     display: flex;
     flex-direction: row;
@@ -17,10 +6,6 @@
     align-items: center;
     justify-content: center;
     gap: var(--size-2-2);
-
-    &:not(.shown) {
-      display: none;
-    }
 
     &.blank {
       flex-direction: column;
