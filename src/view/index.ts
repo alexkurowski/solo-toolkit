@@ -96,6 +96,7 @@ export class SoloToolkitView extends ItemView {
         if (this.tab === "oracle") this.oracle.reset();
         if (this.tab === "deck") this.deck.reset();
         if (this.tab === "dice") this.dice.reset();
+        this.createTab();
       });
     const updateResetBtnTooltip = () =>
       resetBtn.setTooltip(`Reset ${tabLabels[this.tab].toLowerCase()}`);
