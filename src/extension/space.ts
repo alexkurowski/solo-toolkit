@@ -47,6 +47,7 @@ export class SpaceWidget extends WidgetType {
     this.width = width;
     this.updateInitialWidth(width);
     el.style.width = `${width}px`;
+    el.style.minWidth = `2px`;
   }
 
   updateWidth(el: HTMLElement, triesLeft: number) {
@@ -91,9 +92,11 @@ export class SpaceWidget extends WidgetType {
 
     if (this.width) {
       el.style.width = `${this.width}px`;
-    } else {
-      this.updateWidth(el, RETRY_COUNT);
+      el.style.minWidth = `2px`;
     }
+
+    this.updateWidth(el, RETRY_COUNT);
+
     return el;
   }
 }
