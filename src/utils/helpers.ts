@@ -1,5 +1,22 @@
 import { Notice } from "obsidian";
 
+export const compareWords = (
+  valueA: string | undefined,
+  valueB: string | undefined
+): boolean => {
+  if (valueA === undefined || valueB === undefined) return false;
+  if (!valueA && !valueB) return true;
+  if (!valueA || !valueB) return false;
+  valueA = valueA.toLowerCase().trim();
+  valueB = valueB.toLowerCase().trim();
+
+  return (
+    valueA === valueB ||
+    valueA === valueB + "s" ||
+    valueA === valueB.replace(/y$/, "ies")
+  );
+};
+
 export const capitalize = (value: string): string => {
   if (value) {
     return value[0].toUpperCase() + value.substring(1);

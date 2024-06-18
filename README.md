@@ -18,13 +18,13 @@ A set of random word generators. Great for coming up with ideas on how to progre
 
 ### Custom random tables
 
-In addition to default random word generators, you can may add any number of your own random tables by creating notes inside a special folder in your vault (default folder name is "Tables", you can change it in plugin settings).
+In addition to default random word generators, you may add any number of your own random tables by creating notes inside a special folder in your vault (default folder name is "Tables", you can change it in plugin settings). To create more table categories, organize your notes into subfolders.
 
 ### Custom table templates
 
 By default a custom random table roll will return a random line from the note. You can further customize this behavior with templates.
 
-You can add one or multiple templates as properties of the note (simply type `---` at the start of the note). The value of a property can contain regular text as well as keywords inside curly brackets (`{keyword}`), those keywords will be replace with a random word from that section of the note.
+You can add one or multiple templates as properties of the note (simply type `---` at the start of the note). The value of a property can contain regular text as well as keywords inside curly brackets (`{keyword}`), those keywords will be replaced with a random word from a given section of the note. You can also refer to other notes by specifying the note name and/or note section (`{note_name/section_title}`, or `{folder_name/note_name/section_title}`, or simply `{note_name}` if there are no sections).
 
 Example of a note with templates:
 

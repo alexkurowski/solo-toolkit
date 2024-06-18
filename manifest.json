@@ -1,7 +1,7 @@
 {
     "id": "solo-rpg-toolkit",
     "name": "Solo RPG Toolkit",
-    "version": "0.2.16",
+    "version": "0.2.17",
     "minAppVersion": "1.5.11",
     "description": "Random generator tools geared towards solo TTRPG gameplay",
     "author": "Alex Kurowski",

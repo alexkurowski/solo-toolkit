@@ -4,10 +4,20 @@ import {
   generateWord,
   randomFrom,
   clickToCopy,
-  getCustomDictionary,
+  getDefaultDictionary,
   capitalize,
+  compareWords,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
+
+interface CustomTable {
+  [section: string]: string[];
+}
+interface CustomTableCategory {
+  tabName: string;
+  fileName: string;
+  values: CustomTable;
+}
 
 const MAX_REMEMBER_SIZE = 100;
 const DEFAULT = "DEFAULT";
@@ -37,6 +47,7 @@ const wordTooltips: { [word: string]: string } = {
 
 export class WordView {
   view: View;
+  customTables: CustomTableCategory[];
   words: [string, string][];
 
   tab: string;
@@ -86,6 +97,8 @@ export class WordView {
       this.createWordBtn("Locations", "locBuilding");
       this.createWordBtn("Locations", "locWilderness");
     }
+
+    this.customTables = [];
 
     if (this.view.settings.customTableRoot) {
       const folder = this.view.app.vault.getFolderByPath(
@@ -179,7 +192,7 @@ export class WordView {
   createCustomWordBtn(tabName: string, file: TFile) {
     const type = file.basename;
     const templates: string[] = [];
-    const values: Record<string, string[]> = { [DEFAULT]: [] };
+    const values: CustomTable = { [DEFAULT]: [] };
 
     this.view.app.vault.cachedRead(file).then((content: string) => {
       if (!content) return;
@@ -232,15 +245,69 @@ export class WordView {
         values[DEFAULT].push(line);
         if (currentKey) values[currentKey].push(line);
       }
+
+      this.customTables.push({
+        tabName,
+        fileName: type,
+        values: values,
+      });
     });
 
     const getValuesForKey = (key: string): string[] => {
-      return (
-        values[key] ||
-        values[key + "s"] ||
-        values[key.replace(/y$/, "ies")] ||
-        getCustomDictionary(key) || [`{${key}}`]
+      let result: string[] | undefined;
+
+      // Sections in this file
+      const sectionKey = Object.keys(values).find((value) =>
+        compareWords(value, key)
       );
+      if (sectionKey) {
+        result = values[sectionKey];
+        if (result?.length) return result;
+      }
+
+      // Sections in other custom files
+      const keyParts = key.split("/");
+      const otherCustomTable =
+        this.customTables.find(
+          // category.filename
+          (customTable) =>
+            compareWords(customTable.tabName, keyParts[0]) &&
+            compareWords(customTable.fileName, keyParts[1])
+        ) ||
+        this.customTables.find(
+          // [same-category].filename
+          (customTable) =>
+            compareWords(customTable.tabName, tabName) &&
+            compareWords(customTable.fileName, keyParts[0])
+        ) ||
+        this.customTables.find(
+          // [any-category].filename
+          (customTable) => compareWords(customTable.fileName, keyParts[0])
+        );
+      if (otherCustomTable) {
+        for (let i = 0; i < keyParts.length; i++) {
+          const otherTableKey = keyParts
+            .slice(keyParts.length - i - 1)
+            .join("/");
+          const otherTableSectionKey = Object.keys(
+            otherCustomTable.values
+          ).find((value) => compareWords(value, otherTableKey));
+          if (otherTableSectionKey) {
+            result = otherCustomTable.values[otherTableSectionKey];
+            if (result?.length) return result;
+          }
+        }
+        if (keyParts.length === 1) {
+          result = otherCustomTable.values[DEFAULT];
+          if (result?.length) return result;
+        }
+      }
+
+      // Default generic
+      result = getDefaultDictionary(key);
+      if (result?.length) return result;
+
+      return [`{${key}}`];
     };
 
     const generateCustomWord = (): string => {

@@ -167,7 +167,7 @@ export const generateWord = (type: string): string => {
   }
 };
 
-export const getCustomDictionary = (type: string): string[] | undefined => {
+export const getDefaultDictionary = (type: string): string[] | undefined => {
   switch (type) {
     case "noun":
       return dictionary.nouns;
@@ -186,7 +186,7 @@ export const getCustomDictionary = (type: string): string[] | undefined => {
     case "descriptor":
       return dictionary.descriptors;
     case "town name":
-      return [getTownName()];
+      return [getTownName(), getTownName(), getTownName(), getTownName()];
     case "in wild":
       return dictionary.locations;
     case "in town":
