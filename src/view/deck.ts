@@ -1,15 +1,24 @@
-import { ButtonComponent, setIcon, setTooltip } from "obsidian";
+import { ButtonComponent, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { Deck, Tarot, capitalize, clickToCopy } from "../utils";
+import { DefaultDeck } from "../utils";
 import { TabSelect } from "./shared/tabselect";
+import { CustomDeck } from "src/utils/customdeck";
+import deckImages, { jokerImages } from "../icons/deck";
+import tarotImages from "../icons/tarot";
 
 const MAX_REMEMBER_SIZE = 100;
 
+interface DrawnCard {
+  type: "DefaultImage" | "CustomImage" | "CustomText";
+  value: string;
+  suit?: string;
+  index?: number;
+}
+
 export class DeckView {
   view: View;
-  deck: Deck;
-  tarot: Tarot;
-  drawn: [string, string, number?][];
+  decks: Record<string, DefaultDeck | CustomDeck>;
+  drawn: DrawnCard[];
 
   tab: string;
   tabSelect: TabSelect;
@@ -19,15 +28,11 @@ export class DeckView {
 
   constructor(view: View) {
     this.view = view;
-    this.deck = new Deck(this.view.settings.deckJokers);
-    this.tarot = new Tarot();
     this.drawn = [];
   }
 
   create() {
     // Create layout
-    this.deck.setJokers(this.view.settings.deckJokers);
-
     if (this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
     } else {
@@ -51,9 +56,25 @@ export class DeckView {
       );
     }
 
+    this.decks = {};
+
     // Populate layout
-    this.createDeckBtns();
-    this.createTarotBtns();
+    this.createDefaultDeck(
+      "srt:Standard",
+      this.view.settings.deckJokers
+        ? { ...deckImages, ...jokerImages }
+        : deckImages
+    );
+    this.createDefaultDeck("srt:Tarot", tarotImages);
+
+    if (this.view.settings.customDeckRoot) {
+      const folder = this.view.app.vault.getFolderByPath(
+        this.view.settings.customDeckRoot
+      );
+      if (folder) {
+        this.createCustomDecks(folder);
+      }
+    }
 
     const defaultTab = Object.keys(this.tabContentEls)[0];
     this.tabSelect.setValue(this.tab || defaultTab);
@@ -62,11 +83,10 @@ export class DeckView {
   }
 
   reset() {
-    this.deck.shuffle();
-    this.tarot.shuffle();
+    for (const key in this.decks) {
+      this.decks[key].shuffle();
+    }
     this.drawn = [];
-    this.resultsEl.empty();
-    this.updateCount();
   }
 
   setTab(newTab: string) {
@@ -81,94 +101,180 @@ export class DeckView {
     this.updateCount();
   }
 
-  addResult(value: string, suit: string, index?: number, immediate = false) {
+  addResult(card: DrawnCard, immediate = false) {
     const parentElClass = ["deck-result"];
     if (immediate) parentElClass.push("nofade");
     const parentEl = this.resultsEl.createDiv(parentElClass.join(" "));
+    this.resultsEl.insertAfter(parentEl, null);
 
-    if (typeof index === "number") {
-      // Tarot
-      const elClass = ["tarot-result-content"];
-      const el = parentEl.createDiv(elClass.join(" "));
+    if (card.type === "DefaultImage") {
+      const { value } = card;
 
-      setTooltip(parentEl, `${value}: ${suit}`);
-      el.createSpan("tarot-result-index").setText(index.toString());
-      el.createSpan("tarot-result-value").setText(value);
-    } else {
-      // Deck
-      const isRed = suit === "heart" || suit === "diamond" || suit === "red";
-      const isBlack = suit === "club" || suit === "spade" || suit === "black";
-      const isSuit = suit !== "red" && suit !== "black";
+      parentEl.addClass("default-image-result-content");
+      parentEl.setCssProps({
+        "background-image": `url(${value})`,
+      });
 
-      const elClass = ["deck-result-content"];
-      if (isRed) elClass.push("deck-result-red");
-      if (isBlack) elClass.push("deck-result-black");
-      const el = parentEl.createDiv(elClass.join(" "));
+      const zoomEl = parentEl.createDiv("default-image-result-zoom");
+      zoomEl.createEl("img").setAttr("src", value);
 
-      let tooltipValue = value;
-      if (value === "J") tooltipValue = "Jack";
-      if (value === "Q") tooltipValue = "Queen";
-      if (value === "K") tooltipValue = "King";
-      if (value === "A") tooltipValue = "Ace";
-      if (value === "Joker") tooltipValue = "joker";
-      const tooltipText = isSuit
-        ? `${tooltipValue} of ${suit}s`
-        : `${capitalize(suit)} ${tooltipValue}`;
-      setTooltip(parentEl, tooltipText);
-      parentEl.onclick = clickToCopy(tooltipText);
-
-      const valueEl = el.createSpan("deck-result-value");
-      valueEl.setText(value);
-
-      if (isSuit) {
-        const typeEl = el.createSpan("deck-result-type");
-        setIcon(typeEl, suit);
+      parentEl.onmousedown = () => {
+        zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
+      };
+      if (!this.view.isMobile) {
+        parentEl.onmouseenter = () => {
+          zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
+        };
       }
+      parentEl.onmouseleave = () => {
+        zoomEl.removeClass("shown");
+      };
+    } else if (card.type === "CustomImage") {
+      const { value } = card;
+
+      parentEl.addClass("custom-image-result-content");
+      parentEl.setCssProps({
+        "background-image": `url(${value})`,
+      });
+
+      const zoomEl = parentEl.createDiv("custom-image-result-zoom");
+      zoomEl.createEl("img").setAttr("src", value);
+
+      parentEl.onmousedown = () => {
+        zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
+      };
+      if (!this.view.isMobile) {
+        parentEl.onmouseenter = () => {
+          zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
+        };
+      }
+      parentEl.onmouseleave = () => {
+        zoomEl.removeClass("shown");
+      };
     }
   }
 
-  createDeckBtns() {
-    const tabName = "Standard";
+  // createDeckBtns() {
+  //   const tabName = "Standard";
+  //   this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
+  //   this.tabSelect.addOption(tabName, tabName);
+
+  //   new ButtonComponent(this.tabContentEls[tabName])
+  //     .setButtonText("Draw a card")
+  //     .onClick(() => {
+  //       const [value, suit] = this.deck.draw();
+  //       const card: DrawnCard = {
+  //         type: "Deck",
+  //         value,
+  //         suit,
+  //       };
+  //       this.drawn.push(card);
+  //       this.addResult(card);
+  //       this.updateCount();
+  //     });
+
+  //   new ButtonComponent(this.tabContentEls[tabName])
+  //     .setButtonText("Shuffle")
+  //     .onClick(() => {
+  //       this.deck.shuffle();
+  //       this.updateCount();
+  //     });
+
+  //   this.tabContentEls[tabName].createDiv("deck-size");
+  // }
+
+  // createTarotBtns() {
+  //   const tabName = "Tarot";
+  //   this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
+  //   this.tabSelect.addOption(tabName, tabName);
+
+  //   new ButtonComponent(this.tabContentEls[tabName])
+  //     .setButtonText("Draw a card")
+  //     .onClick(() => {
+  //       const [value, suit, index] = this.tarot.draw();
+  //       const card: DrawnCard = {
+  //         type: "Tarot",
+  //         value,
+  //         suit,
+  //         index,
+  //       };
+  //       this.drawn.push(card);
+  //       this.addResult(card);
+  //       this.updateCount();
+  //     });
+
+  //   new ButtonComponent(this.tabContentEls[tabName])
+  //     .setButtonText("Shuffle")
+  //     .onClick(() => {
+  //       this.tarot.shuffle();
+  //       this.updateCount();
+  //     });
+
+  //   this.tabContentEls[tabName].createDiv("deck-size");
+  // }
+
+  createDefaultDeck(tabName: string, data: Record<string, string>) {
+    const label = tabName.replace("srt:", "");
     this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
-    this.tabSelect.addOption(tabName, tabName);
+    this.tabSelect.addOption(tabName, label);
+
+    this.decks[tabName] = new DefaultDeck(tabName, data);
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw a card")
       .onClick(() => {
-        const [value, suit] = this.deck.draw();
-        this.drawn.push([value, suit]);
-        this.addResult(value, suit);
+        const [type, value] = this.decks[tabName].draw();
+        const card: DrawnCard = {
+          type,
+          value,
+        };
+        this.drawn.push(card);
+        this.addResult(card);
         this.updateCount();
       });
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Shuffle")
       .onClick(() => {
-        this.deck.shuffle();
+        this.decks[tabName].shuffle();
         this.updateCount();
       });
 
     this.tabContentEls[tabName].createDiv("deck-size");
   }
 
-  createTarotBtns() {
-    const tabName = "Tarot";
+  createCustomDecks(folder: TFolder) {
+    for (const child of folder.children) {
+      if (child instanceof TFolder) {
+        this.createCustomDeck(child);
+      }
+    }
+  }
+
+  createCustomDeck(folder: TFolder) {
+    const tabName = folder.name;
     this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
     this.tabSelect.addOption(tabName, tabName);
+
+    this.decks[tabName] = new CustomDeck(this.view.app.vault, folder);
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw a card")
       .onClick(() => {
-        const [value, suit, index] = this.tarot.draw();
-        this.drawn.push([value, suit, index]);
-        this.addResult(value, suit, index);
+        const [type, value] = this.decks[tabName].draw();
+        const card: DrawnCard = {
+          type,
+          value,
+        };
+        this.drawn.push(card);
+        this.addResult(card);
         this.updateCount();
       });
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Shuffle")
       .onClick(() => {
-        this.tarot.shuffle();
+        this.decks[tabName].shuffle();
         this.updateCount();
       });
 
@@ -181,14 +287,8 @@ export class DeckView {
         (this.tabContentEls[this.tab]?.children?.length || 0) - 1
       ];
 
-    if (!sizeEl) return;
-    if (this.tab === "Standard") {
-      const [current, max] = this.deck.size();
-      sizeEl.setText(`${current} / ${max}`);
-    } else if (this.tab === "Tarot") {
-      const [current, max] = this.tarot.size();
-      sizeEl.setText(`${current} / ${max}`);
-    }
+    const [current, max] = this.decks[this.tab]?.size?.() || [];
+    sizeEl.setText(`${current || 0} / ${max || 0}`);
   }
 
   repopulateResults() {
@@ -197,8 +297,11 @@ export class DeckView {
     }
 
     for (const drawn of this.drawn) {
-      const [value, suit, index] = drawn;
-      this.addResult(value, suit, index, true);
+      this.addResult(drawn, true);
+    }
+
+    for (let i = 0; i < 10; i++) {
+      this.resultsEl.createDiv("deck-result fake-result-content");
     }
   }
 }

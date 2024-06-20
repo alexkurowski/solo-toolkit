@@ -6,6 +6,7 @@ export type ViewType = "dice" | "deck" | "oracle" | "word";
 export interface SoloToolkitSettings {
   defaultView: ViewType;
   customTableRoot: string;
+  customDeckRoot: string;
   disableDefaultWords: boolean;
   deckJokers: boolean;
   deckTarot: boolean; // obsolete
@@ -15,6 +16,7 @@ export interface SoloToolkitSettings {
 export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   defaultView: "dice",
   customTableRoot: "Tables",
+  customDeckRoot: "Decks",
   disableDefaultWords: false,
   deckJokers: false,
   deckTarot: true,
@@ -58,6 +60,19 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.customTableRoot)
           .onChange(async (value) => {
             this.plugin.settings.customTableRoot = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Custom decks folder")
+      .setDesc("Additional decks can be added in subfolders in this folder")
+      .addText((text) =>
+        text
+          .setPlaceholder("Decks")
+          .setValue(this.plugin.settings.customDeckRoot)
+          .onChange(async (value) => {
+            this.plugin.settings.customDeckRoot = value;
             await this.plugin.saveSettings();
           })
       );
