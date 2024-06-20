@@ -60,6 +60,7 @@ export class SoloToolkitView extends ItemView {
   }
 
   async onOpen() {
+    console.log("on open");
     const parent = this.contentEl;
     parent.empty();
 
@@ -80,6 +81,11 @@ export class SoloToolkitView extends ItemView {
 
     this.createTabPicker();
     this.createTab();
+  }
+
+  onResize() {
+    super.onResize();
+    this.deck.onResize();
   }
 
   async onClose() {

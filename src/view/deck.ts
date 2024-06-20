@@ -89,6 +89,11 @@ export class DeckView {
     this.drawn = [];
   }
 
+  onResize() {
+    this.resultsEl.empty();
+    this.repopulateResults();
+  }
+
   setTab(newTab: string) {
     this.tab = newTab;
     for (const tabName in this.tabContentEls) {
@@ -105,7 +110,10 @@ export class DeckView {
     const parentElClass = ["deck-result"];
     if (immediate) parentElClass.push("nofade");
     const parentEl = this.resultsEl.createDiv(parentElClass.join(" "));
-    this.resultsEl.insertAfter(parentEl, null);
+
+    if (!this.view.isMobile) {
+      this.resultsEl.insertAfter(parentEl, null);
+    }
 
     if (card.type === "DefaultImage") {
       const { value } = card;
@@ -117,6 +125,10 @@ export class DeckView {
 
       const zoomEl = parentEl.createDiv("default-image-result-zoom");
       zoomEl.createEl("img").setAttr("src", value);
+      zoomEl.onmousedown = (event) => {
+        event.stopPropagation();
+        zoomEl.removeClass("shown");
+      };
 
       parentEl.onmousedown = () => {
         zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
@@ -152,66 +164,11 @@ export class DeckView {
         zoomEl.removeClass("shown");
       };
     }
+
+    if (this.view.isMobile) {
+      this.resultsEl.scrollTop = this.resultsEl.scrollHeight;
+    }
   }
-
-  // createDeckBtns() {
-  //   const tabName = "Standard";
-  //   this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
-  //   this.tabSelect.addOption(tabName, tabName);
-
-  //   new ButtonComponent(this.tabContentEls[tabName])
-  //     .setButtonText("Draw a card")
-  //     .onClick(() => {
-  //       const [value, suit] = this.deck.draw();
-  //       const card: DrawnCard = {
-  //         type: "Deck",
-  //         value,
-  //         suit,
-  //       };
-  //       this.drawn.push(card);
-  //       this.addResult(card);
-  //       this.updateCount();
-  //     });
-
-  //   new ButtonComponent(this.tabContentEls[tabName])
-  //     .setButtonText("Shuffle")
-  //     .onClick(() => {
-  //       this.deck.shuffle();
-  //       this.updateCount();
-  //     });
-
-  //   this.tabContentEls[tabName].createDiv("deck-size");
-  // }
-
-  // createTarotBtns() {
-  //   const tabName = "Tarot";
-  //   this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
-  //   this.tabSelect.addOption(tabName, tabName);
-
-  //   new ButtonComponent(this.tabContentEls[tabName])
-  //     .setButtonText("Draw a card")
-  //     .onClick(() => {
-  //       const [value, suit, index] = this.tarot.draw();
-  //       const card: DrawnCard = {
-  //         type: "Tarot",
-  //         value,
-  //         suit,
-  //         index,
-  //       };
-  //       this.drawn.push(card);
-  //       this.addResult(card);
-  //       this.updateCount();
-  //     });
-
-  //   new ButtonComponent(this.tabContentEls[tabName])
-  //     .setButtonText("Shuffle")
-  //     .onClick(() => {
-  //       this.tarot.shuffle();
-  //       this.updateCount();
-  //     });
-
-  //   this.tabContentEls[tabName].createDiv("deck-size");
-  // }
 
   createDefaultDeck(tabName: string, data: Record<string, string>) {
     const label = tabName.replace("srt:", "");
@@ -221,7 +178,7 @@ export class DeckView {
     this.decks[tabName] = new DefaultDeck(tabName, data);
 
     new ButtonComponent(this.tabContentEls[tabName])
-      .setButtonText("Draw a card")
+      .setButtonText("Draw")
       .onClick(() => {
         const [type, value] = this.decks[tabName].draw();
         const card: DrawnCard = {
@@ -259,7 +216,7 @@ export class DeckView {
     this.decks[tabName] = new CustomDeck(this.view.app.vault, folder);
 
     new ButtonComponent(this.tabContentEls[tabName])
-      .setButtonText("Draw a card")
+      .setButtonText("Draw")
       .onClick(() => {
         const [type, value] = this.decks[tabName].draw();
         const card: DrawnCard = {
@@ -300,8 +257,29 @@ export class DeckView {
       this.addResult(drawn, true);
     }
 
-    for (let i = 0; i < 10; i++) {
-      this.resultsEl.createDiv("deck-result fake-result-content");
+    // Add blank cards for the grid
+    const availableWidth = this.view.tabViewEl.innerWidth;
+    const gridGap = 16;
+    const cardWidth = 100;
+    let maxCardsInRow = Math.floor(availableWidth / cardWidth);
+    if (
+      maxCardsInRow * cardWidth + gridGap * (maxCardsInRow - 1) >
+      availableWidth
+    ) {
+      maxCardsInRow--;
+    }
+
+    for (let i = 0; i < maxCardsInRow; i++) {
+      const fakeCardEl = this.resultsEl.createDiv(
+        "deck-result fake-result-content"
+      );
+      if (this.view.isMobile) {
+        this.resultsEl.insertAfter(fakeCardEl, null);
+      }
+    }
+
+    if (this.view.isMobile) {
+      this.resultsEl.scrollTop = this.resultsEl.scrollHeight;
     }
   }
 }

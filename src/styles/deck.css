@@ -9,8 +9,7 @@
     white-space: nowrap;
 
     .deck-size {
-      min-width: 50px;
-      margin-left: var(--size-2-2);
+      min-width: 60px;
       line-height: var(--input-height);
       text-align: right;
     }
@@ -41,37 +40,6 @@
         border-color: var(--interactive-accent);
       }
 
-      /*
-      .deck-result-content {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        font-weight: 500;
-
-        &.deck-result-red {
-          color: var(--color-red);
-        }
-
-        &.deck-result-black {
-          color: #212121;
-        }
-      }
-
-      .tarot-result-content {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        height: 100%;
-        padding-bottom: var(--size-2-2);
-        color: #212121;
-        text-align: center;
-        font-weight: 500;
-      }
-      */
-
       &.default-image-result-content,
       &.custom-image-result-content {
         background-size: cover;
@@ -86,8 +54,11 @@
           opacity: 0;
           overflow: hidden;
           transition: opacity 0.3s ease-in-out;
-          pointer-events: none;
           z-index: 10;
+
+          &:not(.shown) {
+            pointer-events: none;
+          }
 
           &.shown {
             opacity: 1;
@@ -95,6 +66,7 @@
 
           img {
             width: 100%;
+            max-width: 400px;
             height: auto;
             max-height: 100%;
             border-radius: 14px;
@@ -130,13 +102,31 @@
   &.srt-desktop-layout {
     .deck-results {
       margin-bottom: var(--size-4-6);
+
+      .deck-result {
+        &.default-image-result-content,
+        &.custom-image-result-content {
+          .default-image-result-zoom,
+          .custom-image-result-zoom {
+            pointer-events: none;
+          }
+        }
+      }
+    }
+
+    .deck-buttons {
+      .deck-size {
+        margin-left: var(--size-4-2);
+      }
     }
   }
 
   &.srt-mobile-layout {
     .deck-buttons {
+      flex-direction: row-reverse;
+
       .deck-size {
-        padding-left: var(--size-4-5);
+        margin-right: var(--size-4-2);
       }
     }
   }
