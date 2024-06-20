@@ -60,7 +60,6 @@ export class SoloToolkitView extends ItemView {
   }
 
   async onOpen() {
-    console.log("on open");
     const parent = this.contentEl;
     parent.empty();
 

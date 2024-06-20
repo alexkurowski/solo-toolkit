@@ -23,6 +23,9 @@ const MAX_REMEMBER_SIZE = 100;
 const DEFAULT = "DEFAULT";
 
 const wordLabels: { [word: string]: string } = {
+  promptSubject: "Subject",
+  promptAction: "Action",
+
   npcName: "Name",
   npcAspects: "Aspects",
   npcSkills: "Skills",
@@ -34,6 +37,9 @@ const wordLabels: { [word: string]: string } = {
   locWilderness: "Wilderness",
 };
 const wordTooltips: { [word: string]: string } = {
+  promptSubject: "a subject",
+  promptAction: "an action",
+
   npcName: "a name",
   npcAspects: "character aspects",
   npcSkills: "character skills",
@@ -88,6 +94,8 @@ export class WordView {
 
     // Populate layout
     if (!this.view.settings.disableDefaultWords) {
+      this.createWordBtn("Prompts", "promptSubject");
+      this.createWordBtn("Prompts", "promptAction");
       this.createWordBtn("Characters", "npcName");
       this.createWordBtn("Characters", "npcAspects");
       this.createWordBtn("Characters", "npcSkills");

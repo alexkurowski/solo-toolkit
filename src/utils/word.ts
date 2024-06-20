@@ -139,9 +139,9 @@ const getLocationDescription = () => {
 
 export const generateWord = (type: string): string => {
   switch (type) {
-    case "subject":
+    case "promptSubject":
       return getSubject();
-    case "action":
+    case "promptAction":
       return getAction();
 
     case "npcName":
