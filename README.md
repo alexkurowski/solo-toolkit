@@ -12,6 +12,10 @@ Quickly roll a bunch of dice by clicking on a die icon.
 
 A standard deck of 52 cards plus two optional joker cards. An optional deck of oracle major arcana cards is also available.
 
+### Custom decks
+
+You can add any number of your own decks by creating folders of images in a special folder in your vault (default folder name is "Decks", you can change it in plugin settings). This feature is useful with products like "The GameMaster's Apprentice" decks.
+
 ### Random generators
 
 A set of random word generators. Great for coming up with ideas on how to progress the story.
