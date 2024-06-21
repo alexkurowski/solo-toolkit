@@ -122,6 +122,18 @@
   }
 
   &.srt-mobile-layout {
+    .deck-results {
+      .deck-result {
+        &.default-image-result-content,
+        &.custom-image-result-content {
+          .default-image-result-zoom,
+          .custom-image-result-zoom {
+            align-items: flex-start;
+          }
+        }
+      }
+    }
+
     .deck-buttons {
       flex-direction: row-reverse;
 
