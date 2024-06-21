@@ -6,7 +6,7 @@ const MAX_REMEMBER_SIZE = 100;
 
 export class DiceView {
   view: View;
-  rolls: { [key: number]: number[] } = {};
+  rolls: { [key: number]: [number, number][] } = {};
   btnsEl: HTMLElement;
   resultEls: { [key: number]: HTMLElement } = [];
 
@@ -37,21 +37,21 @@ export class DiceView {
     this.rolls = {};
   }
 
-  addResult(container: HTMLElement, max: number) {
+  addResult(container: HTMLElement, max: number, color: number) {
     let value = roll(max);
 
     this.rolls[max] = this.rolls[max] || [];
     const rollIndex = this.rolls[max].length;
-    this.rolls[max][rollIndex] = value;
+    this.rolls[max][rollIndex] = [value, color];
 
-    const el = container.createDiv("dice-result-value");
+    const el = container.createDiv(`dice-result-value dice-color-${color}`);
     el.setText(value.toString());
 
     let i = 0;
     const reroll = () => {
       if (this.rolls[max][rollIndex]) {
         value = roll(max, value);
-        this.rolls[max][rollIndex] = value;
+        this.rolls[max][rollIndex][0] = value;
         el.setText(value.toString());
         i++;
         if (rollIntervals[i]) {
@@ -60,7 +60,7 @@ export class DiceView {
           setTooltip(
             container,
             `Total: ${this.rolls[max].reduce(
-              (result, value) => result + (value || 0),
+              (result, value) => result + (value[0] || 0),
               0
             )}`
           );
@@ -70,8 +70,8 @@ export class DiceView {
     setTimeout(reroll, rollIntervals[i]);
   }
 
-  addImmediateResult(container: HTMLElement, value: number) {
-    const el = container.createDiv("dice-result-value");
+  addImmediateResult(container: HTMLElement, value: number, color: number) {
+    const el = container.createDiv(`dice-result-value dice-color-${color}`);
     el.setText(value.toString());
   }
 
@@ -81,12 +81,17 @@ export class DiceView {
     const resultsEl = container.createDiv(`dice-results dice-results-${d}`);
     this.resultEls[d] = resultsEl;
 
-    new ExtraButtonComponent(container)
+    const btnEl = new ExtraButtonComponent(container)
       .setIcon(`srt-d${d}`)
-      .setTooltip(`Roll d${d}`)
-      .onClick(() => {
-        this.addResult(resultsEl, d);
-      });
+      .setTooltip(`Roll d${d}`);
+
+    btnEl.extraSettingsEl.onclick = (event) => {
+      const { shiftKey, ctrlKey, metaKey, altKey } = event;
+      const a = shiftKey ? 0b001 : 0;
+      const b = ctrlKey || metaKey ? 0b010 : 0;
+      const c = altKey ? 0b100 : 0;
+      this.addResult(resultsEl, d, a + b + c);
+    };
   }
 
   repopulateResults() {
@@ -96,7 +101,7 @@ export class DiceView {
       }
 
       for (const value of this.rolls[key]) {
-        this.addImmediateResult(this.resultEls[key], value);
+        this.addImmediateResult(this.resultEls[key], value[0], value[1]);
       }
     }
   }

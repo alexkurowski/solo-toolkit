@@ -35,6 +35,34 @@
       min-width: 32px;
       text-align: center;
       font-weight: 600;
+
+      &.dice-color-0 {
+        color: inherit;
+      }
+      &.dice-color-1 {
+        color: var(--color-blue);
+      }
+      &.dice-color-2 {
+        color: var(--color-orange);
+      }
+      &.dice-color-3 {
+        color: var(--color-green);
+      }
+      &.dice-color-4 {
+        color: var(--color-red);
+      }
+      &.dice-color-5 {
+        color: var(--color-yellow);
+      }
+      &.dice-color-6 {
+        color: var(--color-cyan);
+      }
+      &.dice-color-7 {
+        color: var(--color-pink);
+      }
+      &.dice-color-8 {
+        color: var(--color-purple);
+      }
     }
   }
 
