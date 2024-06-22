@@ -230,11 +230,12 @@ export class WordView {
         // New template
         if (readingProperties) {
           const templateKey = line.substring(0, line.indexOf(":"));
-          const newTemplate = line
-            .substring(line.indexOf(":") + 1)
-            .trim()
-            .replace(/^"|"$/g, "")
-            .toLowerCase();
+          const newTemplate =
+            line
+              .substring(line.indexOf(":") + 1)
+              .trim()
+              .replace(/^"|"$/g, "")
+              .toLowerCase() || `{${DEFAULT}}`;
           if (templateKey === templateKey.toUpperCase()) {
             templates.push("upcase!" + newTemplate);
           } else if (templateKey === capitalize(templateKey)) {
