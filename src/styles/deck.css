@@ -43,6 +43,7 @@
       &.default-image-result-content,
       &.custom-image-result-content {
         background-size: cover;
+        background-position: center;
 
         .default-image-result-zoom,
         .custom-image-result-zoom {

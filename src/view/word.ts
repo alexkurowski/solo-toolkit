@@ -25,6 +25,7 @@ const DEFAULT = "DEFAULT";
 const wordLabels: { [word: string]: string } = {
   promptSubject: "Subject",
   promptAction: "Action",
+  promptGoal: "Goal",
 
   npcName: "Name",
   npcAspects: "Aspects",
@@ -96,6 +97,7 @@ export class WordView {
     if (!this.view.settings.disableDefaultWords) {
       this.createWordBtn("Prompts", "promptSubject");
       this.createWordBtn("Prompts", "promptAction");
+      this.createWordBtn("Prompts", "promptGoal");
       this.createWordBtn("Characters", "npcName");
       this.createWordBtn("Characters", "npcAspects");
       this.createWordBtn("Characters", "npcSkills");

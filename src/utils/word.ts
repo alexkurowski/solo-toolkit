@@ -2,6 +2,8 @@ import { dictionary } from "./dictionary";
 import { randomFrom } from "./dice";
 import { capitalize } from "./helpers";
 
+const vowels = ["a", "e", "i", "o", "u"];
+
 const getNoun = () => randomFrom(dictionary.nouns);
 const getVerb = () => randomFrom(dictionary.verbs);
 const getAdjective = () => randomFrom(dictionary.adjectives);
@@ -9,6 +11,18 @@ const getAdverb = () => randomFrom(dictionary.adverbs);
 
 const getSubject = () => capitalize(`${getAdjective()} ${getNoun()}`);
 const getAction = () => capitalize(`${getVerb()} ${getAdverb()}`);
+
+const getGoal = () => {
+  const adverb = Math.random() > 0.7 ? getAdverb() : "";
+  const verb = getVerb();
+  const adjective = Math.random() > 0.3 ? getAdjective() : "";
+  const noun = getNoun();
+  const a = vowels.includes(adjective[0] || noun[0]) ? "an" : "a";
+
+  return ["To", adverb, verb, a, adjective, noun]
+    .filter((word: string) => word)
+    .join(" ");
+};
 
 const getName1 = () => {
   let result = "";
@@ -143,6 +157,8 @@ export const generateWord = (type: string): string => {
       return getSubject();
     case "promptAction":
       return getAction();
+    case "promptGoal":
+      return getGoal();
 
     case "npcName":
       return getSomeName();
