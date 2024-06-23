@@ -12,6 +12,7 @@ import hairs from "./hairs";
 import settlements from "./settlements";
 import buildings from "./buildings";
 import locations from "./locations";
+import oracle from "./oracle";
 
 export const dictionary = {
   adjectives,
@@ -28,4 +29,5 @@ export const dictionary = {
   settlements,
   buildings,
   locations,
+  oracle,
 };

@@ -59,7 +59,10 @@ export class OracleView {
         } ${type.toLowerCase()} oracle answer`
       )
       .onClick(() => {
-        const value = generateAnswer(type);
+        const value = generateAnswer(
+          type,
+          this.view.settings.oracleLanguage || "en"
+        );
         this.answers.push([type, value]);
         this.addResult(type, value);
       });

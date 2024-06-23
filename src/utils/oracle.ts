@@ -1,5 +1,9 @@
 import { random } from "./dice";
 import { capitalize } from "./helpers";
+import { dictionary } from "./dictionary";
+
+type Language = keyof typeof dictionary.oracle;
+type Word = keyof typeof dictionary.oracle.en;
 
 const FACTOR_CHANGE = 20;
 const YES_NO_CHANCE = 50;
@@ -8,6 +12,20 @@ const EXTREME_CHANCE = 16;
 
 export class Oracle {
   factor = 0;
+  language: Language = "en";
+  kanjiLanguages: Language[] = ["ja", "zh"];
+
+  setLanguage(newValue: Language) {
+    this.language = newValue;
+  }
+
+  getWord(word: Word): string {
+    if (dictionary.oracle[this.language]) {
+      return dictionary.oracle[this.language][word];
+    } else {
+      return word;
+    }
+  }
 
   getAnswer(chance: number, affectedByFactor: boolean = true): string {
     const yn = this.yesNo(chance, affectedByFactor);
@@ -17,7 +35,11 @@ export class Oracle {
     let result = `${ex} ${yn}`;
     if (ab) result += `, ${ab}`;
 
-    return result.trim();
+    if (this.kanjiLanguages.includes(this.language)) {
+      return result.replace(/ /g, "").replace(",", "、").trim();
+    } else {
+      return result.trim();
+    }
   }
 
   yesNo(chance: number, affectedByFactor: boolean = true): string {
@@ -25,16 +47,16 @@ export class Oracle {
       if (this.roll(chance + this.factor)) {
         this.factor -= FACTOR_CHANGE;
         if (this.factor <= 0) this.factor = 0;
-        return "yes";
+        return this.getWord("yes");
       } else {
         this.factor += FACTOR_CHANGE;
-        return "no";
+        return this.getWord("no");
       }
     } else {
       if (this.roll(chance)) {
-        return "yes";
+        return this.getWord("yes");
       } else {
-        return "no";
+        return this.getWord("no");
       }
     }
   }
@@ -42,9 +64,9 @@ export class Oracle {
   andBut(): string {
     if (this.roll(AND_BUT_CHANCE)) {
       if (this.roll(50)) {
-        return "and";
+        return this.getWord("and");
       } else {
-        return "but";
+        return this.getWord("but");
       }
     } else {
       return "";
@@ -53,7 +75,7 @@ export class Oracle {
 
   extreme(): string {
     if (this.roll(EXTREME_CHANCE)) {
-      return "extreme";
+      return this.getWord("extreme");
     } else {
       return "";
     }
@@ -68,7 +90,8 @@ const oracle = new Oracle();
 const getAnswer = (chance: number = YES_NO_CHANCE) =>
   capitalize(oracle.getAnswer(chance, chance === YES_NO_CHANCE));
 
-export const generateAnswer = (variant: string) => {
+export const generateAnswer = (variant: string, language = "en") => {
+  oracle.setLanguage(language as Language);
   if (variant === "Unlikely") return getAnswer(30);
   if (variant === "Fair") return getAnswer(50);
   if (variant === "Likely") return getAnswer(70);

@@ -1,0 +1,58 @@
+export default {
+  en: {
+    yes: "yes",
+    no: "no",
+    and: "and",
+    but: "but",
+    extreme: "extreme",
+  },
+  es: {
+    yes: "sí",
+    no: "no",
+    and: "y",
+    but: "pero",
+    extreme: "extremo",
+  },
+  pt: {
+    yes: "sim",
+    no: "não",
+    and: "e",
+    but: "mas",
+    extreme: "extremo",
+  },
+  fr: {
+    yes: "oui",
+    no: "non",
+    and: "et",
+    but: "mais",
+    extreme: "extrême",
+  },
+  de: {
+    yes: "ja",
+    no: "nein",
+    and: "und",
+    but: "aber",
+    extreme: "extrem",
+  },
+  zh: {
+    yes: "是",
+    no: "不是",
+    and: "和",
+    but: "但是",
+    extreme: "极端",
+  },
+  ja: {
+    yes: "はい",
+    no: "いいえ",
+    and: "と",
+    but: "でも",
+    extreme: "極端",
+  },
+  hi: {
+    yes: "हाँ",
+    no: "नहीं",
+    and: "और",
+    but: "लेकिन",
+    extreme: "चरम",
+  },
+};

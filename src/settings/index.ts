@@ -11,6 +11,7 @@ export interface SoloToolkitSettings {
   deckJokers: boolean;
   deckTarot: boolean; // obsolete
   inlineCounters: boolean;
+  oracleLanguage: string;
 }
 
 export const DEFAULT_SETTINGS: SoloToolkitSettings = {
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   deckJokers: false,
   deckTarot: true,
   inlineCounters: false,
+  oracleLanguage: "en",
 };
 
 export class SoloToolkitSettingTab extends PluginSettingTab {
@@ -116,5 +118,24 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl)
+      .setName("Yes/no oracle language")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("en", "English")
+          .addOption("zh", "Chinese")
+          .addOption("fr", "French")
+          .addOption("de", "German")
+          .addOption("hi", "Hindi")
+          .addOption("ja", "Japanese")
+          .addOption("pt", "Portuguese")
+          .addOption("es", "Spanish");
+        dropdown.setValue(this.plugin.settings.oracleLanguage || "en");
+        dropdown.onChange(async (value: ViewType) => {
+          this.plugin.settings.oracleLanguage = value;
+          await this.plugin.saveSettings();
+        });
+      });
   }
 }
