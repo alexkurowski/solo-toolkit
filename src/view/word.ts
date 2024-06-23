@@ -234,7 +234,9 @@ export class WordView {
             line
               .substring(line.indexOf(":") + 1)
               .trim()
-              .replace(/^"|"$/g, "")
+              .replace(/^['"]|['"]$/g, "")
+              .replace(/\\"/g, '"')
+              .replace(/\\'/g, "'")
               .toLowerCase() || `{${DEFAULT}}`;
           if (templateKey === templateKey.toUpperCase()) {
             templates.push("upcase!" + newTemplate);
@@ -280,19 +282,19 @@ export class WordView {
       const keyParts = key.split("/");
       const otherCustomTable =
         this.customTables.find(
-          // category.filename
+          // category/filename
           (customTable) =>
             compareWords(customTable.tabName, keyParts[0]) &&
             compareWords(customTable.fileName, keyParts[1])
         ) ||
         this.customTables.find(
-          // [same-category].filename
+          // [same-category]/filename
           (customTable) =>
             compareWords(customTable.tabName, tabName) &&
             compareWords(customTable.fileName, keyParts[0])
         ) ||
         this.customTables.find(
-          // [any-category].filename
+          // [any-category]/filename
           (customTable) => compareWords(customTable.fileName, keyParts[0])
         );
       if (otherCustomTable) {
