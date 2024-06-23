@@ -230,18 +230,33 @@ export class WordView {
         // New template
         if (readingProperties) {
           const templateKey = line.substring(0, line.indexOf(":"));
-          const newTemplate =
-            line
-              .substring(line.indexOf(":") + 1)
-              .trim()
-              .replace(/^['"]|['"]$/g, "")
-              .replace(/\\"/g, '"')
-              .replace(/\\'/g, "'")
-              .toLowerCase() || `{${DEFAULT}}`;
-          if (templateKey === templateKey.toUpperCase()) {
-            templates.push("upcase!" + newTemplate);
-          } else if (templateKey === capitalize(templateKey)) {
-            templates.push("capitalize!" + newTemplate);
+
+          let templateValue = line.substring(line.indexOf(":") + 1).trim();
+          // Remove wrapping quotation marks
+          if (templateValue.length > 1) {
+            if (templateValue[0] === templateValue[templateValue.length - 1]) {
+              if (templateValue[0] === "'" || templateValue[0] === '"') {
+                templateValue = templateValue.replace(/^['"]|['"]$/g, "");
+              }
+            }
+          }
+
+          const newTemplate = templateValue
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+          // Ignore blank templates
+          if (!newTemplate) continue;
+
+          if (
+            templateKey.length > 1 &&
+            templateKey === templateKey.toUpperCase()
+          ) {
+            templates.push("upcase!" + newTemplate.toLowerCase());
+          } else if (
+            templateKey.length > 1 &&
+            templateKey === capitalize(templateKey)
+          ) {
+            templates.push("capitalize!" + newTemplate.toLowerCase());
           } else {
             templates.push(newTemplate);
           }

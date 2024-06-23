@@ -6,7 +6,7 @@ A plugin for Obsidian (https://obsidian.md) that adds helpful features for playi
 
 ### Dice roller
 
-Quickly roll a bunch of dice by clicking on a die icon.
+Quickly roll a bunch of dice by clicking on a die icon. Hold shift for alternative color.
 
 ### Deck of cards
 
@@ -28,7 +28,7 @@ In addition to default random word generators, you may add any number of your ow
 
 By default a custom random table roll will return a random line from the note. You can further customize this behavior with templates.
 
-You can add one or multiple templates as properties of the note (simply type `---` at the start of the note). The value of a property can contain regular text as well as keywords inside curly brackets (`{keyword}`), those keywords will be replaced with a random word from a given section of the note. You can also refer to other notes by specifying the note name and/or note section (`{note_name/section_title}`, or `{folder_name/note_name/section_title}`, or simply `{note_name}` if there are no sections).
+You can add one or multiple templates as properties of the note (simply type `---` at the start of the note). The value of a property can contain regular text as well as keywords inside curly brackets (`{keyword}`), those keywords will be replaced with a random word from a given section of the note. You can refer to lines from other other notes by specifying the note name and/or note section (`{note_name/section_title}`, or `{folder_name/note_name/section_title}`, or simply `{note_name}` if there are no sections).
 
 Example of a note with templates:
 
@@ -61,7 +61,7 @@ very much
 a little
 ```
 
-It's also possible to utilize built-in dictionaries by using the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`.
+It's possible to utilize built-in dictionaries by using the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`.
 
 ### Inline elements
 
