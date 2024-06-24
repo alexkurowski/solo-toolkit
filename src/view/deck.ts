@@ -11,7 +11,7 @@ const MAX_REMEMBER_SIZE = 100;
 interface DrawnCard {
   type: "DefaultImage" | "CustomImage" | "CustomText";
   value: string;
-  flip?: boolean;
+  flip?: number;
   suit?: string;
   index?: number;
 }
@@ -111,7 +111,7 @@ export class DeckView {
     const { value, flip } = card;
 
     const parentElClass = ["deck-result", "image-result-content"];
-    if (flip) parentElClass.push("flip");
+    if (flip) parentElClass.push(`flip${flip}`);
     if (immediate) parentElClass.push("nofade");
     const parentEl = this.resultsEl.createDiv(parentElClass.join(" "));
 
@@ -135,7 +135,7 @@ export class DeckView {
       const isShown = zoomEl.hasClass("shown");
       zoomEl.toggleClass("shown", !isShown);
       if (this.view.settings.deckClipboard && isShown) {
-        clickToCopyImage(value)(event);
+        clickToCopyImage(value, flip || 0)(event);
       }
     };
     if (!this.view.isMobile) {
@@ -162,8 +162,7 @@ export class DeckView {
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw")
       .onClick(() => {
-        const [type, value] = this.decks[tabName].draw();
-        const flip = roll(100) <= 50;
+        const [type, value, flip] = this.decks[tabName].draw();
         const card: DrawnCard = {
           type,
           value,
@@ -202,10 +201,11 @@ export class DeckView {
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw")
       .onClick(() => {
-        const [type, value] = this.decks[tabName].draw();
+        const [type, value, flip] = this.decks[tabName].draw();
         const card: DrawnCard = {
           type,
           value,
+          flip,
         };
         this.drawn.push(card);
         this.addResult(card);

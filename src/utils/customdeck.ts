@@ -1,4 +1,5 @@
 import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
+import { randomFrom } from "./dice";
 import { shuffle } from "./helpers";
 
 export class CustomDeck {
@@ -6,6 +7,7 @@ export class CustomDeck {
   type: string;
   cards: string[];
   deckCards: string[];
+  flip: number[] = [0];
 
   private supportedExtensions = ["jpg", "jpeg", "png"];
 
@@ -29,6 +31,31 @@ export class CustomDeck {
                 arrayBufferToBase64(value)
             );
           });
+        } else if (child.extension === "md") {
+          this.vault.cachedRead(child).then((content: string) => {
+            if (!content) return;
+
+            const lines = content
+              .split("\n")
+              .map((line: string) => line.trim())
+              .filter((line: string) => line);
+
+            for (let line of lines) {
+              line = line.toLowerCase();
+              if (line === "flip") {
+                this.flip = [0, 2];
+              }
+              if (line === "flip2") {
+                this.flip = [0, 1];
+              }
+              if (line === "flip3") {
+                this.flip = [0, 1, 3];
+              }
+              if (line === "flip4") {
+                this.flip = [0, 1, 2, 3];
+              }
+            }
+          });
         }
       }
       if (child instanceof TFolder) {
@@ -37,10 +64,10 @@ export class CustomDeck {
     }
   }
 
-  draw(): ["CustomImage" | "CustomText", string] {
+  draw(): ["CustomImage" | "CustomText", string, number] {
     if (!this.cards.length) this.shuffle();
     const value = this.cards.pop() || "";
-    return ["CustomImage", value];
+    return ["CustomImage", value, randomFrom(this.flip)];
   }
 
   shuffle() {
