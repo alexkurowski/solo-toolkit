@@ -1,4 +1,4 @@
-import { Vault, TFile, TFolder } from "obsidian";
+import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
 import { shuffle } from "./helpers";
 
 export class CustomDeck {
@@ -6,6 +6,8 @@ export class CustomDeck {
   type: string;
   cards: string[];
   deckCards: string[];
+
+  private supportedExtensions = ["jpg", "jpeg", "png"];
 
   constructor(vault: Vault, folder: TFolder) {
     this.vault = vault;
@@ -20,8 +22,13 @@ export class CustomDeck {
   parseFolder(folder: TFolder) {
     for (const child of folder.children) {
       if (child instanceof TFile) {
-        if (child.extension === "jpg" || child.extension === "png") {
-          this.deckCards.push(this.vault.getResourcePath(child));
+        if (this.supportedExtensions.includes(child.extension)) {
+          this.vault.readBinary(child).then((value) => {
+            this.deckCards.push(
+              `data:image/${child.extension};base64,` +
+                arrayBufferToBase64(value)
+            );
+          });
         }
       }
       if (child instanceof TFolder) {

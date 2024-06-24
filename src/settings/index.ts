@@ -10,6 +10,7 @@ export interface SoloToolkitSettings {
   disableDefaultWords: boolean;
   deckJokers: boolean;
   deckTarot: boolean; // obsolete
+  deckClipboard: boolean;
   inlineCounters: boolean;
   oracleLanguage: string;
 }
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   disableDefaultWords: false,
   deckJokers: false,
   deckTarot: true,
+  deckClipboard: false,
   inlineCounters: false,
   oracleLanguage: "en",
 };
@@ -101,6 +103,20 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.deckJokers)
           .onChange(async (value) => {
             this.plugin.settings.deckJokers = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Enable "click to copy" on cards')
+      .setDesc(
+        'Experimental: this will create image copies in your "new attachments" folder at the moment'
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.deckClipboard)
+          .onChange(async (value) => {
+            this.plugin.settings.deckClipboard = value;
             await this.plugin.saveSettings();
           })
       );

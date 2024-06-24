@@ -1,6 +1,6 @@
 import { ButtonComponent, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { DefaultDeck } from "../utils";
+import { clickToCopyImage, DefaultDeck, roll } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 import { CustomDeck } from "src/utils/customdeck";
 import deckImages, { jokerImages } from "../icons/deck";
@@ -11,6 +11,7 @@ const MAX_REMEMBER_SIZE = 100;
 interface DrawnCard {
   type: "DefaultImage" | "CustomImage" | "CustomText";
   value: string;
+  flip?: boolean;
   suit?: string;
   index?: number;
 }
@@ -107,7 +108,10 @@ export class DeckView {
   }
 
   addResult(card: DrawnCard, immediate = false) {
-    const parentElClass = ["deck-result"];
+    const { value, flip } = card;
+
+    const parentElClass = ["deck-result", "image-result-content"];
+    if (flip) parentElClass.push("flip");
     if (immediate) parentElClass.push("nofade");
     const parentEl = this.resultsEl.createDiv(parentElClass.join(" "));
 
@@ -115,55 +119,33 @@ export class DeckView {
       this.resultsEl.insertAfter(parentEl, null);
     }
 
-    if (card.type === "DefaultImage") {
-      const { value } = card;
+    if (!value) return;
 
-      parentEl.addClass("default-image-result-content");
-      parentEl.setCssProps({
-        "background-image": `url(${value})`,
-      });
+    parentEl.createEl("img").setAttr("src", value);
 
-      const zoomEl = parentEl.createDiv("default-image-result-zoom");
-      zoomEl.createEl("img").setAttr("src", value);
-      zoomEl.onmousedown = (event) => {
-        event.stopPropagation();
-        zoomEl.removeClass("shown");
-      };
+    const zoomEl = parentEl.createDiv("image-result-zoom");
+    zoomEl.createEl("img").setAttr("src", value);
+    zoomEl.onmousedown = (event) => {
+      event.stopPropagation();
+      zoomEl.removeClass("shown");
+    };
 
-      parentEl.onmousedown = () => {
-        zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
-      };
-      if (!this.view.isMobile) {
-        parentEl.onmouseenter = () => {
-          zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
-        };
+    parentEl.onmousedown = (event) => {
+      event.preventDefault();
+      const isShown = zoomEl.hasClass("shown");
+      zoomEl.toggleClass("shown", !isShown);
+      if (this.view.settings.deckClipboard && isShown) {
+        clickToCopyImage(value)(event);
       }
-      parentEl.onmouseleave = () => {
-        zoomEl.removeClass("shown");
-      };
-    } else if (card.type === "CustomImage") {
-      const { value } = card;
-
-      parentEl.addClass("custom-image-result-content");
-      parentEl.setCssProps({
-        "background-image": `url(${value})`,
-      });
-
-      const zoomEl = parentEl.createDiv("custom-image-result-zoom");
-      zoomEl.createEl("img").setAttr("src", value);
-
-      parentEl.onmousedown = () => {
+    };
+    if (!this.view.isMobile) {
+      parentEl.onmouseenter = () => {
         zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
-      };
-      if (!this.view.isMobile) {
-        parentEl.onmouseenter = () => {
-          zoomEl.toggleClass("shown", !zoomEl.hasClass("shown"));
-        };
-      }
-      parentEl.onmouseleave = () => {
-        zoomEl.removeClass("shown");
       };
     }
+    parentEl.onmouseleave = () => {
+      zoomEl.removeClass("shown");
+    };
 
     if (this.view.isMobile) {
       this.resultsEl.scrollTop = this.resultsEl.scrollHeight;
@@ -181,9 +163,11 @@ export class DeckView {
       .setButtonText("Draw")
       .onClick(() => {
         const [type, value] = this.decks[tabName].draw();
+        const flip = roll(100) <= 50;
         const card: DrawnCard = {
           type,
           value,
+          flip,
         };
         this.drawn.push(card);
         this.addResult(card);
