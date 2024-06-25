@@ -64,21 +64,21 @@ export class CustomDeck {
     if (!this.cards.length) this.shuffle();
     const file = this.cards.pop();
 
-    if (!file) {
+    try {
+      if (!file) throw "No cards";
+      const bytes = await this.vault.readBinary(file);
+      const contentType = "image/" + file.extension.replace("jpg", "jpeg");
+      const value = `data:${contentType};base64,` + arrayBufferToBase64(bytes);
+      return {
+        image: value,
+        flip: randomFrom(this.flip),
+      };
+    } catch (error) {
       return {
         image: "",
         flip: randomFrom(this.flip),
       };
     }
-
-    const bytes = await this.vault.readBinary(file);
-    const value =
-      `data:image/${file.extension.replace("jpg", "jpeg")};base64,` +
-      arrayBufferToBase64(bytes);
-    return {
-      image: value,
-      flip: randomFrom(this.flip),
-    };
   }
 
   shuffle() {
