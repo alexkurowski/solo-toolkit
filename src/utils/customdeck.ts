@@ -1,12 +1,13 @@
 import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
+import { Card } from "./deck";
 import { randomFrom } from "./dice";
 import { shuffle } from "./helpers";
 
 export class CustomDeck {
   vault: Vault;
   type: string;
-  cards: string[];
-  deckCards: string[];
+  cards: TFile[];
+  deckCards: TFile[];
   flip: number[] = [0];
 
   private supportedExtensions = ["jpg", "jpeg", "png"];
@@ -25,12 +26,7 @@ export class CustomDeck {
     for (const child of folder.children) {
       if (child instanceof TFile) {
         if (this.supportedExtensions.includes(child.extension)) {
-          this.vault.readBinary(child).then((value) => {
-            this.deckCards.push(
-              `data:image/${child.extension};base64,` +
-                arrayBufferToBase64(value)
-            );
-          });
+          this.deckCards.push(child);
         } else if (child.extension === "md") {
           this.vault.cachedRead(child).then((content: string) => {
             if (!content) return;
@@ -64,10 +60,25 @@ export class CustomDeck {
     }
   }
 
-  draw(): ["CustomImage" | "CustomText", string, number] {
+  async draw(): Promise<Card> {
     if (!this.cards.length) this.shuffle();
-    const value = this.cards.pop() || "";
-    return ["CustomImage", value, randomFrom(this.flip)];
+    const file = this.cards.pop();
+
+    if (!file) {
+      return {
+        image: "",
+        flip: randomFrom(this.flip),
+      };
+    }
+
+    const bytes = await this.vault.readBinary(file);
+    const value =
+      `data:image/${file.extension.replace("jpg", "jpeg")};base64,` +
+      arrayBufferToBase64(bytes);
+    return {
+      image: value,
+      flip: randomFrom(this.flip),
+    };
   }
 
   shuffle() {

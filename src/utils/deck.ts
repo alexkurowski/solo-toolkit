@@ -1,6 +1,11 @@
 import { randomFrom } from "./dice";
 import { shuffle } from "./helpers";
 
+export interface Card {
+  image: string;
+  flip?: number;
+}
+
 export class DefaultDeck {
   type: string;
   cards: string[];
@@ -15,10 +20,13 @@ export class DefaultDeck {
     this.shuffle();
   }
 
-  draw(): ["DefaultImage", string, number] {
+  async draw(): Promise<Card> {
     if (!this.cards.length) this.shuffle();
     const value = this.cards.pop() || "";
-    return ["DefaultImage", "data:image/png;base64," + value, randomFrom(this.flip)];
+    return {
+      image: "data:image/jpeg;base64," + value,
+      flip: randomFrom(this.flip),
+    };
   }
 
   shuffle() {
