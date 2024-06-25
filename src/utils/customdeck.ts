@@ -24,9 +24,10 @@ export class CustomDeck {
   parseFolder(folder: TFolder) {
     for (const child of folder.children) {
       if (child instanceof TFile) {
-        if (this.supportedExtensions.includes(child.extension)) {
+        const lowerCaseFileExtension = child.extension.toLowerCase();
+        if (this.supportedExtensions.includes(lowerCaseFileExtension)) {
           this.vault.readBinary(child).then((value) => {
-            const extension = child.extension === "svg" ? "svg+xml" : child.extension.toLowerCase();
+            const extension = lowerCaseFileExtension === "svg" ? "svg+xml" : lowerCaseFileExtension;
             this.deckCards.push(
               `data:image/${extension};base64,` +
                 arrayBufferToBase64(value)
