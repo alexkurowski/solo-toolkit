@@ -9,7 +9,7 @@ export class CustomDeck {
   deckCards: string[];
   flip: number[] = [0];
 
-  private supportedExtensions = ["jpg", "jpeg", "png"];
+  private supportedExtensions = ["jpg", "jpeg", "png", "webp", "bmp", "svg"];
 
   constructor(vault: Vault, folder: TFolder) {
     this.vault = vault;
@@ -26,8 +26,9 @@ export class CustomDeck {
       if (child instanceof TFile) {
         if (this.supportedExtensions.includes(child.extension)) {
           this.vault.readBinary(child).then((value) => {
+            const extension = child.extension === "svg" ? "svg+xml" : child.extension.toLowerCase();
             this.deckCards.push(
-              `data:image/${child.extension};base64,` +
+              `data:image/${extension};base64,` +
                 arrayBufferToBase64(value)
             );
           });
