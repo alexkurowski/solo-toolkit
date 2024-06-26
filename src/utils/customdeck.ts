@@ -8,6 +8,7 @@ export class CustomDeck {
   type: string;
   cards: TFile[];
   deckCards: TFile[];
+  cardsLength: number = 0;
   flip: number[] = [0];
 
   private supportedExtensions = [
@@ -28,6 +29,11 @@ export class CustomDeck {
     this.deckCards = [];
     this.parseFolder(folder);
     this.shuffle();
+  }
+
+  update(folder: TFolder) {
+    this.deckCards = [];
+    this.parseFolder(folder);
   }
 
   parseFolder(folder: TFolder) {
@@ -95,9 +101,10 @@ export class CustomDeck {
   shuffle() {
     this.cards = [...this.deckCards];
     shuffle(this.cards);
+    this.cardsLength = this.cards.length;
   }
 
   size(): [number, number] {
-    return [this.cards.length, this.deckCards.length];
+    return [this.cards.length, this.cardsLength];
   }
 }

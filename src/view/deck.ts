@@ -24,6 +24,7 @@ export class DeckView {
   constructor(view: View) {
     this.view = view;
     this.drawn = [];
+    this.decks = {};
   }
 
   create() {
@@ -50,8 +51,6 @@ export class DeckView {
         this.setTab.bind(this)
       );
     }
-
-    this.decks = {};
 
     // Populate layout
     this.createDefaultDeck(
@@ -159,7 +158,12 @@ export class DeckView {
     this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
     this.tabSelect.addOption(tabName, label);
 
-    this.decks[tabName] = new DefaultDeck(tabName, data);
+    const deck = this.decks[tabName];
+    if (deck && deck instanceof DefaultDeck) {
+      deck.update(data);
+    } else {
+      this.decks[tabName] = new DefaultDeck(tabName, data);
+    }
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw")
@@ -193,7 +197,12 @@ export class DeckView {
     this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
     this.tabSelect.addOption(tabName, tabName);
 
-    this.decks[tabName] = new CustomDeck(this.view.app.vault, folder);
+    const deck = this.decks[tabName];
+    if (deck instanceof CustomDeck) {
+      deck.update(folder);
+    } else {
+      this.decks[tabName] = new CustomDeck(this.view.app.vault, folder);
+    }
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw")

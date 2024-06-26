@@ -22,6 +22,10 @@ export class DefaultDeck {
     this.shuffle();
   }
 
+  update(data: Record<string, string>) {
+    this.deckCards = Object.values(data);
+  }
+
   async draw(): Promise<Card> {
     if (!this.cards.length) this.shuffle();
     const value = this.cards.pop() || "";
