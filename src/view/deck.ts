@@ -1,6 +1,6 @@
 import { ButtonComponent, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { Card, DefaultDeck, clickToCopyImage } from "../utils";
+import { Card, DefaultDeck, clickToCopyImage, clickToCopy } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 import { CustomDeck } from "src/utils/customdeck";
 import deckImages, { jokerImages } from "../icons/deck";
@@ -102,7 +102,7 @@ export class DeckView {
   }
 
   addResult(card: DrawnCard, immediate = false) {
-    const { image, flip } = card;
+    const { image, flip, file } = card;
 
     const parentElClass = ["deck-result", "image-result-content"];
     if (flip) parentElClass.push(`flip${flip}`);
@@ -128,8 +128,16 @@ export class DeckView {
       event.preventDefault();
       const isShown = zoomEl.hasClass("shown");
       zoomEl.toggleClass("shown", !isShown);
-      if (this.view.settings.deckClipboard && isShown) {
-        clickToCopyImage(image, flip || 0)(event);
+      switch (this.view.settings.deckClipboardMode) {
+        case "md":
+          if (file) clickToCopy(`![[${file.path}]]`)(event);
+          return;
+        case "path":
+          if (file) clickToCopy(file.path)(event);
+          return;
+        case "png":
+          if (file) clickToCopyImage(image, flip || 0)(event);
+          return;
       }
     };
     if (!this.view.isMobile) {

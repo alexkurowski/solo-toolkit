@@ -1,9 +1,11 @@
+import { TFile } from "obsidian";
 import { randomFrom } from "./dice";
 import { shuffle } from "./helpers";
 
 export interface Card {
   image: string;
   flip?: number;
+  file?: TFile;
 }
 
 export class DefaultDeck {

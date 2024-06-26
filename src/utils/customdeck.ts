@@ -68,10 +68,11 @@ export class CustomDeck {
       if (!file) throw "No cards";
       const bytes = await this.vault.readBinary(file);
       const contentType = "image/" + file.extension.replace("jpg", "jpeg");
-      const value = `data:${contentType};base64,` + arrayBufferToBase64(bytes);
+      const image = `data:${contentType};base64,` + arrayBufferToBase64(bytes);
       return {
-        image: value,
+        image,
         flip: randomFrom(this.flip),
+        file,
       };
     } catch (error) {
       return {
