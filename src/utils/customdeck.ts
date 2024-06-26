@@ -10,7 +10,15 @@ export class CustomDeck {
   deckCards: TFile[];
   flip: number[] = [0];
 
-  private supportedExtensions = ["jpg", "jpeg", "png"];
+  private supportedExtensions = [
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "webp",
+    "bmp",
+    "svg",
+  ];
 
   constructor(vault: Vault, folder: TFolder) {
     this.vault = vault;
@@ -67,7 +75,9 @@ export class CustomDeck {
     try {
       if (!file) throw "No cards";
       const bytes = await this.vault.readBinary(file);
-      const contentType = "image/" + file.extension.replace("jpg", "jpeg");
+      const contentType =
+        "image/" +
+        file.extension.replace("jpg", "jpeg").replace("svg", "svg+xml");
       const image = `data:${contentType};base64,` + arrayBufferToBase64(bytes);
       return {
         image,
