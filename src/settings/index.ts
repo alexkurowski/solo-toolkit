@@ -2,6 +2,7 @@ import { App, Setting, PluginSettingTab } from "obsidian";
 import SoloToolkitPlugin from "../main";
 
 export type ViewType = "dice" | "deck" | "oracle" | "word";
+type DeckClipboardMode = "" | "md" | "path" | "png";
 
 export interface SoloToolkitSettings {
   defaultView: ViewType;
@@ -10,7 +11,8 @@ export interface SoloToolkitSettings {
   disableDefaultWords: boolean;
   deckJokers: boolean;
   deckTarot: boolean; // obsolete
-  deckClipboard: boolean;
+  deckClipboard: boolean; // obsolete
+  deckClipboardMode: DeckClipboardMode;
   inlineCounters: boolean;
   oracleLanguage: string;
 }
@@ -23,6 +25,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   deckJokers: false,
   deckTarot: true,
   deckClipboard: false,
+  deckClipboardMode: "",
   inlineCounters: false,
   oracleLanguage: "en",
 };
@@ -108,18 +111,20 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Enable "click to copy" on cards')
-      .setDesc(
-        'Experimental: this will create image copies in your "new attachments" folder at the moment'
-      )
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.deckClipboard)
-          .onChange(async (value) => {
-            this.plugin.settings.deckClipboard = value;
-            await this.plugin.saveSettings();
-          })
-      );
+      .setName("Card click behavior")
+      .setDesc("Determines what happens when you click on a drawn card")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("", "Off")
+          .addOption("md", "Markdown link (paste into notes)")
+          .addOption("path", "File path (paste into Excalidraw plugin)")
+          .addOption("png", "Image (paste outside Obsidian)");
+        dropdown.setValue(this.plugin.settings.deckClipboardMode || "");
+        dropdown.onChange(async (value: DeckClipboardMode) => {
+          this.plugin.settings.deckClipboardMode = value;
+          await this.plugin.saveSettings();
+        });
+      });
 
     new Setting(containerEl)
       .setName("Enable inline elements")

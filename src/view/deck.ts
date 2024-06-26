@@ -1,6 +1,6 @@
 import { ButtonComponent, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { clickToCopyImage, DefaultDeck, roll } from "../utils";
+import { Card, DefaultDeck, clickToCopyImage, clickToCopy } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 import { CustomDeck } from "src/utils/customdeck";
 import deckImages, { jokerImages } from "../icons/deck";
@@ -8,13 +8,7 @@ import tarotImages from "../icons/tarot";
 
 const MAX_REMEMBER_SIZE = 100;
 
-interface DrawnCard {
-  type: "DefaultImage" | "CustomImage" | "CustomText";
-  value: string;
-  flip?: number;
-  suit?: string;
-  index?: number;
-}
+type DrawnCard = Card;
 
 export class DeckView {
   view: View;
@@ -108,7 +102,7 @@ export class DeckView {
   }
 
   addResult(card: DrawnCard, immediate = false) {
-    const { value, flip } = card;
+    const { image, flip, file } = card;
 
     const parentElClass = ["deck-result", "image-result-content"];
     if (flip) parentElClass.push(`flip${flip}`);
@@ -119,12 +113,12 @@ export class DeckView {
       this.resultsEl.insertAfter(parentEl, null);
     }
 
-    if (!value) return;
+    if (!image) return;
 
-    parentEl.createEl("img").setAttr("src", value);
+    parentEl.createEl("img").setAttr("src", image);
 
     const zoomEl = parentEl.createDiv("image-result-zoom");
-    zoomEl.createEl("img").setAttr("src", value);
+    zoomEl.createEl("img").setAttr("src", image);
     zoomEl.onmousedown = (event) => {
       event.stopPropagation();
       zoomEl.removeClass("shown");
@@ -134,8 +128,16 @@ export class DeckView {
       event.preventDefault();
       const isShown = zoomEl.hasClass("shown");
       zoomEl.toggleClass("shown", !isShown);
-      if (this.view.settings.deckClipboard && isShown) {
-        clickToCopyImage(value, flip || 0)(event);
+      switch (this.view.settings.deckClipboardMode) {
+        case "md":
+          if (file) clickToCopy(`![[${file.path}]]`)(event);
+          return;
+        case "path":
+          if (file) clickToCopy(file.path)(event);
+          return;
+        case "png":
+          if (file) clickToCopyImage(image, flip || 0)(event);
+          return;
       }
     };
     if (!this.view.isMobile) {
@@ -161,13 +163,8 @@ export class DeckView {
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw")
-      .onClick(() => {
-        const [type, value, flip] = this.decks[tabName].draw();
-        const card: DrawnCard = {
-          type,
-          value,
-          flip,
-        };
+      .onClick(async () => {
+        const card = await this.decks[tabName].draw();
         this.drawn.push(card);
         this.addResult(card);
         this.updateCount();
@@ -200,13 +197,8 @@ export class DeckView {
 
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText("Draw")
-      .onClick(() => {
-        const [type, value, flip] = this.decks[tabName].draw();
-        const card: DrawnCard = {
-          type,
-          value,
-          flip,
-        };
+      .onClick(async () => {
+        const card = await this.decks[tabName].draw();
         this.drawn.push(card);
         this.addResult(card);
         this.updateCount();

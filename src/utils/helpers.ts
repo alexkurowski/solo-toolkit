@@ -60,6 +60,15 @@ export const clickToCopyImage =
         canvas.height = target.naturalHeight;
       }
 
+      // Make image not larger that 300px to save on space
+      let scale = 1;
+      const maxSize = 300;
+      if (canvas.width > maxSize || canvas.height > maxSize) {
+        scale = Math.min(maxSize / canvas.width, maxSize / canvas.height);
+        canvas.width = Math.floor(canvas.width * scale);
+        canvas.height = Math.floor(canvas.height * scale);
+      }
+
       if (ctx) {
         if (flip) {
           switch (flip) {
@@ -75,6 +84,7 @@ export const clickToCopyImage =
           }
           ctx.rotate((flip * 90 * Math.PI) / 180);
         }
+        ctx.scale(scale, scale);
         ctx.drawImage(target, 0, 0);
         canvas.toBlob((blob) => {
           if (blob) {
@@ -90,35 +100,8 @@ export const clickToCopyImage =
         }, "image/png");
       }
     };
+
     img.src = value;
-
-    // try {
-    //   const contentType = value.substring(
-    //     value.indexOf(":") + 1,
-    //     value.indexOf(";")
-    //   );
-    //   const chars = atob(value.replace(`data:${contentType};base64,`, ""));
-    //   const bytes = [];
-    //   for (let i = 0; i < chars.length; i++) {
-    //     bytes.push(chars.charCodeAt(i));
-    //   }
-
-    //   const blob = new Blob([new Uint8Array(bytes)], { type: "image/png" });
-    //   navigator.clipboard
-    //     .write([
-    //       new ClipboardItem({
-    //         [blob.type]: blob,
-    //       }),
-    //     ])
-    //     .then(() => {
-    //       new Notice("Copied to clipboard");
-    //     })
-    //     .catch((error) => {
-    //       new Notice(`Failed to copy: ${error}`);
-    //     });
-    // } catch (error) {
-    //   new Notice(`Failed to copy: ${error}`);
-    // }
   };
 
 export function first<T>(arr: T[]): T {
