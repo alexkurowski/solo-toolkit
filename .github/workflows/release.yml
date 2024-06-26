@@ -22,7 +22,7 @@ jobs:
           npm install
           npm run build
           npm run deploy
-          zip ./dist/solo-rpg-toolkit.zip dist/*
+          zip ./dist/solo-rpg-toolkit.zip dist/solo-rpg-toolkit/*
 
       - name: Create release
         env:
