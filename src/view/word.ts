@@ -7,6 +7,8 @@ import {
   getDefaultDictionary,
   capitalize,
   compareWords,
+  trim,
+  identity,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 
@@ -207,10 +209,7 @@ export class WordView {
     this.view.app.vault.cachedRead(file).then((content: string) => {
       if (!content) return;
 
-      const lines = content
-        .split("\n")
-        .map((line: string) => line.trim())
-        .filter((line: string) => line);
+      const lines = content.split("\n").map(trim).filter(identity);
 
       let currentKey = "";
       let readingProperties = false;
@@ -294,7 +293,7 @@ export class WordView {
       }
 
       // Sections in other custom files
-      const keyParts = key.split("/");
+      const keyParts = key.split("/").map(trim);
       const otherCustomTable =
         this.customTables.find(
           // category/filename
@@ -335,23 +334,41 @@ export class WordView {
       result = getDefaultDictionary(key);
       if (result?.length) return result;
 
-      return [`{${key}}`];
+      return [];
+    };
+
+    const getValuesForKeys = (key: string): string[] => {
+      const keys = key.split("|").map(trim);
+      const result = keys.map(getValuesForKey).flat();
+      if (result?.length) {
+        return result;
+      } else {
+        return [`{${key}}`];
+      }
+    };
+
+    const replace = (lastSubs: Record<string, string>) => (wkey: string) => {
+      const key = wkey.replace(/{|}/g, "").trim().toLowerCase();
+      if (!key) return "";
+      return (lastSubs[key] = randomFrom(
+        getValuesForKeys(key),
+        lastSubs[key] || null
+      ));
     };
 
     const generateCustomWord = (): string => {
       if (templates.length) {
         const template = randomFrom(templates);
         const lastSubs: Record<string, string> = {};
-        const result = template
-          .replace(/{+ ?[^}]+ ?}+/g, (wkey: string) => {
-            const key = wkey.replace(/{|}/g, "").trim().toLowerCase();
-            if (!key) return "";
-            return (lastSubs[key] = randomFrom(
-              getValuesForKey(key),
-              lastSubs[key] || null
-            ));
-          })
-          .trim();
+
+        let result = template;
+        for (let i = 0; i < 5; i++) {
+          const newResult = result.replace(/{+ ?[^}]+ ?}+/g, replace(lastSubs));
+          if (newResult === result) break;
+          result = newResult;
+        }
+        result = result.trim();
+
         if (template.startsWith("capitalize!")) {
           return capitalize(result.replace("capitalize!", ""));
         } else if (template.startsWith("upcase!")) {

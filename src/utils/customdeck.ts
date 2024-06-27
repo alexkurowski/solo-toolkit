@@ -1,7 +1,7 @@
 import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
 import { Card } from "./deck";
 import { randomFrom } from "./dice";
-import { shuffle } from "./helpers";
+import { identity, shuffle, trim } from "./helpers";
 
 export class CustomDeck {
   vault: Vault;
@@ -45,10 +45,7 @@ export class CustomDeck {
           this.vault.cachedRead(child).then((content: string) => {
             if (!content) return;
 
-            const lines = content
-              .split("\n")
-              .map((line: string) => line.trim())
-              .filter((line: string) => line);
+            const lines = content.split("\n").map(trim).filter(identity);
 
             for (let line of lines) {
               line = line.toLowerCase();

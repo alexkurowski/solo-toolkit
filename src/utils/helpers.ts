@@ -25,6 +25,10 @@ export const capitalize = (value: string): string => {
   }
 };
 
+export const trim = (value: string): string => value.trim();
+
+export const identity = (value: string): string => value;
+
 export const shuffle = <T>(arr: T[]) => {
   let index = arr.length;
   let random = 0;

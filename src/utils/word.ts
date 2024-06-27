@@ -1,6 +1,6 @@
 import { dictionary } from "./dictionary";
 import { randomFrom } from "./dice";
-import { capitalize } from "./helpers";
+import { capitalize, identity } from "./helpers";
 
 const vowels = ["a", "e", "i", "o", "u"];
 
@@ -20,7 +20,7 @@ const getGoal = () => {
   const a = vowels.includes(adjective[0] || noun[0]) ? "an" : "a";
 
   return ["To", adverb, verb, a, adjective, noun]
-    .filter((word: string) => word)
+    .filter(identity)
     .join(" ");
 };
 

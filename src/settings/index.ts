@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   deckJokers: false,
   deckTarot: true,
   deckClipboard: false,
-  deckClipboardMode: "",
+  deckClipboardMode: "md",
   inlineCounters: false,
   oracleLanguage: "en",
 };
