@@ -137,7 +137,7 @@ export class OracleView {
       this.createMythicBtn(tabName, "very unlikely");
       this.createMythicBtn(tabName, "nearly impossible");
       this.createMythicBtn(tabName, "impossible");
-      this.createMythicChaosBtn(tabName);
+      this.createMythicFactorBtns(tabName);
     }
     if (tabName === "fu") {
       this.createDefaultBtn(tabName, "low");
@@ -182,7 +182,7 @@ export class OracleView {
       });
   }
 
-  createMythicChaosBtn(tabName: string) {
+  createMythicFactorBtns(tabName: string) {
     const containerEl = this.tabContentEls[tabName].createDiv("mythic-factor");
     const oracle = this.oracles[tabName];
     if (!oracle || !(oracle instanceof MythicOracle)) return;

@@ -115,7 +115,7 @@ export class MythicOracle extends BaseOracle implements Oracle {
 
   getAnswer(variant: string): string {
     const r = this.roll(); // roll
-    const s = parseInt(r.toString()[0]); // single
+    const s = r % 10; // single
     const odds = chart[variant][this.factor - 1];
     const yn = r <= odds[1];
     const ex = r <= odds[0] || r >= odds[2];
