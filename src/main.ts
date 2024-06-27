@@ -18,7 +18,8 @@ export default class SoloToolkitPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE,
-      (leaf) => new SoloToolkitView(leaf, this.settings),
+      (leaf) =>
+        new SoloToolkitView(leaf, this.settings, this.saveSetting.bind(this))
     );
 
     this.registerEditorExtension(soloToolkitExtension(this));
@@ -60,6 +61,14 @@ export default class SoloToolkitPlugin extends Plugin {
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSetting(setting: Partial<SoloToolkitSettings>) {
+    this.settings = {
+      ...this.settings,
+      ...setting,
+    };
+    return this.saveSettings();
   }
 
   async saveSettings() {

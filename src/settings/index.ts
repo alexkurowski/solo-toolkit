@@ -15,6 +15,11 @@ export interface SoloToolkitSettings {
   deckClipboardMode: DeckClipboardMode;
   inlineCounters: boolean;
   oracleLanguage: string;
+
+  wordTab: string;
+  oracleTab: string;
+  deckTab: string;
+  mythicFactor: number;
 }
 
 export const DEFAULT_SETTINGS: SoloToolkitSettings = {
@@ -28,6 +33,11 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   deckClipboardMode: "md",
   inlineCounters: false,
   oracleLanguage: "en",
+
+  wordTab: "",
+  oracleTab: "",
+  deckTab: "",
+  mythicFactor: 5,
 };
 
 export class SoloToolkitSettingTab extends PluginSettingTab {

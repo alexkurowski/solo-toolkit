@@ -40,7 +40,7 @@ export class OracleView {
     this.view = view;
     this.oracles = {
       default: new StandardOracle(),
-      mythic: new MythicOracle(),
+      mythic: new MythicOracle(this.view.settings.mythicFactor || 5),
       fu: new FuOracle(),
     };
     this.answers = [];
@@ -76,25 +76,13 @@ export class OracleView {
     this.createOracle("mythic");
     this.createOracle("fu");
 
-    const defaultTab = Object.keys(this.tabContentEls)[0];
+    const availableTabs = Object.keys(this.tabContentEls);
+    const defaultTab = availableTabs.includes(this.view.settings.oracleTab)
+      ? this.view.settings.oracleTab
+      : availableTabs[0];
     this.tabSelect.setValue(this.tab || defaultTab);
 
     this.repopulateResults();
-
-    // if (this.view.isMobile) {
-    //   this.resultsEl = this.view.tabViewEl.createDiv("oracle-results");
-    // }
-
-    // this.btnsEl = this.view.tabViewEl.createDiv("oracle-buttons");
-    // this.createAnswerBtn("Unlikely");
-    // this.createAnswerBtn("Fair");
-    // this.createAnswerBtn("Likely");
-
-    // if (!this.view.isMobile) {
-    //   this.resultsEl = this.view.tabViewEl.createDiv("oracle-results");
-    // }
-
-    // this.repopulateResults();
   }
 
   reset() {
@@ -104,6 +92,7 @@ export class OracleView {
 
   setTab(newTab: string) {
     this.tab = newTab;
+    this.view.setSettings({ oracleTab: newTab });
     for (const tabName in this.tabContentEls) {
       if (tabName === newTab) {
         this.tabContentEls[tabName].show();
@@ -204,6 +193,7 @@ export class OracleView {
       .onClick(() => {
         oracle.changeFactor(-1);
         counterEl.setText(oracle.factor.toString());
+        this.view.setSettings({ mythicFactor: oracle.factor });
       });
     const counterEl = containerEl.createDiv("counter");
     counterEl.setText(oracle.factor.toString());
@@ -213,6 +203,7 @@ export class OracleView {
       .onClick(() => {
         oracle.changeFactor(+1);
         counterEl.setText(oracle.factor.toString());
+        this.view.setSettings({ mythicFactor: oracle.factor });
       });
   }
 

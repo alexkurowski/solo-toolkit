@@ -122,7 +122,10 @@ export class WordView {
     }
 
     const tabElsCount = Object.keys(this.tabContentEls).length;
-    const defaultTab = Object.keys(this.tabContentEls)[0];
+    const availableTabs = Object.keys(this.tabContentEls);
+    const defaultTab = availableTabs.includes(this.view.settings.wordTab)
+      ? this.view.settings.wordTab
+      : availableTabs[0];
     this.tabSelect.setValue(this.tab || defaultTab);
 
     if (tabElsCount === 0) {
@@ -148,6 +151,7 @@ export class WordView {
 
   setTab(newTab: string) {
     this.tab = newTab;
+    this.view.setSettings({ wordTab: newTab });
     for (const tabName in this.tabContentEls) {
       if (tabName === newTab) {
         this.tabContentEls[tabName].show();

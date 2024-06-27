@@ -108,6 +108,11 @@ const doubles = [11, 22, 33, 44, 55, 66, 77, 88, 99];
 export class MythicOracle extends BaseOracle implements Oracle {
   factor: number = 5;
 
+  constructor(factor: number) {
+    super();
+    this.factor = factor;
+  }
+
   getAnswer(variant: string): string {
     const r = this.roll(); // roll
     const s = parseInt(r.toString()[0]); // single

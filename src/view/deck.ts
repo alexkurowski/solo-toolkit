@@ -70,7 +70,10 @@ export class DeckView {
       }
     }
 
-    const defaultTab = Object.keys(this.tabContentEls)[0];
+    const availableTabs = Object.keys(this.tabContentEls);
+    const defaultTab = availableTabs.includes(this.view.settings.deckTab)
+      ? this.view.settings.deckTab
+      : availableTabs[0];
     this.tabSelect.setValue(this.tab || defaultTab);
 
     this.repopulateResults();
@@ -92,6 +95,7 @@ export class DeckView {
 
   setTab(newTab: string) {
     this.tab = newTab;
+    this.view.setSettings({ deckTab: newTab });
     for (const tabName in this.tabContentEls) {
       if (tabName === newTab) {
         this.tabContentEls[tabName].show();

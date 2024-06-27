@@ -26,6 +26,7 @@ const tabLabels = {
 
 export class SoloToolkitView extends ItemView {
   public settings: SoloToolkitSettings;
+  public setSettings: (settings: Partial<SoloToolkitSettings>) => void;
   public isMobile: boolean = false;
 
   public tab: ViewType;
@@ -37,9 +38,14 @@ export class SoloToolkitView extends ItemView {
   public word: WordView;
   public oracle: OracleView;
 
-  constructor(leaf: WorkspaceLeaf, settings: SoloToolkitSettings) {
+  constructor(
+    leaf: WorkspaceLeaf,
+    settings: SoloToolkitSettings,
+    setSettings: (settings: Partial<SoloToolkitSettings>) => void
+  ) {
     super(leaf);
     this.settings = settings;
+    this.setSettings = setSettings;
     this.tab = settings.defaultView || "deck";
     this.dice = new DiceView(this);
     this.deck = new DeckView(this);
