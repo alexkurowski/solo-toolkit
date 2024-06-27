@@ -71,6 +71,10 @@ export class DiceView {
               clickToCopy(`[d${max}: ${value}]`)(event);
             }
           };
+          el.oncontextmenu = (event) => {
+            event.preventDefault();
+            clickToCopy(`[${size}d${max}: ${sum}]`)(event);
+          };
           setTooltip(container, `Total: ${sum}`);
         }
       }
@@ -99,6 +103,10 @@ export class DiceView {
       const b = ctrlKey || metaKey ? 0b010 : 0;
       const c = altKey ? 0b100 : 0;
       this.addResult(resultsEl, d, a + b + c);
+    };
+    btnEl.extraSettingsEl.oncontextmenu = (event) => {
+      event.preventDefault();
+      this.addResult(resultsEl, d, 1);
     };
   }
 
