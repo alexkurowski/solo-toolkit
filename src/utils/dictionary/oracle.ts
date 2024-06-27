@@ -5,6 +5,7 @@ export default {
     and: "and",
     but: "but",
     extreme: "extreme",
+    event: "random event",
   },
   es: {
     yes: "sí",
@@ -12,6 +13,7 @@ export default {
     and: "y",
     but: "pero",
     extreme: "extremo",
+    event: "evento aleatorio",
   },
   pt: {
     yes: "sim",
@@ -19,6 +21,7 @@ export default {
     and: "e",
     but: "mas",
     extreme: "extremo",
+    event: "evento aleatório",
   },
   fr: {
     yes: "oui",
@@ -26,6 +29,7 @@ export default {
     and: "et",
     but: "mais",
     extreme: "extrême",
+    event: "événement aléatoire",
   },
   de: {
     yes: "ja",
@@ -33,6 +37,7 @@ export default {
     and: "und",
     but: "aber",
     extreme: "extrem",
+    event: "zufälliges ereignis",
   },
   zh: {
     yes: "是",
@@ -40,6 +45,7 @@ export default {
     and: "和",
     but: "但是",
     extreme: "极端",
+    event: "随机事件",
   },
   ja: {
     yes: "はい",
@@ -47,6 +53,7 @@ export default {
     and: "と",
     but: "でも",
     extreme: "極端",
+    event: "ランダムイベント",
   },
   hi: {
     yes: "हाँ",
@@ -54,5 +61,6 @@ export default {
     and: "और",
     but: "लेकिन",
     extreme: "चरम",
+    event: "यादृच्छिक घटना",
   },
 };

@@ -2,7 +2,7 @@ import { dictionary } from "./dictionary";
 import { randomFrom } from "./dice";
 import { capitalize, identity } from "./helpers";
 
-const vowels = ["a", "e", "i", "o", "u"];
+export const vowels = ["a", "e", "i", "o", "u"];
 
 const getNoun = () => randomFrom(dictionary.nouns);
 const getVerb = () => randomFrom(dictionary.verbs);

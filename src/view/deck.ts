@@ -84,8 +84,10 @@ export class DeckView {
   }
 
   onResize() {
-    this.resultsEl.empty();
-    this.repopulateResults();
+    if (this.resultsEl) {
+      this.resultsEl.empty();
+      this.repopulateResults();
+    }
   }
 
   setTab(newTab: string) {

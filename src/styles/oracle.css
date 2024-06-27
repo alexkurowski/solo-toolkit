@@ -7,8 +7,28 @@
     justify-content: center;
     gap: var(--size-2-2);
 
-    & + .oracle-buttons {
-      margin-top: calc(var(--size-4-3) * -1);
+    &.oracle-buttons-mythic {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+
+      button {
+        font-size: var(--font-ui-smaller);
+      }
+    }
+
+    .mythic-factor {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      grid-column-start: 1;
+      grid-column-end: 4;
+
+      .counter {
+        width: 20px;
+        text-align: center;
+        font-weight: 500;
+      }
     }
   }
 
