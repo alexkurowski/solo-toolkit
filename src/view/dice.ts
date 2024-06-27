@@ -1,6 +1,6 @@
 import { ExtraButtonComponent, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { roll, rollIntervals } from "../utils";
+import { clickToCopy, roll, rollIntervals } from "../utils";
 
 const MAX_REMEMBER_SIZE = 100;
 
@@ -57,13 +57,21 @@ export class DiceView {
         if (rollIntervals[i]) {
           setTimeout(reroll, rollIntervals[i]);
         } else {
-          setTooltip(
-            container,
-            `Total: ${this.rolls[max].reduce(
-              (result, value) => result + (value[0] || 0),
-              0
-            )}`
+          const size = this.rolls[max].length;
+          const sum = this.rolls[max].reduce(
+            (result, value) => result + (value[0] || 0),
+            0
           );
+          el.onclick = (event) => {
+            const { shiftKey, ctrlKey, metaKey, altKey } = event;
+            const anyKey = shiftKey || ctrlKey || metaKey || altKey;
+            if (anyKey) {
+              clickToCopy(`[${size}d${max}: ${sum}]`)(event);
+            } else {
+              clickToCopy(`[d${max}: ${value}]`)(event);
+            }
+          };
+          setTooltip(container, `Total: ${sum}`);
         }
       }
     };
