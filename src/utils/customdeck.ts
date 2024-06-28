@@ -37,6 +37,8 @@ export class CustomDeck {
   }
 
   parseFolder(folder: TFolder) {
+    this.flip = [0];
+
     for (const child of folder.children) {
       if (child instanceof TFile) {
         if (this.supportedExtensions.includes(child.extension)) {
