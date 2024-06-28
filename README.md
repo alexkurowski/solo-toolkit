@@ -6,7 +6,7 @@ A plugin for Obsidian (https://obsidian.md) that adds helpful features for playi
 
 ### Dice roller
 
-Quickly roll a bunch of dice by clicking on a die icon. Hold shift for alternative color.
+Quickly roll a bunch of dice by clicking on a die icon. Hold shift, or right click/long tap to roll dice with alternative color.
 
 ### Deck of cards
 
@@ -14,7 +14,11 @@ A standard deck of 52 cards plus two optional joker cards, and a deck of oracle 
 
 ### Custom decks
 
-You can add any number of your own decks by creating folders of images in a special folder in your vault (default folder name is "Decks", you can change it in plugin settings). This feature can be useful with products like "The GameMaster's Apprentice" VTT decks, but can also be used with any kind of images: maps, item icons, or portraits.
+You can add any number of your own decks by creating folders of images in a special folder of your vault (default folder name is "Decks", you can change it in plugin settings). This feature can be useful with products like "The GameMaster's Apprentice" VTT decks, but can also be used with any kind of images: maps, item icons, or portraits.
+
+#### Other custom deck options
+
+- Cards can be rotated in your custom deck. Add a note inside your deck folder and add a word `flip` to randomize upright and upside down cards. Other options are `flip2` for upright and tapped, `flip3` for upright and tapped in both directions, `flip4` for randomized rotation.
 
 ### Random generators
 
@@ -65,7 +69,8 @@ a little
 
 - Refer to other notes by specifying the note name and/or note section: `{note_name/section_title}`, or `{folder_name/note_name/section_title}`, or simply `{note_name}` if there are no sections.
 - Refer to multiple sections by listing them separately: `{name|food}`.
-- Utilize built-in dictionaries by using any of the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`.
+- Utilize built-in dictionaries by using any of the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`, `{a}`.
+- Template key can be capitalized (e.g. `Loves: {food}`) in order to ensure sentence capitalization.
 
 ### Inline elements
 

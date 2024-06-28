@@ -9,6 +9,7 @@ import {
   compareWords,
   trim,
   identity,
+  vowels,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 
@@ -371,6 +372,17 @@ export class WordView {
           if (newResult === result) break;
           result = newResult;
         }
+        result = result.replace(
+          /{+ ?a ?}+/g,
+          (key: string, index: number, original: string) => {
+            const match = original.substring(index + key.length).match(/\w/);
+            if (match) {
+              return vowels.includes(match[0]) ? "an" : "a";
+            } else {
+              return key;
+            }
+          }
+        );
         result = result.trim();
 
         if (template.startsWith("capitalize!")) {
