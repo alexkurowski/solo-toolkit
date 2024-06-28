@@ -29,6 +29,9 @@ export const trim = (value: string): string => value.trim();
 
 export const identity = (value: string): string => value;
 
+export const sum = (values: number[]): number =>
+  values.reduce((sum, value) => sum + (value || 0), 0);
+
 export const shuffle = <T>(arr: T[]) => {
   let index = arr.length;
   let random = 0;
@@ -39,6 +42,14 @@ export const shuffle = <T>(arr: T[]) => {
     [arr[index], arr[random]] = [arr[random], arr[index]];
   }
 };
+
+export function first<T>(arr: T[]): T {
+  return arr[0];
+}
+
+export function last<T>(arr: T[]): T {
+  return arr[arr.length - 1];
+}
 
 export const clickToCopy = (value: string) => (event: MouseEvent) => {
   event.preventDefault();
@@ -108,10 +119,16 @@ export const clickToCopyImage =
     img.src = value;
   };
 
-export function first<T>(arr: T[]): T {
-  return arr[0];
-}
-
-export function last<T>(arr: T[]): T {
-  return arr[arr.length - 1];
+export function bounce(timeout: number, once = false) {
+  let lastTime = 0;
+  return {
+    set: () => {
+      lastTime = Date.now();
+    },
+    check: () => {
+      const result = lastTime + timeout > Date.now();
+      if (once) lastTime = 0;
+      return result;
+    },
+  };
 }

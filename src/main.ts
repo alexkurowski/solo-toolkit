@@ -64,10 +64,7 @@ export default class SoloToolkitPlugin extends Plugin {
   }
 
   async saveSetting(setting: Partial<SoloToolkitSettings>) {
-    this.settings = {
-      ...this.settings,
-      ...setting,
-    };
+    Object.assign(this.settings, setting);
     return this.saveSettings();
   }
 

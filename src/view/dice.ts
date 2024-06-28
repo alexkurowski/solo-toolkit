@@ -1,6 +1,6 @@
 import { ExtraButtonComponent, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { clickToCopy, roll, rollIntervals } from "../utils";
+import { clickToCopy, roll, rollIntervals, bounce, sum, first } from "../utils";
 
 const MAX_REMEMBER_SIZE = 100;
 
@@ -57,25 +57,41 @@ export class DiceView {
         if (rollIntervals[i]) {
           setTimeout(reroll, rollIntervals[i]);
         } else {
-          const size = this.rolls[max].length;
-          const sum = this.rolls[max].reduce(
-            (result, value) => result + (value[0] || 0),
-            0
-          );
+          // To prevent double-tap bug on mobile
+          const preventClick = bounce(1000, true);
+
           el.onclick = (event) => {
+            if (preventClick.check()) return;
             const { shiftKey, ctrlKey, metaKey, altKey } = event;
             const anyKey = shiftKey || ctrlKey || metaKey || altKey;
+
+            const [single, total] = this.formatForClipboard(value, max);
+
             if (anyKey) {
-              clickToCopy(`[${size}d${max}: ${sum}]`)(event);
+              clickToCopy(total)(event);
             } else {
-              clickToCopy(`[d${max}: ${value}]`)(event);
+              clickToCopy(single)(event);
             }
           };
+
           el.oncontextmenu = (event) => {
             event.preventDefault();
-            clickToCopy(`[${size}d${max}: ${sum}]`)(event);
+            event.stopPropagation();
+            const [_single, total] = this.formatForClipboard(value, max);
+            clickToCopy(total)(event);
+            preventClick.set();
           };
-          setTooltip(container, `Total: ${sum}`);
+
+          setTooltip(
+            container,
+            `${this.rolls[max].length}d${max}: ${sum(
+              this.rolls[max].map(first)
+            )}`,
+            {
+              delay: 0,
+              placement: "right",
+            }
+          );
         }
       }
     };
@@ -85,6 +101,33 @@ export class DiceView {
   addImmediateResult(container: HTMLElement, value: number, color: number) {
     const el = container.createDiv(`dice-result-value dice-color-${color}`);
     el.setText(value.toString());
+  }
+
+  formatForClipboard(value: number, max: number): [string, string] {
+    const size = this.rolls[max].length;
+    const total = sum(this.rolls[max].map(first));
+    const singleStr = `d${max}: ${value}`;
+    const totalStr = `${size}d${max}: ${total}`;
+    switch (this.view.settings.diceClipboardMode) {
+      case "plain":
+        return [singleStr, totalStr];
+      case "parenthesis":
+        return [`(${singleStr})`, `(${totalStr})`];
+      case "square":
+        return [`[${singleStr}]`, `[${totalStr}]`];
+      case "curly":
+        return [`{${singleStr}}`, `{${totalStr}}`];
+      case "code":
+        return [`\`${singleStr}\``, `\`${totalStr}\``];
+      case "code+parenthesis":
+        return [`\`(${singleStr})\``, `\`(${totalStr})\``];
+      case "code+square":
+        return [`\`[${singleStr}]\``, `\`[${totalStr}]\``];
+      case "code+curly":
+        return [`\`{${singleStr}}\``, `\`{${totalStr}}\``];
+      default:
+        return [singleStr, totalStr];
+    }
   }
 
   createDiceBtn(d: number) {
@@ -97,16 +140,23 @@ export class DiceView {
       .setIcon(`srt-d${d}`)
       .setTooltip(`Roll d${d}`);
 
+    // To prevent double-tap bug on mobile
+    const preventClick = bounce(1000, true);
+
     btnEl.extraSettingsEl.onclick = (event) => {
+      if (preventClick.check()) return;
       const { shiftKey, ctrlKey, metaKey, altKey } = event;
       const a = shiftKey ? 0b001 : 0;
       const b = ctrlKey || metaKey ? 0b010 : 0;
       const c = altKey ? 0b100 : 0;
       this.addResult(resultsEl, d, a + b + c);
     };
+
     btnEl.extraSettingsEl.oncontextmenu = (event) => {
       event.preventDefault();
+      event.stopPropagation();
       this.addResult(resultsEl, d, 1);
+      preventClick.set();
     };
   }
 

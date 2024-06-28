@@ -3,6 +3,15 @@ import SoloToolkitPlugin from "../main";
 
 export type ViewType = "dice" | "deck" | "oracle" | "word";
 type DeckClipboardMode = "" | "md" | "path" | "png";
+type DiceClipboardMode =
+  | "plain"
+  | "parenthesis"
+  | "square"
+  | "curly"
+  | "code"
+  | "code+parenthesis"
+  | "code+square"
+  | "code+curly";
 
 export interface SoloToolkitSettings {
   defaultView: ViewType;
@@ -13,6 +22,7 @@ export interface SoloToolkitSettings {
   deckTarot: boolean; // obsolete
   deckClipboard: boolean; // obsolete
   deckClipboardMode: DeckClipboardMode;
+  diceClipboardMode: DiceClipboardMode;
   inlineCounters: boolean;
   oracleLanguage: string;
 
@@ -31,6 +41,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   deckTarot: true,
   deckClipboard: false,
   deckClipboardMode: "md",
+  diceClipboardMode: "code",
   inlineCounters: false,
   oracleLanguage: "en",
 
@@ -121,8 +132,28 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("Dice click behavior")
+      .setDesc("What will be copied when you click on a dice roll result")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("plain", "d6: 4")
+          .addOption("parenthesis", "(d6: 4)")
+          .addOption("square", "[d6: 4]")
+          .addOption("curly", "{d6: 4}")
+          .addOption("code", "`d6: 4`")
+          .addOption("code+parenthesis", "`(d6: 4)`")
+          .addOption("code+square", "`[d6: 4]`")
+          .addOption("code+curly", "`{d6: 4}`");
+        dropdown.setValue(this.plugin.settings.diceClipboardMode || "");
+        dropdown.onChange(async (value: DiceClipboardMode) => {
+          this.plugin.settings.diceClipboardMode = value;
+          await this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
       .setName("Card click behavior")
-      .setDesc("Determines what happens when you click on a drawn card")
+      .setDesc("What will be copied when you click on a drawn card")
       .addDropdown((dropdown) => {
         dropdown
           .addOption("", "Off")

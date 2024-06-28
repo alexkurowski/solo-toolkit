@@ -46,7 +46,7 @@ export class SoloToolkitView extends ItemView {
     super(leaf);
     this.settings = settings;
     this.setSettings = setSettings;
-    this.tab = settings.defaultView || "deck";
+    this.tab = this.settings.defaultView || "deck";
     this.dice = new DiceView(this);
     this.deck = new DeckView(this);
     this.word = new WordView(this);
