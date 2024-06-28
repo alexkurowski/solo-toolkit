@@ -19,6 +19,7 @@ export interface SoloToolkitSettings {
   customDeckRoot: string;
   disableDefaultWords: boolean;
   deckJokers: boolean;
+  deckFlip: boolean;
   deckTarot: boolean; // obsolete
   deckClipboard: boolean; // obsolete
   deckClipboardMode: DeckClipboardMode;
@@ -38,6 +39,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   customDeckRoot: "Decks",
   disableDefaultWords: false,
   deckJokers: false,
+  deckFlip: true,
   deckTarot: true,
   deckClipboard: false,
   deckClipboardMode: "md",
@@ -127,6 +129,18 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.deckJokers)
           .onChange(async (value) => {
             this.plugin.settings.deckJokers = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Add upside down cards to default decks")
+      .setDesc("Don't forget to shuffle after changing this")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.deckFlip)
+          .onChange(async (value) => {
+            this.plugin.settings.deckFlip = value;
             await this.plugin.saveSettings();
           })
       );

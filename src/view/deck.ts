@@ -175,6 +175,7 @@ export class DeckView {
       .setButtonText("Draw")
       .onClick(async () => {
         const card = await this.decks[tabName].draw();
+        if (!this.view.settings.deckFlip) card.flip = 0;
         this.drawn.push(card);
         this.addResult(card);
         this.updateCount();
