@@ -89,7 +89,7 @@ export class DiceView {
             )}`,
             {
               delay: 0,
-              placement: "right",
+              placement: "bottom",
             }
           );
         }

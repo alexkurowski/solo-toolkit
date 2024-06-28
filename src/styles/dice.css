@@ -29,6 +29,7 @@
       flex-wrap: nowrap;
       align-items: center;
       justify-content: flex-end;
+      max-width: calc(100% - 32px);
       cursor: pointer;
     }
 
