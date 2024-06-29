@@ -15,6 +15,7 @@ import {
 } from "@codemirror/view";
 import { CountWidget, COUNT_REGEX } from "./count";
 import { TrackWidget, TRACK_REGEX } from "./track";
+import { ClockWidget, CLOCK_REGEX } from "./clock";
 import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../main";
 
@@ -91,19 +92,37 @@ class TrackPlugin implements PluginValue {
             );
           }
 
-          if (TRACK_REGEX.test(text)) {
-            buildMeta.push(meta);
-            builder.add(
-              from,
-              to,
-              Decoration.replace({
-                widget: new TrackWidget({
-                  originalNode: node.node,
-                  originalText: text,
-                  dirty,
-                }),
-              })
-            );
+          if (pluginRef?.settings?.inlineProgressMode === "track") {
+            if (TRACK_REGEX.test(text)) {
+              buildMeta.push(meta);
+              builder.add(
+                from,
+                to,
+                Decoration.replace({
+                  widget: new TrackWidget({
+                    originalNode: node.node,
+                    originalText: text,
+                    dirty,
+                  }),
+                })
+              );
+            }
+          } else {
+            if (CLOCK_REGEX.test(text)) {
+              buildMeta.push(meta);
+              builder.add(
+                from,
+                to,
+                Decoration.replace({
+                  widget: new ClockWidget({
+                    originalNode: node.node,
+                    originalText: text,
+                    size: pluginRef?.settings?.inlineProgressMode || "clock",
+                    dirty,
+                  }),
+                })
+              );
+            }
           }
 
           if (SPACE_REGEX.test(text)) {

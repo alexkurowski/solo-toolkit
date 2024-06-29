@@ -13,6 +13,7 @@ type DiceClipboardMode =
   | "code+square"
   | "code+curly";
 type WordClipboardMode = "plain" | "code";
+type ProgressMode = "track" | "clock" | "small_clock" | "big_clock";
 
 export interface SoloToolkitSettings {
   defaultView: ViewType;
@@ -27,6 +28,7 @@ export interface SoloToolkitSettings {
   diceClipboardMode: DiceClipboardMode;
   wordClipboardMode: WordClipboardMode;
   inlineCounters: boolean;
+  inlineProgressMode: ProgressMode;
   oracleLanguage: string;
 
   wordTab: string;
@@ -48,6 +50,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   diceClipboardMode: "code",
   wordClipboardMode: "plain",
   inlineCounters: false,
+  inlineProgressMode: "clock",
   oracleLanguage: "en",
 
   wordTab: "",
@@ -211,6 +214,22 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl)
+      .setName("Style of inline progress trackers")
+      .setDesc("Boxes can count up to 200, clocks up to 16")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("track", "Boxes")
+          .addOption("clock", "Clock")
+          .addOption("small_clock", "Clock (smaller)")
+          .addOption("big_clock", "Clock (larger)");
+        dropdown.setValue(this.plugin.settings.inlineProgressMode || "");
+        dropdown.onChange(async (value: ProgressMode) => {
+          this.plugin.settings.inlineProgressMode = value;
+          await this.plugin.saveSettings();
+        });
+      });
 
     new Setting(containerEl)
       .setName("Yes/no oracle language")

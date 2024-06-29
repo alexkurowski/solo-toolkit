@@ -68,6 +68,41 @@
   }
 }
 
+.srt-clock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 0;
+  flex-shrink: 0;
+  vertical-align: middle;
+
+  .srt-clock-svg {
+    cursor: pointer;
+
+    circle,
+    path {
+      stroke: var(--text-muted);
+    }
+
+    circle[fill="currentColor"],
+    path[fill="currentColor"] {
+      fill: var(--interactive-accent);
+    }
+  }
+
+  .srt-clock-edit {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin-left: var(--size-2-2);
+    cursor: pointer;
+
+    svg {
+      color: var(--text-faint);
+    }
+  }
+}
+
 .srt-space {
   display: inline-block;
   height: calc(var(--line-height-normal) * 0.7em);
