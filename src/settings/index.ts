@@ -12,6 +12,7 @@ type DiceClipboardMode =
   | "code+parenthesis"
   | "code+square"
   | "code+curly";
+type WordClipboardMode = "plain" | "code";
 
 export interface SoloToolkitSettings {
   defaultView: ViewType;
@@ -24,6 +25,7 @@ export interface SoloToolkitSettings {
   deckClipboard: boolean; // obsolete
   deckClipboardMode: DeckClipboardMode;
   diceClipboardMode: DiceClipboardMode;
+  wordClipboardMode: WordClipboardMode;
   inlineCounters: boolean;
   oracleLanguage: string;
 
@@ -40,10 +42,11 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   disableDefaultWords: false,
   deckJokers: false,
   deckFlip: true,
-  deckTarot: true,
-  deckClipboard: false,
+  deckTarot: true, // deprecated
+  deckClipboard: false, // deprecated
   deckClipboardMode: "md",
   diceClipboardMode: "code",
+  wordClipboardMode: "plain",
   inlineCounters: false,
   oracleLanguage: "en",
 
@@ -177,6 +180,20 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
         dropdown.setValue(this.plugin.settings.deckClipboardMode || "");
         dropdown.onChange(async (value: DeckClipboardMode) => {
           this.plugin.settings.deckClipboardMode = value;
+          await this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Oracle and random table results click behavior")
+      .setDesc("What will be copied when you click on a phrase result")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("plain", "Plain text")
+          .addOption("code", "Inilne code");
+        dropdown.setValue(this.plugin.settings.wordClipboardMode || "");
+        dropdown.onChange(async (value: WordClipboardMode) => {
+          this.plugin.settings.wordClipboardMode = value;
           await this.plugin.saveSettings();
         });
       });

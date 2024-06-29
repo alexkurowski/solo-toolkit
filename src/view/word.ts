@@ -166,7 +166,15 @@ export class WordView {
     const elClass = ["word-result"];
     if (immediate) elClass.push("nofade");
     const el = this.resultsEl.createEl("a", { cls: elClass.join(" ") });
-    el.onclick = clickToCopy(value);
+
+    el.onclick = (event) => {
+      switch (this.view.settings.wordClipboardMode) {
+        case "plain":
+          return clickToCopy(value)(event);
+        case "code":
+          return clickToCopy(`\`${value}\``)(event);
+      }
+    };
 
     const typeEl = el.createSpan("word-result-type");
     typeEl.setText(type);
