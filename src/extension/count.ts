@@ -65,8 +65,18 @@ export class CountWidget extends WidgetType {
     const minusEl = document.createElement("button");
     minusEl.classList.add("clickable-icon");
     setIcon(minusEl, "minus");
-    minusEl.onclick = () => {
-      this.value--;
+    minusEl.onclick = (event) => {
+      if (event.shiftKey) {
+        this.value -= 10;
+      } else {
+        this.value -= 1;
+      }
+      valueEl.innerText = this.value.toString();
+      this.updateDoc(view);
+    };
+    minusEl.oncontextmenu = (event) => {
+      event.preventDefault();
+      this.value -= 10;
       valueEl.innerText = this.value.toString();
       this.updateDoc(view);
     };
@@ -74,11 +84,20 @@ export class CountWidget extends WidgetType {
     const plusEl = document.createElement("button");
     plusEl.classList.add("clickable-icon");
     setIcon(plusEl, "plus");
-    plusEl.onclick = () => {
-      this.value++;
+    plusEl.onclick = (event) => {
+      if (event.shiftKey) {
+        this.value += 10;
+      } else {
+        this.value += 1;
+      }
       valueEl.innerText = this.value.toString();
       this.updateDoc(view);
-      return false;
+    };
+    plusEl.oncontextmenu = (event) => {
+      event.preventDefault();
+      this.value += 10;
+      valueEl.innerText = this.value.toString();
+      this.updateDoc(view);
     };
 
     el.append(minusEl);
