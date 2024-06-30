@@ -15,12 +15,14 @@ export class ClockWidget extends WidgetType {
   max: number;
   size: number;
   dirty: () => void;
+  showEdit: boolean;
 
   constructor(opts: {
     originalNode: SyntaxNode;
     originalText: string;
     size: string;
     dirty: () => void;
+    showEdit: boolean;
   }) {
     super();
     this.node = opts.originalNode;
@@ -40,6 +42,7 @@ export class ClockWidget extends WidgetType {
         this.size = 50;
     }
     this.dirty = opts.dirty;
+    this.showEdit = opts.showEdit;
   }
 
   parseValue(text: string): [number, number] {
@@ -168,13 +171,15 @@ export class ClockWidget extends WidgetType {
       this.updateDoc(view);
     };
 
-    const editEl = el.createEl("div");
-    editEl.classList.add("clickable-icon", "srt-clock-edit");
-    setIcon(editEl, "pen");
-    editEl.onclick = () => {
-      this.dirty();
-      this.focusOnNode(view);
-    };
+    if (this.showEdit) {
+      const editEl = el.createEl("div");
+      editEl.classList.add("clickable-icon", "srt-clock-edit");
+      setIcon(editEl, "pen");
+      editEl.onclick = () => {
+        this.dirty();
+        this.focusOnNode(view);
+      };
+    }
 
     return el;
   }

@@ -13,6 +13,7 @@ import {
   EditorView,
   ViewPlugin,
 } from "@codemirror/view";
+import { editorLivePreviewField } from "obsidian";
 import { CountWidget, COUNT_REGEX } from "./count";
 import { TrackWidget, TRACK_REGEX } from "./track";
 import { ClockWidget, CLOCK_REGEX } from "./clock";
@@ -26,29 +27,41 @@ class TrackPlugin implements PluginValue {
   considerNextSelectionChange: boolean = false;
   previousBuildMeta: string[] = [];
   spaceStore: Record<string, number> = {};
+  spaceStoreIndex: Record<number, number> = {};
 
   constructor(view: EditorView) {
     this.buildDecorations(view);
   }
 
   update(update: ViewUpdate) {
-    if (update.docChanged || update.viewportChanged) {
-      this.buildDecorations(update.view);
-    } else if (this.considerNextSelectionChange && update.selectionSet) {
+    const isLivePreview = update.state.field(editorLivePreviewField);
+    const shouldUpdate = pluginRef?.settings?.inlineDynamicEdit
+      ? update.docChanged || update.viewportChanged || update.selectionSet
+      : update.docChanged || update.viewportChanged;
+    const shouldUpdateButton = pluginRef?.settings?.inlineDynamicEdit
+      ? this.considerNextSelectionChange && update.selectionSet
+      : false;
+
+    if (shouldUpdate) {
+      this.buildDecorations(update.view, isLivePreview);
+    } else if (shouldUpdateButton) {
       this.considerNextSelectionChange = false;
-      this.buildDecorations(update.view);
+      this.buildDecorations(update.view, isLivePreview);
     }
   }
 
   destroy() {}
 
-  buildDecorations(view: EditorView) {
+  buildDecorations(view: EditorView, isLivePreview = true) {
+    const isDynamicEdit = pluginRef?.settings?.inlineDynamicEdit;
     const builder = new RangeSetBuilder<Decoration>();
     const buildMeta: string[] = [];
 
     const shouldDisable =
       !pluginRef?.settings?.inlineCounters ||
+      !isLivePreview ||
       !view.dom.closest(".is-live-preview");
+
     if (shouldDisable) {
       this.previousBuildMeta = [];
       this.decorations = builder.finish();
@@ -56,6 +69,9 @@ class TrackPlugin implements PluginValue {
     }
 
     const selection = view.state.selection;
+
+    // For tabstop widget
+    let widgetIndex = 0;
 
     const dirty = () => (this.considerNextSelectionChange = true);
 
@@ -103,6 +119,7 @@ class TrackPlugin implements PluginValue {
                     originalNode: node.node,
                     originalText: text,
                     dirty,
+                    showEdit: !isDynamicEdit,
                   }),
                 })
               );
@@ -119,6 +136,7 @@ class TrackPlugin implements PluginValue {
                     originalText: text,
                     size: pluginRef?.settings?.inlineProgressMode || "clock",
                     dirty,
+                    showEdit: !isDynamicEdit,
                   }),
                 })
               );
@@ -126,6 +144,7 @@ class TrackPlugin implements PluginValue {
           }
 
           if (SPACE_REGEX.test(text)) {
+            const thisWidgetIndex = widgetIndex;
             buildMeta.push(meta);
             builder.add(
               from,
@@ -134,14 +153,19 @@ class TrackPlugin implements PluginValue {
                 widget: new SpaceWidget({
                   originalNode: node.node,
                   originalText: text,
-                  initialWidth: this.spaceStore[meta] || 0,
+                  initialWidth:
+                    this.spaceStore[meta] ||
+                    this.spaceStoreIndex[thisWidgetIndex] ||
+                    0,
                   updateInitialWidth: (width: number) => {
                     this.spaceStore[meta] = width;
+                    this.spaceStoreIndex[thisWidgetIndex] = width;
                   },
                   dirty,
                 }),
               })
             );
+            widgetIndex++;
           }
         },
       });

@@ -29,6 +29,7 @@ export interface SoloToolkitSettings {
   wordClipboardMode: WordClipboardMode;
   inlineCounters: boolean;
   inlineProgressMode: ProgressMode;
+  inlineDynamicEdit: boolean; // NOTE: disable "edit" inline buttons
   oracleLanguage: string;
 
   wordTab: string;
@@ -51,6 +52,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   wordClipboardMode: "plain",
   inlineCounters: false,
   inlineProgressMode: "clock",
+  inlineDynamicEdit: true,
   oracleLanguage: "en",
 
   wordTab: "",

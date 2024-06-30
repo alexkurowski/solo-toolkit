@@ -13,12 +13,14 @@ export class TrackWidget extends WidgetType {
   value: number;
   max: number;
   dirty: () => void;
+  showEdit: boolean;
   btnEls: HTMLElement[];
 
   constructor(opts: {
     originalNode: SyntaxNode;
     originalText: string;
     dirty: () => void;
+    showEdit: boolean;
   }) {
     super();
     this.node = opts.originalNode;
@@ -28,6 +30,7 @@ export class TrackWidget extends WidgetType {
     if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
     if (this.value > this.max) this.value = this.max;
     this.dirty = opts.dirty;
+    this.showEdit = opts.showEdit;
   }
 
   parseValue(text: string): [number, number] {
@@ -82,7 +85,8 @@ export class TrackWidget extends WidgetType {
       const btnEl = document.createElement("button");
       btnEl.classList.add("clickable-icon", "srt-track-btn");
       setTooltip(btnEl, (i + 1).toString());
-      btnEl.onclick = () => {
+      btnEl.onclick = (event) => {
+        event.preventDefault();
         if (this.value >= i + 1) {
           this.value = i;
         } else {
@@ -97,15 +101,15 @@ export class TrackWidget extends WidgetType {
 
     this.updateButtonClasses();
 
-    const editEl = document.createElement("div");
-    editEl.classList.add("clickable-icon", "srt-track-edit");
-    setIcon(editEl, "pen");
-    editEl.onclick = () => {
-      this.dirty();
-      this.focusOnNode(view);
-    };
-
-    el.append(editEl);
+    if (this.showEdit) {
+      const editEl = el.createEl("div");
+      editEl.classList.add("clickable-icon", "srt-track-edit");
+      setIcon(editEl, "pen");
+      editEl.onclick = () => {
+        this.dirty();
+        this.focusOnNode(view);
+      };
+    }
 
     return el;
   }

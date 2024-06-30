@@ -2,8 +2,8 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
 
 export const SPACE_REGEX = /^` +`$/;
-const RETRY_COUNT = 5;
-const RETRY_DELAY = 10;
+const RETRY_COUNT = 20;
+const RETRY_DELAY = 2;
 const TAB_SIZE = 30;
 
 export class SpaceWidget extends WidgetType {
