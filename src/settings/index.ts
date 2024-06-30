@@ -27,6 +27,7 @@ export interface SoloToolkitSettings {
   deckClipboardMode: DeckClipboardMode;
   diceClipboardMode: DiceClipboardMode;
   wordClipboardMode: WordClipboardMode;
+  diceDeleteOnCopy: boolean;
   inlineCounters: boolean;
   inlineProgressMode: ProgressMode;
   inlineDynamicEdit: boolean; // NOTE: disable "edit" inline buttons
@@ -50,6 +51,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   deckClipboardMode: "md",
   diceClipboardMode: "code",
   wordClipboardMode: "plain",
+  diceDeleteOnCopy: false,
   inlineCounters: false,
   inlineProgressMode: "clock",
   inlineDynamicEdit: true,

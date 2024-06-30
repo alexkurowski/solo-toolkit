@@ -69,8 +69,14 @@ export class DiceView {
 
             if (anyKey) {
               clickToCopy(total)(event);
+              if (this.view.settings.diceDeleteOnCopy) {
+                container.empty();
+              }
             } else {
               clickToCopy(single)(event);
+              if (this.view.settings.diceDeleteOnCopy) {
+                el.remove();
+              }
             }
           };
 
@@ -79,6 +85,9 @@ export class DiceView {
             event.stopPropagation();
             const [_single, total] = this.formatForClipboard(value, max);
             clickToCopy(total)(event);
+            if (this.view.settings.diceDeleteOnCopy) {
+              container.empty();
+            }
             preventClick.set();
           };
 
