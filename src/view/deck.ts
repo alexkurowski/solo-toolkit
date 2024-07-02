@@ -141,7 +141,7 @@ export class DeckView {
           if (file) clickToCopy(file.path)(event);
           return;
         case "png":
-          if (file) clickToCopyImage(image, flip || 0)(event);
+          clickToCopyImage(image, flip || 0)(event);
           return;
       }
     };
