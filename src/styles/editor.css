@@ -1,0 +1,16 @@
+div[alt="srt-flip1"],
+div[alt="srt-flip2"],
+div[alt="srt-flip3"] {
+  display: inline-block !important;
+  overflow: hidden !important;
+}
+
+img[alt="srt-flip1"] {
+  transform: rotate(90deg);
+}
+img[alt="srt-flip2"] {
+  transform: rotate(180deg);
+}
+img[alt="srt-flip3"] {
+  transform: rotate(270deg);
+}

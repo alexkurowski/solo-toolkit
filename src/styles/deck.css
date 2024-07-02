@@ -79,23 +79,23 @@
           }
         }
 
-        &.flip1 {
+        &.deck-flip1 {
           img {
             transform: rotate(90deg);
           }
         }
-        &.flip2 {
+        &.deck-flip2 {
           img {
             transform: rotate(180deg);
           }
         }
-        &.flip3 {
+        &.deck-flip3 {
           img {
             transform: rotate(270deg);
           }
         }
 
-        &.flip1 {
+        &.deck-flip1 {
           > img {
             width: calc(var(--card-height) - 4px);
             height: calc(var(--card-width) - 4px);
@@ -104,7 +104,7 @@
             transform-origin: calc(var(--card-width) / 2 - 2px);
           }
         }
-        &.flip3 {
+        &.deck-flip3 {
           > img {
             width: calc(var(--card-height) - 4px);
             height: calc(var(--card-width) - 4px);

@@ -110,7 +110,7 @@ export class DeckView {
     const { image, flip, file } = card;
 
     const parentElClass = ["deck-result", "image-result-content"];
-    if (flip) parentElClass.push(`flip${flip}`);
+    if (flip) parentElClass.push(`deck-flip${flip}`);
     if (immediate) parentElClass.push("nofade");
     const parentEl = this.resultsEl.createDiv(parentElClass.join(" "));
 
@@ -135,7 +135,13 @@ export class DeckView {
       zoomEl.toggleClass("shown", !isShown);
       switch (this.view.settings.deckClipboardMode) {
         case "md":
-          if (file) clickToCopy(`![[${file.path}]]`)(event);
+          if (file) {
+            if (flip) {
+              clickToCopy(`![[${file.path}|srt-flip${flip}]]`)(event);
+            } else {
+              clickToCopy(`![[${file.path}]]`)(event);
+            }
+          }
           return;
         case "path":
           if (file) clickToCopy(file.path)(event);
