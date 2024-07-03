@@ -38,94 +38,90 @@
       &:hover {
         border-color: var(--interactive-accent);
       }
+    }
 
-      &.image-result-content {
-        > img {
+    .image-result-content {
+      > img {
+        width: 100%;
+        height: 100%;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+
+      .image-result-zoom {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease-in-out;
+        z-index: 10;
+
+        &:not(.shown) {
+          pointer-events: none;
+        }
+
+        &.shown {
+          opacity: 1;
+        }
+
+        img {
           width: 100%;
-          height: 100%;
-          border-radius: 6px;
-          object-fit: cover;
-        }
-
-        .image-result-zoom {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          overflow: hidden;
-          transition: opacity 0.3s ease-in-out;
-          z-index: 10;
-
-          &:not(.shown) {
-            pointer-events: none;
-          }
-
-          &.shown {
-            opacity: 1;
-          }
-
-          img {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            max-height: 100%;
-            border-radius: 14px;
-            object-fit: contain;
-          }
-        }
-
-        &.deck-flip1 {
-          > img {
-            width: 136px;
-            height: 96px;
-            max-width: 136px;
-            max-height: 96px;
-            transform: rotate(90deg);
-            transform-origin: 48px 48px;
-          }
-
-          .image-result-zoom {
-            img {
-              transform: rotate(90deg);
-            }
-          }
-        }
-        &.deck-flip2 {
-          > img {
-            width: 100%;
-            height: 100%;
-            transform: rotate(180deg);
-          }
-
-          .image-result-zoom {
-            img {
-              transform: rotate(180deg);
-            }
-          }
-        }
-        &.deck-flip3 {
-          > img {
-            width: 136px;
-            height: 96px;
-            max-width: 136px;
-            max-height: 96px;
-            transform: rotate(270deg);
-            transform-origin: 68px 68px;
-          }
-
-          .image-result-zoom {
-            img {
-              transform: rotate(270deg);
-            }
-          }
+          max-width: 400px;
+          height: auto;
+          max-height: 100%;
+          border-radius: 14px;
+          object-fit: contain;
         }
       }
+    }
 
-      &.fake-result-content {
-        visibility: hidden;
+    .deck-flip1 {
+      > img {
+        width: 136px;
+        height: 96px;
+        max-width: 136px;
+        max-height: 96px;
+        transform: rotate(90deg);
+        transform-origin: 48px 48px;
       }
+
+      .image-result-zoom img {
+        transform: rotate(90deg);
+      }
+    }
+
+    .deck-flip2 {
+      > img {
+        width: 100%;
+        height: 100%;
+        transform: rotate(180deg);
+      }
+
+      .image-result-zoom img {
+        transform: rotate(180deg);
+      }
+    }
+
+    .deck-flip3 {
+      > img {
+        width: 136px;
+        height: 96px;
+        max-width: 136px;
+        max-height: 96px;
+        transform: rotate(270deg);
+        transform-origin: 68px 68px;
+      }
+
+      .image-result-zoom img {
+        transform: rotate(270deg);
+      }
+    }
+
+    .fake-result-content {
+      visibility: hidden;
     }
 
     .deck-result-value {
