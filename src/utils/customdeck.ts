@@ -44,7 +44,7 @@ export class CustomDeck {
         if (this.supportedExtensions.includes(child.extension)) {
           this.deckCards.push(child);
         } else if (child.extension === "md") {
-          this.vault.cachedRead(child).then((content: string) => {
+          this.vault.read(child).then((content: string) => {
             if (!content) return;
 
             const lines = content.split("\n").map(trim).filter(identity);
@@ -67,9 +67,10 @@ export class CustomDeck {
           });
         }
       }
-      if (child instanceof TFolder) {
-        this.parseFolder(child);
-      }
+      // NOTE: Commented out to skip nested folders
+      // if (child instanceof TFolder) {
+      //   this.parseFolder(child);
+      // }
     }
   }
 
@@ -92,7 +93,7 @@ export class CustomDeck {
     } catch (error) {
       return {
         image: "",
-        flip: randomFrom(this.flip),
+        flip: 0,
       };
     }
   }

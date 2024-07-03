@@ -3,8 +3,6 @@ import { SoloToolkitView as View } from "./index";
 import { Card, DefaultDeck, clickToCopyImage, clickToCopy } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 import { CustomDeck } from "src/utils/customdeck";
-import deckImages, { jokerImages } from "../icons/deck";
-import tarotImages from "../icons/tarot";
 
 const MAX_REMEMBER_SIZE = 100;
 
@@ -54,12 +52,10 @@ export class DeckView {
 
     // Populate layout
     this.createDefaultDeck(
-      "srt:Standard",
-      this.view.settings.deckJokers
-        ? { ...deckImages, ...jokerImages }
-        : deckImages
+      "Standard",
+      this.view.settings.deckJokers ? [] : ["JokerBlack", "JokerRed"]
     );
-    this.createDefaultDeck("srt:Tarot", tarotImages);
+    this.createDefaultDeck("Tarot", []);
 
     if (this.view.settings.customDeckRoot) {
       const folder = this.view.app.vault.getFolderByPath(
@@ -107,7 +103,7 @@ export class DeckView {
   }
 
   addResult(card: DrawnCard, immediate = false) {
-    const { image, flip, file } = card;
+    const { image, flip, file, path } = card;
 
     const parentElClass = ["deck-result", "image-result-content"];
     if (flip) parentElClass.push(`deck-flip${flip}`);
@@ -141,10 +137,22 @@ export class DeckView {
             } else {
               clickToCopy(`![[${file.path}]]`)(event);
             }
+          } else if (path) {
+            const resourcePath =
+              this.view.app.vault.adapter.getResourcePath(path);
+            if (flip) {
+              clickToCopy(`![srt-flip${flip}](${resourcePath})`)(event);
+            } else {
+              clickToCopy(`![srt-flip0](${resourcePath})`)(event);
+            }
           }
           return;
         case "path":
-          if (file) clickToCopy(file.path)(event);
+          if (file) {
+            clickToCopy(file.path)(event);
+          } else if (path) {
+            clickToCopy(path)(event);
+          }
           return;
         case "png":
           clickToCopyImage(image, flip || 0)(event);
@@ -165,16 +173,19 @@ export class DeckView {
     }
   }
 
-  createDefaultDeck(tabName: string, data: Record<string, string>) {
-    const label = tabName.replace("srt:", "");
+  createDefaultDeck(tabName: string, excludedKeys: string[]) {
     this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
-    this.tabSelect.addOption(tabName, label);
+    this.tabSelect.addOption(tabName, tabName);
 
     const deck = this.decks[tabName];
     if (deck && deck instanceof DefaultDeck) {
-      deck.update(data);
+      deck.update(excludedKeys);
     } else {
-      this.decks[tabName] = new DefaultDeck(tabName, data);
+      this.decks[tabName] = new DefaultDeck(
+        tabName,
+        this.view.app.vault,
+        excludedKeys
+      );
     }
 
     new ButtonComponent(this.tabContentEls[tabName])

@@ -219,7 +219,7 @@ export class WordView {
     const templates: string[] = [];
     const values: CustomTable = { [DEFAULT]: [] };
 
-    this.view.app.vault.cachedRead(file).then((content: string) => {
+    this.view.app.vault.read(file).then((content: string) => {
       if (!content) return;
 
       const lines = content.split("\n").map(trim).filter(identity);
