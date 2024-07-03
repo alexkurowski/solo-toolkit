@@ -1,7 +1,4 @@
 .srt-container {
-  --card-width: 100px;
-  --card-height: 140px;
-
   .deck-buttons {
     display: flex;
     flex-direction: row;
@@ -20,7 +17,7 @@
 
   .deck-results {
     display: grid;
-    grid-template-columns: repeat(auto-fit, var(--card-width));
+    grid-template-columns: repeat(auto-fit, 100px);
     justify-content: center;
     justify-items: center;
     gap: var(--size-4-4);
@@ -29,8 +26,8 @@
     .deck-result {
       flex-grow: 0;
       flex-shrink: 0;
-      width: var(--card-width);
-      height: var(--card-height);
+      width: 100px;
+      height: 140px;
       background: #fcfcfc;
       border-radius: 8px;
       border: 2px solid var(--text-faint);
@@ -80,38 +77,48 @@
         }
 
         &.deck-flip1 {
-          img {
+          > img {
+            width: 136px;
+            height: 96px;
+            max-width: 136px;
+            max-height: 96px;
             transform: rotate(90deg);
+            transform-origin: 48px 48px;
+          }
+
+          .image-result-zoom {
+            img {
+              transform: rotate(90deg);
+            }
           }
         }
         &.deck-flip2 {
-          img {
+          > img {
+            width: 100%;
+            height: 100%;
             transform: rotate(180deg);
           }
-        }
-        &.deck-flip3 {
-          img {
-            transform: rotate(270deg);
-          }
-        }
 
-        &.deck-flip1 {
-          > img {
-            width: calc(var(--card-height) - 4px);
-            height: calc(var(--card-width) - 4px);
-            max-width: calc(var(--card-height) - 4px);
-            max-height: calc(var(--card-width) - 4px);
-            transform-origin: calc(var(--card-width) / 2 - 2px);
+          .image-result-zoom {
+            img {
+              transform: rotate(180deg);
+            }
           }
         }
         &.deck-flip3 {
           > img {
-            width: calc(var(--card-height) - 4px);
-            height: calc(var(--card-width) - 4px);
-            max-width: calc(var(--card-height) - 4px);
-            max-height: calc(var(--card-width) - 4px);
-            transform-origin: calc(var(--card-height) / 2 - 2px)
-              calc(var(--card-height) / 2 - 2px);
+            width: 136px;
+            height: 96px;
+            max-width: 136px;
+            max-height: 96px;
+            transform: rotate(270deg);
+            transform-origin: 68px 68px;
+          }
+
+          .image-result-zoom {
+            img {
+              transform: rotate(270deg);
+            }
           }
         }
       }
