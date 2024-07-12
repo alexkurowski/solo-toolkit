@@ -20,13 +20,15 @@ import { ClockWidget, CLOCK_REGEX } from "./clock";
 import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../main";
 
+type BuildMeta = string;
+
 let pluginRef: Plugin;
 
 class TrackPlugin implements PluginValue {
   decorations: DecorationSet;
   considerNextSelectionChange: boolean = false;
-  previousBuildMeta: string[] = [];
-  spaceStore: Record<string, number> = {};
+  previousBuildMeta: BuildMeta[] = [];
+  spaceStore: Record<BuildMeta, number> = {};
   spaceStoreIndex: Record<number, number> = {};
 
   constructor(view: EditorView) {
@@ -35,6 +37,13 @@ class TrackPlugin implements PluginValue {
 
   update(update: ViewUpdate) {
     const isLivePreview = update.state.field(editorLivePreviewField);
+    const shouldDisable =
+      !pluginRef?.settings?.inlineCounters || !isLivePreview;
+
+    if (shouldDisable) {
+      return;
+    }
+
     const shouldUpdate = pluginRef?.settings?.inlineDynamicEdit
       ? update.docChanged || update.viewportChanged || update.selectionSet
       : update.docChanged || update.viewportChanged;
@@ -43,31 +52,19 @@ class TrackPlugin implements PluginValue {
       : false;
 
     if (shouldUpdate) {
-      this.buildDecorations(update.view, isLivePreview);
+      this.buildDecorations(update.view);
     } else if (shouldUpdateButton) {
       this.considerNextSelectionChange = false;
-      this.buildDecorations(update.view, isLivePreview);
+      this.buildDecorations(update.view);
     }
   }
 
   destroy() {}
 
-  buildDecorations(view: EditorView, isLivePreview = true) {
+  buildDecorations(view: EditorView) {
     const isDynamicEdit = pluginRef?.settings?.inlineDynamicEdit;
     const builder = new RangeSetBuilder<Decoration>();
-    const buildMeta: string[] = [];
-
-    const shouldDisable =
-      !pluginRef?.settings?.inlineCounters ||
-      !isLivePreview ||
-      !view.dom.closest(".is-live-preview");
-
-    if (shouldDisable) {
-      this.previousBuildMeta = [];
-      this.decorations = builder.finish();
-      return;
-    }
-
+    const buildMeta: BuildMeta[] = [];
     const selection = view.state.selection;
 
     // For tabstop widget
@@ -187,7 +184,7 @@ class TrackPlugin implements PluginValue {
     );
   }
 
-  isMetaChanged(buildMeta: string[]): boolean {
+  isMetaChanged(buildMeta: BuildMeta[]): boolean {
     if (!buildMeta.length) return true;
     if (buildMeta.length !== this.previousBuildMeta.length) return true;
     for (const index in buildMeta) {
