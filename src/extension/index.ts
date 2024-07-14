@@ -24,6 +24,7 @@ type BuildMeta = string;
 
 let pluginRef: Plugin;
 
+// Live preview mode inline elements
 class TrackPlugin implements PluginValue {
   decorations: DecorationSet;
   considerNextSelectionChange: boolean = false;
@@ -39,11 +40,6 @@ class TrackPlugin implements PluginValue {
     const isLivePreview = update.state.field(editorLivePreviewField);
     const shouldDisable =
       !pluginRef?.settings?.inlineCounters || !isLivePreview;
-
-    if (shouldDisable) {
-      return;
-    }
-
     const shouldUpdate = pluginRef?.settings?.inlineDynamicEdit
       ? update.docChanged || update.viewportChanged || update.selectionSet
       : update.docChanged || update.viewportChanged;
@@ -51,7 +47,10 @@ class TrackPlugin implements PluginValue {
       ? this.considerNextSelectionChange && update.selectionSet
       : false;
 
-    if (shouldUpdate) {
+    if (shouldDisable) {
+      this.decorations = Decoration.none;
+      this.previousBuildMeta = [];
+    } else if (shouldUpdate) {
       this.buildDecorations(update.view);
     } else if (shouldUpdateButton) {
       this.considerNextSelectionChange = false;
@@ -185,7 +184,7 @@ class TrackPlugin implements PluginValue {
   }
 
   isMetaChanged(buildMeta: BuildMeta[]): boolean {
-    if (!buildMeta.length) return true;
+    if (!buildMeta.length || !this.previousBuildMeta.length) return true;
     if (buildMeta.length !== this.previousBuildMeta.length) return true;
     for (const index in buildMeta) {
       if (buildMeta[index] !== this.previousBuildMeta[index]) return true;

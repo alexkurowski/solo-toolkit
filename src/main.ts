@@ -7,6 +7,7 @@ import {
 } from "./settings";
 import { SoloToolkitView, VIEW_TYPE } from "./view";
 import { soloToolkitExtension } from "./extension";
+import { soloToolkitPostprocessor } from "./postprocessor";
 import { exportDeck } from "./utils/deck";
 import deckImages from "./icons/deck";
 import tarotImages from "./icons/tarot";
@@ -27,6 +28,7 @@ export default class SoloToolkitPlugin extends Plugin {
         new SoloToolkitView(leaf, this.settings, this.saveSetting.bind(this))
     );
 
+    this.registerMarkdownPostProcessor(soloToolkitPostprocessor(this));
     this.registerEditorExtension(soloToolkitExtension(this));
 
     this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", () => this.openView());
