@@ -10,16 +10,21 @@ import {
   trim,
   identity,
   vowels,
+  curveValues,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 
 interface CustomTable {
   [section: string]: string[];
 }
+interface CustomTableCurves {
+  [section: string]: number;
+}
 interface CustomTableCategory {
   tabName: string;
   fileName: string;
   values: CustomTable;
+  curves: CustomTableCurves;
 }
 
 const MAX_REMEMBER_SIZE = 100;
@@ -215,9 +220,12 @@ export class WordView {
   }
 
   createCustomWordBtn(tabName: string, file: TFile) {
-    const type = file.basename;
+    const [defaultKey, defaultCurve] = this.parseKeyWithCurve(file.basename);
+    const type = defaultKey;
+
     const templates: string[] = [];
     const values: CustomTable = { [DEFAULT]: [] };
+    const curves: CustomTableCurves = { [DEFAULT]: defaultCurve };
 
     this.view.app.vault.read(file).then((content: string) => {
       if (!content) return;
@@ -277,8 +285,13 @@ export class WordView {
 
         // Treat headers as template keys
         if (line.startsWith("#")) {
-          currentKey = line.replace(/#/g, "").trim().toLowerCase();
+          const [key, curve] = this.parseKeyWithCurve(
+            line.replace(/#/g, "").trim().toLowerCase()
+          );
+
+          currentKey = key;
           values[currentKey] = [];
+          curves[currentKey] = curve;
           continue;
         }
 
@@ -290,11 +303,15 @@ export class WordView {
         tabName,
         fileName: type,
         values: values,
+        curves: curves,
       });
     });
 
-    const getValuesForKey = (key: string): string[] => {
+    const getValuesForKey = (
+      key: string
+    ): { values: string[]; curve: number } => {
       let result: string[] | undefined;
+      let curve: number = 1;
 
       // Sections in this file
       const sectionKey = Object.keys(values).find((value) =>
@@ -302,7 +319,10 @@ export class WordView {
       );
       if (sectionKey) {
         result = values[sectionKey];
-        if (result?.length) return result;
+        if (result?.length) {
+          curve = curves[sectionKey] || 1;
+          return { values: result, curve };
+        }
       }
 
       // Sections in other custom files
@@ -334,25 +354,31 @@ export class WordView {
           ).find((value) => compareWords(value, otherTableKey));
           if (otherTableSectionKey) {
             result = otherCustomTable.values[otherTableSectionKey];
-            if (result?.length) return result;
+            if (result?.length) {
+              curve = otherCustomTable.curves[otherTableSectionKey] || 1;
+              return { values: result, curve };
+            }
           }
         }
         if (keyParts.length === 1) {
           result = otherCustomTable.values[DEFAULT];
-          if (result?.length) return result;
+          if (result?.length) {
+            curve = otherCustomTable.curves[DEFAULT] || 1;
+            return { values: result, curve };
+          }
         }
       }
 
       // Default generic
       result = getDefaultDictionary(key);
-      if (result?.length) return result;
+      if (result?.length) return { values: result, curve: 1 };
 
-      return [];
+      return { values: [], curve: 1 };
     };
 
     const getValuesForKeys = (key: string): string[] => {
       const keys = key.split("|").map(trim);
-      const result = keys.map(getValuesForKey).flat();
+      const result = keys.map(getValuesForKey).map(curveValues).flat();
       if (result?.length) {
         return result;
       } else {
@@ -401,7 +427,7 @@ export class WordView {
           return result;
         }
       } else {
-        return randomFrom(values[DEFAULT]);
+        return randomFrom(getValuesForKeys(DEFAULT));
       }
     };
 
@@ -430,6 +456,18 @@ export class WordView {
     for (const word of this.words) {
       const [type, value] = word;
       this.addResult(type, value, true);
+    }
+  }
+
+  private parseKeyWithCurve(value: string): [string, number] {
+    const match = value.match(/ \d+d$/i);
+    if (match) {
+      return [
+        value.replace(match[0], "").trim(),
+        parseInt(match[0].replace(/\D/g, "")),
+      ];
+    } else {
+      return [value, 1];
     }
   }
 }
