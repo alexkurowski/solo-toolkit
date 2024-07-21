@@ -2,11 +2,12 @@ import { random } from "../dice";
 import { AnswerVariant, Oracle, BaseOracle } from "./shared";
 
 const FACTOR_CHANGE = 20;
-const AND_BUT_CHANCE = 16;
-const EXTREME_CHANCE = 16;
+const AND_BUT_CHANCE = 50;
+const EXTREME_CHANCE = 10;
 
 export class StandardOracle extends BaseOracle implements Oracle {
   factor = 0;
+  biasEnabled = false;
 
   getAnswer(variant: AnswerVariant): string {
     if (variant === "low") {
@@ -14,8 +15,12 @@ export class StandardOracle extends BaseOracle implements Oracle {
     } else if (variant === "high") {
       return this.formatAnswer(this.getAnswerWithChance(70, false));
     } else {
-      return this.formatAnswer(this.getAnswerWithChance(50, true));
+      return this.formatAnswer(this.getAnswerWithChance(50, this.biasEnabled));
     }
+  }
+
+  setBias(enabled: boolean) {
+    this.biasEnabled = enabled;
   }
 
   private getAnswerWithChance(

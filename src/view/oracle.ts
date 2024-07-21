@@ -166,6 +166,9 @@ export class OracleView {
         oracle.setLanguage(
           (this.view.settings.oracleLanguage as Language) || "en"
         );
+        if (oracle instanceof StandardOracle) {
+          oracle.setBias(this.view.settings.standardOracleBias);
+        }
         const value = oracle.getAnswer(type);
         this.answers.push([label, value]);
         this.addResult(label, value);

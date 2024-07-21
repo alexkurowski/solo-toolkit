@@ -31,6 +31,7 @@ export interface SoloToolkitSettings {
   inlineCounters: boolean;
   inlineProgressMode: ProgressMode;
   inlineDynamicEdit: boolean; // NOTE: disable "edit" inline buttons
+  standardOracleBias: boolean;
   oracleLanguage: string;
 
   wordTab: string;
@@ -55,6 +56,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   inlineCounters: false,
   inlineProgressMode: "clock",
   inlineDynamicEdit: true,
+  standardOracleBias: false,
   oracleLanguage: "en",
 
   wordTab: "",
