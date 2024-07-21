@@ -307,7 +307,7 @@ export class WordView {
           values[DEFAULT].push(line);
           if (currentKey) values[currentKey].push(line);
         } else if (mode === "cutup") {
-          values[DEFAULT].push(...line.split(" "));
+          values[DEFAULT].push(...line.split(/ +/));
         }
       }
 
