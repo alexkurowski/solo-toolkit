@@ -1,12 +1,13 @@
 import { ButtonComponent, ExtraButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
-import { clickToCopy, capitalize, vowels } from "../utils";
+import { clickToCopy, capitalize, an } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 import {
   Oracle,
   StandardOracle,
   MythicOracle,
   FuOracle,
+  MuneOracle,
   AnswerVariant,
   Language,
 } from "src/utils/oracles";
@@ -17,6 +18,7 @@ const tabLabels: { [word: string]: string } = {
   default: "Default",
   mythic: "Mythic",
   fu: "Freeform Universal",
+  mune: "Mune",
 };
 
 const oracleLabels: { [word: string]: string } = {
@@ -42,6 +44,7 @@ export class OracleView {
       default: new StandardOracle(),
       mythic: new MythicOracle(this.view.settings.mythicFactor || 5),
       fu: new FuOracle(),
+      mune: new MuneOracle(),
     };
     this.answers = [];
   }
@@ -75,6 +78,7 @@ export class OracleView {
     this.createOracle("default");
     this.createOracle("mythic");
     this.createOracle("fu");
+    this.createOracle("mune");
 
     const availableTabs = Object.keys(this.tabContentEls);
     const defaultTab = availableTabs.includes(this.view.settings.oracleTab)
@@ -130,11 +134,6 @@ export class OracleView {
     );
     this.tabSelect.addOption(tabName, label);
 
-    if (tabName === "default") {
-      this.createDefaultBtn(tabName, "low");
-      this.createDefaultBtn(tabName, "mid");
-      this.createDefaultBtn(tabName, "high");
-    }
     if (tabName === "mythic") {
       this.createMythicBtn(tabName, "certain");
       this.createMythicBtn(tabName, "nearly certain");
@@ -146,8 +145,11 @@ export class OracleView {
       this.createMythicBtn(tabName, "nearly impossible");
       this.createMythicBtn(tabName, "impossible");
       this.createMythicFactorBtns(tabName);
-    }
-    if (tabName === "fu") {
+    } else if (
+      tabName === "default" ||
+      tabName === "fu" ||
+      tabName === "mune"
+    ) {
       this.createDefaultBtn(tabName, "low");
       this.createDefaultBtn(tabName, "mid");
       this.createDefaultBtn(tabName, "high");
@@ -156,7 +158,7 @@ export class OracleView {
 
   createDefaultBtn(tabName: string, type: AnswerVariant) {
     const label = oracleLabels[type] || capitalize(type);
-    const a = vowels.includes(label[0].toLowerCase()) ? "an" : "a";
+    const a = an(label);
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText(label)
       .setTooltip(`Generate ${a} ${label.toLowerCase()} oracle answer`)
@@ -167,7 +169,10 @@ export class OracleView {
           (this.view.settings.oracleLanguage as Language) || "en"
         );
         if (oracle instanceof StandardOracle) {
-          oracle.setBias(this.view.settings.standardOracleBias);
+          oracle.setConfig({
+            bias: this.view.settings.standardOracleBias,
+            events: this.view.settings.standardOracleEvents,
+          });
         }
         const value = oracle.getAnswer(type);
         this.answers.push([label, value]);
@@ -177,7 +182,7 @@ export class OracleView {
 
   createMythicBtn(tabName: string, type: string) {
     const label = oracleLabels[type] || capitalize(type);
-    const a = vowels.includes(label[0].toLowerCase()) ? "an" : "a";
+    const a = an(label);
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText(label)
       .setTooltip(`Generate ${a} ${label.toLowerCase()} oracle answer`)

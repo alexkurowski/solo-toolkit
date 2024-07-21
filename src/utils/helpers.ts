@@ -1,4 +1,5 @@
 import { Notice } from "obsidian";
+import { vowels } from "./word";
 
 export const compareWords = (
   valueA: string | undefined,
@@ -22,6 +23,14 @@ export const capitalize = (value: string): string => {
     return value[0].toUpperCase() + value.substring(1);
   } else {
     return "";
+  }
+};
+
+export const an = (nextWord: string): "a" | "an" => {
+  if (vowels.includes((nextWord[0] || "").toLowerCase())) {
+    return "an";
+  } else {
+    return "a";
   }
 };
 

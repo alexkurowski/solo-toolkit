@@ -1,13 +1,23 @@
-import { random } from "../dice";
+import { random, randomFrom } from "../dice";
 import { AnswerVariant, Oracle, BaseOracle } from "./shared";
 
 const FACTOR_CHANGE = 20;
 const AND_BUT_CHANCE = 50;
 const EXTREME_CHANCE = 10;
+const EVENT_CHANCE = 20;
+
+const EVENT_TYPES = [
+  ["random", "random", "unexpected", "unexpected", "surprising"],
+  ["positive", "positive", "negative", "negative", "neutral"],
+  ["character", "character", "faction", "faction", "environment"],
+  ["event", "event", "encounter", "encounter", "incident"],
+];
 
 export class StandardOracle extends BaseOracle implements Oracle {
+  eventCounter = 0;
   factor = 0;
   biasEnabled = false;
+  eventsEnabled = false;
 
   getAnswer(variant: AnswerVariant): string {
     if (variant === "low") {
@@ -19,8 +29,9 @@ export class StandardOracle extends BaseOracle implements Oracle {
     }
   }
 
-  setBias(enabled: boolean) {
-    this.biasEnabled = enabled;
+  setConfig(opts: { bias: boolean; events: boolean }) {
+    this.biasEnabled = opts.bias;
+    this.eventsEnabled = opts.events;
   }
 
   private getAnswerWithChance(
@@ -30,9 +41,11 @@ export class StandardOracle extends BaseOracle implements Oracle {
     const yn = this.yesNo(chance, affectedByFactor);
     const ab = this.andBut();
     const ex = this.extreme();
+    const ev = this.event();
 
     let result = `${ex} ${yn}`;
     if (ab) result += `, ${ab}`;
+    if (ev) result += ` (${ev})`;
 
     return result;
   }
@@ -71,6 +84,21 @@ export class StandardOracle extends BaseOracle implements Oracle {
   private extreme(): string {
     if (this.roll(EXTREME_CHANCE)) {
       return this.getWord("extreme");
+    } else {
+      return "";
+    }
+  }
+
+  private event(): string {
+    if (!this.eventsEnabled) return "";
+    if (this.roll(EVENT_CHANCE)) {
+      this.eventCounter++;
+      if (this.eventCounter >= 3) {
+        this.eventCounter = 0;
+        return EVENT_TYPES.map((words) => randomFrom(words)).join(" ");
+      } else {
+        return "";
+      }
     } else {
       return "";
     }

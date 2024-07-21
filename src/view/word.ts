@@ -10,8 +10,8 @@ import {
   compareWords,
   trim,
   identity,
-  vowels,
   curveValues,
+  an,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 
@@ -429,7 +429,7 @@ export class WordView {
             (key: string, index: number, original: string) => {
               const match = original.substring(index + key.length).match(/\w/);
               if (match) {
-                return vowels.includes(match[0]) ? "an" : "a";
+                return an(match[0]);
               } else {
                 return key;
               }

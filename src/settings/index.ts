@@ -30,8 +30,9 @@ export interface SoloToolkitSettings {
   diceDeleteOnCopy: boolean;
   inlineCounters: boolean;
   inlineProgressMode: ProgressMode;
-  inlineDynamicEdit: boolean; // NOTE: disable "edit" inline buttons
+  inlineDynamicEdit: boolean;
   standardOracleBias: boolean;
+  standardOracleEvents: boolean;
   oracleLanguage: string;
 
   wordTab: string;
@@ -57,6 +58,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   inlineProgressMode: "clock",
   inlineDynamicEdit: true,
   standardOracleBias: false,
+  standardOracleEvents: false,
   oracleLanguage: "en",
 
   wordTab: "",
