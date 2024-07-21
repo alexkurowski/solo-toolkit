@@ -1,8 +1,8 @@
 export const rollIntervals = [30, 60, 60, 90, 90, 120, 160];
 
-export const random = (min: number, max: number, not = -1): number => {
+export const random = (min: number, max: number, not = NaN): number => {
   let result = not;
-  while (result === not) {
+  while (result === not || Number.isNaN(result)) {
     result = Math.floor(Math.random() * (max - min + 1)) + min;
   }
   return result;

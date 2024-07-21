@@ -2,6 +2,7 @@ import { TFile, TFolder, ButtonComponent } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import {
   generateWord,
+  random,
   randomFrom,
   clickToCopy,
   getDefaultDictionary,
@@ -20,6 +21,7 @@ interface CustomTable {
 interface CustomTableCurves {
   [section: string]: number;
 }
+type CustomTableMode = "default" | "cutup";
 interface CustomTableCategory {
   tabName: string;
   fileName: string;
@@ -222,6 +224,7 @@ export class WordView {
   createCustomWordBtn(tabName: string, file: TFile) {
     const [defaultKey, defaultCurve] = this.parseKeyWithCurve(file.basename);
     const type = defaultKey;
+    let mode: CustomTableMode = "default";
 
     const templates: string[] = [];
     const values: CustomTable = { [DEFAULT]: [] };
@@ -268,6 +271,11 @@ export class WordView {
           if (!newTemplate) continue;
 
           if (
+            templateKey.toLowerCase().trim() === "mode" &&
+            newTemplate.toLowerCase().trim() === "cutup"
+          ) {
+            mode = "cutup";
+          } else if (
             templateKey.length > 1 &&
             templateKey === templateKey.toUpperCase()
           ) {
@@ -295,16 +303,22 @@ export class WordView {
           continue;
         }
 
-        values[DEFAULT].push(line);
-        if (currentKey) values[currentKey].push(line);
+        if (mode === "default") {
+          values[DEFAULT].push(line);
+          if (currentKey) values[currentKey].push(line);
+        } else if (mode === "cutup") {
+          values[DEFAULT].push(...line.split(" "));
+        }
       }
 
-      this.customTables.push({
-        tabName,
-        fileName: type,
-        values: values,
-        curves: curves,
-      });
+      if (mode === "default") {
+        this.customTables.push({
+          tabName,
+          fileName: type,
+          values: values,
+          curves: curves,
+        });
+      }
     });
 
     const getValuesForKey = (
@@ -396,38 +410,50 @@ export class WordView {
     };
 
     const generateCustomWord = (): string => {
-      if (templates.length) {
-        const template = randomFrom(templates);
-        const lastSubs: Record<string, string> = {};
+      if (mode === "default") {
+        if (templates.length) {
+          const template = randomFrom(templates);
+          const lastSubs: Record<string, string> = {};
 
-        let result = template;
-        for (let i = 0; i < 5; i++) {
-          const newResult = result.replace(/{+ ?[^}]+ ?}+/g, replace(lastSubs));
-          if (newResult === result) break;
-          result = newResult;
-        }
-        result = result.replace(
-          /{+ ?a ?}+/g,
-          (key: string, index: number, original: string) => {
-            const match = original.substring(index + key.length).match(/\w/);
-            if (match) {
-              return vowels.includes(match[0]) ? "an" : "a";
-            } else {
-              return key;
-            }
+          let result = template;
+          for (let i = 0; i < 5; i++) {
+            const newResult = result.replace(
+              /{+ ?[^}]+ ?}+/g,
+              replace(lastSubs)
+            );
+            if (newResult === result) break;
+            result = newResult;
           }
-        );
-        result = result.trim();
+          result = result.replace(
+            /{+ ?a ?}+/g,
+            (key: string, index: number, original: string) => {
+              const match = original.substring(index + key.length).match(/\w/);
+              if (match) {
+                return vowels.includes(match[0]) ? "an" : "a";
+              } else {
+                return key;
+              }
+            }
+          );
+          result = result.trim();
 
-        if (template.startsWith("capitalize!")) {
-          return capitalize(result.replace("capitalize!", ""));
-        } else if (template.startsWith("upcase!")) {
-          return result.replace("upcase!", "").toUpperCase();
+          if (template.startsWith("capitalize!")) {
+            return capitalize(result.replace("capitalize!", ""));
+          } else if (template.startsWith("upcase!")) {
+            return result.replace("upcase!", "").toUpperCase();
+          } else {
+            return result;
+          }
         } else {
-          return result;
+          return randomFrom(getValuesForKeys(DEFAULT));
         }
+      } else if (mode === "cutup") {
+        const words = values[DEFAULT];
+        const length = random(2, 6) + random(2, 6);
+        const startFrom = random(0, words.length - length - 1);
+        return words.slice(startFrom, startFrom + length).join(" ");
       } else {
-        return randomFrom(getValuesForKeys(DEFAULT));
+        return randomFrom(values[DEFAULT]);
       }
     };
 
