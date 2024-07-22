@@ -1,5 +1,5 @@
 import { dictionary } from "./dictionary";
-import { randomFrom } from "./dice";
+import { random, randomFrom } from "./dice";
 import { an, capitalize, identity } from "./helpers";
 
 export const vowels = ["a", "e", "i", "o", "u"];
@@ -86,15 +86,33 @@ const getName3 = () => {
   return capitalize(result);
 };
 
-const getNames = [getName1, getName2, getName3];
-let getNamesIndex = 0;
-const getSomeName = () => {
-  const callback = getNames[getNamesIndex++ % getNames.length];
-
+const getName4 = () => {
   if (Math.random() > 0.9) {
-    return `${callback()} ${callback()} ${callback()}`;
+    return [
+      randomFrom(dictionary.names4[0]),
+      randomFrom(dictionary.names4[0]),
+      randomFrom(dictionary.names4[1]),
+    ].join(" ");
   } else {
-    return `${callback()} ${callback()}`;
+    return [
+      randomFrom(dictionary.names4[0]),
+      randomFrom(dictionary.names4[1]),
+    ].join(" ");
+  }
+};
+
+const getNames = [getName1, getName2, getName3, getName4, getName4, getName4];
+const getSomeName = () => {
+  const id = random(0, 5);
+  const callback = getNames[id];
+  if (id <= 2) {
+    if (Math.random() > 0.9) {
+      return `${callback()} ${callback()} ${callback()}`;
+    } else {
+      return `${callback()} ${callback()}`;
+    }
+  } else {
+    return callback();
   }
 };
 
