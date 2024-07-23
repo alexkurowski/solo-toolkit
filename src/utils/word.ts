@@ -87,18 +87,9 @@ const getName3 = () => {
 };
 
 const getName4 = () => {
-  if (Math.random() > 0.9) {
-    return [
-      randomFrom(dictionary.names4[0]),
-      randomFrom(dictionary.names4[0]),
-      randomFrom(dictionary.names4[1]),
-    ].join(" ");
-  } else {
-    return [
-      randomFrom(dictionary.names4[0]),
-      randomFrom(dictionary.names4[1]),
-    ].join(" ");
-  }
+  return (
+    randomFrom(dictionary.names4[0]) + " " + randomFrom(dictionary.names4[1])
+  );
 };
 
 const getNames = [getName1, getName2, getName3, getName4, getName4, getName4];

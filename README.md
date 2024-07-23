@@ -71,7 +71,13 @@ a little
 - Refer to multiple sections by listing them separately: `{name|food}`.
 - Utilize built-in dictionaries by using any of the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`, `{a}`.
 - Add bell curve probability by adding Xd at the end of note name or section (e.g. `Clues 2d.md` or `# Food 3d`).
-- Template key can be capitalized (e.g. `Loves: {food}`) in order to ensure sentence capitalization.
+- Template key can be capitalized (e.g. `Loves: {food}`) if you'd like to ensure sentence capitalization.
+
+#### Cut-up method mode
+
+Custom table notes can also be used in a "cut-up method" mode. Copy-paste any book (or any source material) content into a note, and add a note property `mode: cutup` (type `---` at the start of the note).
+
+In this mode, a random snippet from the note will be returned, instead of a random line.
 
 ### Inline elements
 
