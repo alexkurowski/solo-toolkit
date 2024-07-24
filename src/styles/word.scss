@@ -14,6 +14,46 @@
     }
   }
 
+  .word-quick {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-2);
+    padding-left: var(--size-4-1);
+    padding-right: var(--size-4-1);
+
+    textarea {
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+      height: 100px;
+      min-height: 80px;
+      max-height: 60vh;
+    }
+
+    .word-quick-buttons {
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: var(--size-2-2);
+      width: 100%;
+    }
+
+    .word-quick-ctc {
+      position: absolute;
+      right: 12px;
+      bottom: 48px;
+      bottom: calc(var(--input-height) + var(--size-4-4) + var(--size-2-1));
+      width: 24px;
+      height: 24px;
+      padding: var(--size-4-1);
+      opacity: 0.5;
+    }
+  }
+
   .word-results {
     display: flex;
     flex-direction: column;

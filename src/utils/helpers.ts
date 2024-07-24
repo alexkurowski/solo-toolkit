@@ -60,8 +60,8 @@ export function last<T>(arr: T[]): T {
   return arr[arr.length - 1];
 }
 
-export const clickToCopy = (value: string) => (event: MouseEvent) => {
-  event.preventDefault();
+export const clickToCopy = (value: string) => (event?: MouseEvent) => {
+  event?.preventDefault();
   navigator.clipboard.writeText(value);
   new Notice("Copied to clipboard");
 };
@@ -140,6 +140,21 @@ export function bounce(timeout: number, once = false) {
       return result;
     },
   };
+}
+
+export default function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+) {
+  let timeout: ReturnType<typeof setTimeout>;
+  function debounced(...args: Parameters<T>) {
+    const later = () => {
+      func.apply(this, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  }
+  return debounced as T;
 }
 
 function cartesianProduct(...allEntries: number[][]): number[][] {

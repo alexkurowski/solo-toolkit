@@ -39,6 +39,8 @@ export interface SoloToolkitSettings {
   oracleTab: string;
   deckTab: string;
   mythicFactor: number;
+  wordQuickValue: string;
+  wordQuickHeight: number;
 }
 
 export const DEFAULT_SETTINGS: SoloToolkitSettings = {
@@ -65,6 +67,8 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   oracleTab: "",
   deckTab: "",
   mythicFactor: 5,
+  wordQuickValue: "",
+  wordQuickHeight: 100,
 };
 
 export class SoloToolkitSettingTab extends PluginSettingTab {

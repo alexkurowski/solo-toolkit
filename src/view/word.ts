@@ -1,4 +1,11 @@
-import { TFile, TFolder, ButtonComponent } from "obsidian";
+import {
+  TFile,
+  TFolder,
+  ButtonComponent,
+  ExtraButtonComponent,
+  TextAreaComponent,
+  debounce,
+} from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import {
   generateWord,
@@ -128,6 +135,8 @@ export class WordView {
         this.createCustomWordBtns(folder);
       }
     }
+
+    this.createQuickWordBtn("Quick table...");
 
     const tabElsCount = Object.keys(this.tabContentEls).length;
     const availableTabs = Object.keys(this.tabContentEls);
@@ -472,6 +481,60 @@ export class WordView {
         this.words.push([type, value]);
         this.addResult(type, value);
       });
+  }
+
+  createQuickWordBtn(tabName: string) {
+    if (!this.tabContentEls[tabName]) {
+      this.tabContentEls[tabName] = this.tabContainerEl.createDiv("word-quick");
+      this.tabSelect.addOption(tabName, tabName);
+    }
+
+    const input = new TextAreaComponent(this.tabContentEls[tabName]);
+    const initialInputValue = this.view.settings.wordQuickValue ?? "";
+    const initialInputHeight = this.view.settings.wordQuickHeight ?? 100;
+    input.setValue(initialInputValue);
+    input.inputEl.style.height = `${initialInputHeight}px`;
+    input.onChange(
+      debounce((newValue: string) => {
+        this.view.setSettings({ wordQuickValue: newValue });
+      }, 1000)
+    );
+    new ResizeObserver(() => {
+      this.view.setSettings({ wordQuickHeight: input.inputEl.offsetHeight });
+    }).observe(input.inputEl);
+
+    const buttonsContainerEl =
+      this.tabContentEls[tabName].createDiv("word-quick-buttons");
+
+    new ButtonComponent(buttonsContainerEl)
+      .setButtonText("Reset")
+      .setTooltip("Reset values")
+      .onClick(() => {
+        input.setValue("");
+        this.view.setSettings({ wordQuickValue: "" });
+      });
+
+    new ButtonComponent(buttonsContainerEl)
+      .setButtonText("Roll")
+      .setTooltip(`Generate a random word`)
+      .onClick(() => {
+        const values = input.getValue().split("\n").map(trim);
+        const value = randomFrom(values);
+        if (value) {
+          this.words.push(["Quick", value]);
+          this.addResult("Quick", value);
+        }
+      });
+
+    new ExtraButtonComponent(buttonsContainerEl)
+      .setIcon(`copy`)
+      .setTooltip(`Copy to clipboard`)
+      .onClick(() => {
+        clickToCopy(input.getValue())();
+        input.setValue("");
+        this.view.setSettings({ wordQuickValue: "" });
+      })
+      .extraSettingsEl.addClass("word-quick-ctc");
   }
 
   repopulateResults() {
