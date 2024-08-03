@@ -5,6 +5,7 @@ import { TabSelect } from "./shared/tabselect";
 import {
   Oracle,
   StandardOracle,
+  Standard2Oracle,
   MythicOracle,
   FuOracle,
   MuneOracle,
@@ -16,6 +17,7 @@ const MAX_REMEMBER_SIZE = 100;
 
 const tabLabels: { [word: string]: string } = {
   default: "Default",
+  default2: "d6 + X",
   mythic: "Mythic",
   fu: "Freeform Universal",
   mune: "Mune",
@@ -42,6 +44,7 @@ export class OracleView {
     this.view = view;
     this.oracles = {
       default: new StandardOracle(),
+      default2: new Standard2Oracle(),
       mythic: new MythicOracle(this.view.settings.mythicFactor || 5),
       fu: new FuOracle(),
       mune: new MuneOracle(),
@@ -76,6 +79,7 @@ export class OracleView {
 
     // Populate layout
     this.createOracle("default");
+    this.createOracle("default2");
     this.createOracle("mythic");
     this.createOracle("fu");
     this.createOracle("mune");
@@ -145,6 +149,12 @@ export class OracleView {
       this.createMythicBtn(tabName, "nearly impossible");
       this.createMythicBtn(tabName, "impossible");
       this.createMythicFactorBtns(tabName);
+    } else if (tabName === "default2") {
+      this.createDefault2Btn(tabName, "-2");
+      this.createDefault2Btn(tabName, "-1");
+      this.createDefault2Btn(tabName, "0");
+      this.createDefault2Btn(tabName, "+1");
+      this.createDefault2Btn(tabName, "+2");
     } else if (
       tabName === "default" ||
       tabName === "fu" ||
@@ -177,6 +187,25 @@ export class OracleView {
         const value = oracle.getAnswer(type);
         this.answers.push([label, value]);
         this.addResult(label, value);
+      });
+  }
+
+  createDefault2Btn(tabName: string, type: string) {
+    new ButtonComponent(this.tabContentEls[tabName])
+      .setButtonText(type)
+      .setTooltip(`Generate a ${type} oracle answer`)
+      .onClick(() => {
+        const oracle = this.oracles[tabName];
+        if (!oracle || !(oracle instanceof Standard2Oracle)) return;
+        oracle.setLanguage(
+          (this.view.settings.oracleLanguage as Language) || "en"
+        );
+        oracle.setConfig({
+          events: this.view.settings.standardOracleEvents,
+        });
+        const value = oracle.getAnswer(type);
+        this.answers.push([type, value]);
+        this.addResult(type, value);
       });
   }
 
