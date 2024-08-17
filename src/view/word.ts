@@ -20,6 +20,8 @@ import {
   curveValues,
   an,
   sum,
+  findWordKey,
+  normalizeTemplateValue,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 
@@ -33,6 +35,7 @@ type CustomTableMode = "default" | "cutup";
 interface CustomTableCategory {
   tabName: string;
   fileName: string;
+  templates: string[];
   values: CustomTable;
   curves: CustomTableCurves;
 }
@@ -248,11 +251,11 @@ export class WordView {
       let currentKey = "";
       let readingProperties = false;
 
-      for (const i in lines) {
+      for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
         // Switch properties parsing mode
-        if (i == "0" && line === "---") {
+        if (i == 0 && line === "---") {
           readingProperties = true;
           continue;
         } else if (readingProperties && line === "---") {
@@ -265,14 +268,23 @@ export class WordView {
           const templateKey = line.substring(0, line.indexOf(":"));
 
           let templateValue = line.substring(line.indexOf(":") + 1).trim();
-          // Remove wrapping quotation marks
-          if (templateValue.length > 1) {
-            if (templateValue[0] === templateValue[templateValue.length - 1]) {
-              if (templateValue[0] === "'" || templateValue[0] === '"') {
-                templateValue = templateValue.replace(/^['"]|['"]$/g, "");
+          // Multiline value
+          if (templateValue === "|-") {
+            i++;
+            const newTemplateValue: string[] = [];
+            while (!lines[i].includes(":") && lines[i] !== "---") {
+              let newLine = lines[i].trim();
+              newLine = normalizeTemplateValue(newLine);
+              if (newLine) {
+                newTemplateValue.push(newLine);
               }
+              i++;
             }
+            templateValue = newTemplateValue.join("<br/>");
+            i--;
           }
+          // Remove wrapping quotation marks
+          templateValue = normalizeTemplateValue(templateValue);
 
           const newTemplate = templateValue
             .replace(/\\"/g, '"')
@@ -325,8 +337,9 @@ export class WordView {
         this.customTables.push({
           tabName,
           fileName: type,
-          values: values,
-          curves: curves,
+          templates,
+          values,
+          curves,
         });
       }
     });
@@ -338,9 +351,7 @@ export class WordView {
       let curve: number = 1;
 
       // Sections in this file
-      const sectionKey = Object.keys(values).find((value) =>
-        compareWords(value, key)
-      );
+      const sectionKey = findWordKey(values, key);
       if (sectionKey) {
         result = values[sectionKey];
         if (result?.length) {
@@ -369,33 +380,44 @@ export class WordView {
           (customTable) => compareWords(customTable.fileName, keyParts[0])
         );
       if (otherCustomTable) {
-        for (let i = 0; i < keyParts.length; i++) {
-          const otherTableKey = keyParts
-            .slice(keyParts.length - i - 1)
-            .join("/");
-          const otherTableSectionKey = Object.keys(
-            otherCustomTable.values
-          ).find((value) => compareWords(value, otherTableKey));
-          if (otherTableSectionKey) {
-            result = otherCustomTable.values[otherTableSectionKey];
-            if (result?.length) {
-              curve = otherCustomTable.curves[otherTableSectionKey] || 1;
-              return { values: result, curve };
-            }
-          }
-        }
-        if (keyParts.length === 1) {
+        // Return all values if there are no sections present or specified
+        if (
+          keyParts.length === 1 ||
+          Object.keys(otherCustomTable.values).length === 1
+        ) {
           result = otherCustomTable.values[DEFAULT];
           if (result?.length) {
             curve = otherCustomTable.curves[DEFAULT] || 1;
             return { values: result, curve };
           }
         }
+
+        // Lookup section for format category/filename/section
+        for (let i = 0; i < keyParts.length; i++) {
+          // Search by parts in case section also has '/' in it
+          // 'section', then 'filename/section', and so on
+          const otherTableKey = keyParts
+            .slice(keyParts.length - i - 1)
+            .join("/");
+
+          const otherTableMatchedSectionKey = findWordKey(
+            otherCustomTable.values,
+            otherTableKey
+          );
+
+          if (otherTableMatchedSectionKey) {
+            result = otherCustomTable.values[otherTableMatchedSectionKey];
+            if (result?.length) {
+              curve = otherCustomTable.curves[otherTableMatchedSectionKey] || 1;
+              return { values: result, curve };
+            }
+          }
+        }
       }
 
       // Files in other custom folder
       const otherCustomTables = this.customTables.filter(
-        // category
+        // category/[any-filename]
         (customTable) => compareWords(customTable.tabName, key)
       );
       if (otherCustomTables?.length) {
@@ -429,30 +451,96 @@ export class WordView {
       }
     };
 
-    const replace = (lastSubs: Record<string, string>) => (wkey: string) => {
-      const key = wkey.replace(/{|}/g, "").trim().toLowerCase();
+    const replaceKeyWithWord =
+      (lastSubs: Record<string, string>) =>
+      (wrapperKey: string): string => {
+        const key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
+        if (!key) return "";
+        return (lastSubs[key] = randomFrom(
+          getValuesForKeys(key),
+          lastSubs[key] || null
+        ));
+      };
+
+    const replaceKeyWithTemplate = (wrapperKey: string): string => {
+      const key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
       if (!key) return "";
-      return (lastSubs[key] = randomFrom(
-        getValuesForKeys(key),
-        lastSubs[key] || null
-      ));
+      // Find files from another custom folder
+      const tables = this.customTables.filter(
+        // category/[any-filename]
+        (customTable) => compareWords(customTable.tabName, key)
+      );
+      if (tables.length) {
+        // Take random file from folder
+        const table = randomFrom(tables);
+        if (table.templates?.length) {
+          // Take random foreign template
+          let template = randomFrom(table.templates);
+          // Cleanup foreign template
+          template = template.replace(/^(capitalize!|upcase!)/, "").trim();
+          // Provide folder and file context for each foreign subkey
+          template = template.replace(
+            /{+ ?[^}]+ ?}+/g,
+            (wrappedSubKey: string) => {
+              let subKey = wrappedSubKey
+                .replace(/{|}/g, "")
+                .trim()
+                .toLowerCase();
+              if (subKey.includes("|")) {
+                // Apply pipe and leave only a single key
+                subKey = randomFrom(subKey.split("|")).trim();
+              }
+              if (subKey.includes("/")) {
+                // Key already has some kind of context
+                return `{${subKey}}`;
+              }
+
+              // Check if key is a section in that table
+              if (findWordKey(table.values, subKey)) {
+                // Specify full folder/file/section path to that table
+                return `{${table.tabName}/${table.fileName}/${subKey}}`;
+              } else {
+                // Key is not a section in that table
+                return `{${subKey}}`;
+              }
+            }
+          );
+          if (template) {
+            return template;
+          }
+        } else if (table) {
+          return `{${table.tabName}/${table.fileName}}`;
+        }
+      }
+      return `{${key}}`;
     };
 
     const generateCustomWord = (): string => {
       if (mode === "default") {
         if (templates.length) {
           const template = randomFrom(templates);
-          const lastSubs: Record<string, string> = {};
+          const previousSubs: Record<string, string> = {};
 
           let result = template;
+          // Import keys from other folders
           for (let i = 0; i < 5; i++) {
             const newResult = result.replace(
               /{+ ?[^}]+ ?}+/g,
-              replace(lastSubs)
+              replaceKeyWithTemplate
             );
             if (newResult === result) break;
             result = newResult;
           }
+          // Replace all keys with actual words
+          for (let i = 0; i < 5; i++) {
+            const newResult = result.replace(
+              /{+ ?[^}]+ ?}+/g,
+              replaceKeyWithWord(previousSubs)
+            );
+            if (newResult === result) break;
+            result = newResult;
+          }
+          // Write a/an based on the next word
           result = result.replace(
             /{+ ?a ?}+/g,
             (key: string, index: number, original: string) => {
@@ -466,6 +554,7 @@ export class WordView {
           );
           result = result.trim();
 
+          // Apply template's casing rules and return
           if (template.startsWith("capitalize!")) {
             return capitalize(result.replace("capitalize!", ""));
           } else if (template.startsWith("upcase!")) {
@@ -498,8 +587,10 @@ export class WordView {
       .onClick(() => {
         const value = generateCustomWord();
         if (!value) return;
-        this.words.push([type, value]);
-        this.addResult(type, value);
+        value.split(/< ?br ?\/? ?>/).forEach((line) => {
+          this.words.push([type, line]);
+          this.addResult(type, line);
+        });
       });
   }
 

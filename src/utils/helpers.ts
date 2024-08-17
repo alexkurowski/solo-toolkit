@@ -18,6 +18,23 @@ export const compareWords = (
   );
 };
 
+export const findWordKey = (
+  values: Record<string, string[]>,
+  key: string
+): string | undefined =>
+  Object.keys(values).find((valueKey) => compareWords(valueKey, key));
+
+export const normalizeTemplateValue = (str: string): string => {
+  if (str.length > 1) {
+    if (str[0] === str[str.length - 1]) {
+      if (str[0] === "'" || str[0] === '"') {
+        str = str.replace(/^['"]|['"]$/g, "");
+      }
+    }
+  }
+  return str.trim();
+};
+
 export const capitalize = (value: string): string => {
   if (value) {
     return value[0].toUpperCase() + value.substring(1);
