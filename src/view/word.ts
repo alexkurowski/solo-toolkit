@@ -19,6 +19,7 @@ import {
   identity,
   curveValues,
   an,
+  sum,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 
@@ -389,6 +390,25 @@ export class WordView {
             curve = otherCustomTable.curves[DEFAULT] || 1;
             return { values: result, curve };
           }
+        }
+      }
+
+      // Files in other custom folder
+      const otherCustomTables = this.customTables.filter(
+        // category
+        (customTable) => compareWords(customTable.tabName, key)
+      );
+      if (otherCustomTables?.length) {
+        result = otherCustomTables.map((table) => table.values[DEFAULT]).flat();
+        if (result?.length) {
+          const curveSum = sum(
+            otherCustomTables.map((table) => table.curves[DEFAULT])
+          );
+          curve = Math.round(curveSum / otherCustomTables.length) || 1;
+          return {
+            values: result,
+            curve,
+          };
         }
       }
 
