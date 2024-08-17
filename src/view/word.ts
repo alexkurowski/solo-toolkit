@@ -31,7 +31,7 @@ interface CustomTable {
 interface CustomTableCurves {
   [section: string]: number;
 }
-type CustomTableMode = "default" | "cutup";
+type CustomTableMode = "default" | "cutup" | "notes";
 interface CustomTableCategory {
   tabName: string;
   fileName: string;
@@ -297,6 +297,12 @@ export class WordView {
             newTemplate.toLowerCase().trim() === "cutup"
           ) {
             mode = "cutup";
+          } else if (
+            templateKey.toLowerCase().trim() === "mode" &&
+            (newTemplate.toLowerCase().trim() === "note" ||
+              newTemplate.toLowerCase().trim() === "notes")
+          ) {
+            mode = "notes";
           } else if (
             templateKey.length > 1 &&
             templateKey === templateKey.toUpperCase()
@@ -570,6 +576,8 @@ export class WordView {
         const length = random(2, 6) + random(2, 6);
         const startFrom = random(0, words.length - length - 1);
         return words.slice(startFrom, startFrom + length).join(" ");
+      } else if (mode === "notes") {
+        return "WIP";
       } else {
         return randomFrom(values[DEFAULT]);
       }
@@ -587,10 +595,15 @@ export class WordView {
       .onClick(() => {
         const value = generateCustomWord();
         if (!value) return;
-        value.split(/< ?br ?\/? ?>|\\n/).forEach((line) => {
-          this.words.push([type, line]);
-          this.addResult(type, line);
-        });
+        value
+          .split(/< ?br ?\/? ?>|\\n/)
+          .reverse()
+          .forEach((line) => {
+            if (line) {
+              this.words.push([type, line]);
+              this.addResult(type, line);
+            }
+          });
       });
   }
 
