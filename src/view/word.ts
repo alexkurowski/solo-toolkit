@@ -252,7 +252,7 @@ export class WordView {
       let readingProperties = false;
 
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+        const line: string = lines[i];
 
         // Switch properties parsing mode
         if (i == 0 && line === "---") {
@@ -587,7 +587,7 @@ export class WordView {
       .onClick(() => {
         const value = generateCustomWord();
         if (!value) return;
-        value.split(/< ?br ?\/? ?>/).forEach((line) => {
+        value.split(/< ?br ?\/? ?>|\\n/).forEach((line) => {
           this.words.push([type, line]);
           this.addResult(type, line);
         });
