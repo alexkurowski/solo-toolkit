@@ -70,9 +70,11 @@ a little
 - Refer to other notes by specifying the note name and/or note section: `{note_name/section_title}`, or `{folder_name/note_name/section_title}`, or simply `{note_name}` if there are no sections.
 - Refer to all sections in all notes from a specific folder: `{folder_name}`.
 - Refer to multiple sections by listing them separately: `{name|food}`.
+- Get a random note title inside a subfoder: `{folder_name/*}`. In order to display note's content instead of its name: `{folder_name/!}`.
 - Utilize built-in dictionaries by using any of the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`, `{a}`.
 - Add bell curve probability by adding Xd at the end of note name or section (e.g. `Clues 2d.md` or `# Food 3d`).
 - Template key can be capitalized (e.g. `Loves: {food}`) if you'd like to ensure sentence capitalization.
+- You can hide a subfolder from dropdown menu by adding a dot at the end of folder's name: `/Items.`, they can still be referenced with a keyword: `{item}`.
 
 #### Cut-up method mode
 

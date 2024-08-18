@@ -22,20 +22,28 @@ import {
   sum,
   findWordKey,
   normalizeTemplateValue,
+  clamp,
 } from "../utils";
 import { TabSelect } from "./shared/tabselect";
 
 interface CustomTable {
   [section: string]: string[];
 }
+interface CustomTableTemplate {
+  value: string;
+  capitalize?: boolean;
+  upcase?: boolean;
+  repeat?: number;
+}
 interface CustomTableCurves {
   [section: string]: number;
 }
-type CustomTableMode = "default" | "cutup" | "notes";
-interface CustomTableCategory {
+type CustomTableMode = "default" | "cutup";
+export interface CustomTableCategory {
+  path: string[];
   tabName: string;
   fileName: string;
-  templates: string[];
+  templates: CustomTableTemplate[];
   values: CustomTable;
   curves: CustomTableCurves;
 }
@@ -200,7 +208,12 @@ export class WordView {
     typeEl.setText(type);
 
     const valueEl = el.createSpan("word-result-value");
-    valueEl.setText(value);
+
+    const lines = value.split("\n");
+    for (const line of lines) {
+      const lineEl = valueEl.createDiv();
+      lineEl.setText(line);
+    }
   }
 
   createWordBtn(tabName: string, type: string) {
@@ -221,25 +234,26 @@ export class WordView {
       });
   }
 
-  createCustomWordBtns(folder: TFolder) {
+  createCustomWordBtns(folder: TFolder, path: string[] = []) {
     for (const child of folder.children) {
       if (child instanceof TFile) {
         if (child.extension === "md") {
-          this.createCustomWordBtn(folder.name, child);
+          this.createCustomWordBtn(folder, child, path);
         }
       }
       if (child instanceof TFolder) {
-        this.createCustomWordBtns(child);
+        this.createCustomWordBtns(child, [...path, child.name]);
       }
     }
   }
 
-  createCustomWordBtn(tabName: string, file: TFile) {
+  createCustomWordBtn(folder: TFolder, file: TFile, path: string[]) {
     const [defaultKey, defaultCurve] = this.parseKeyWithCurve(file.basename);
+    const tabName = folder.name.replace(/\.$/, "");
     const type = defaultKey;
     let mode: CustomTableMode = "default";
 
-    const templates: string[] = [];
+    const templates: CustomTableTemplate[] = [];
     const values: CustomTable = { [DEFAULT]: [] };
     const curves: CustomTableCurves = { [DEFAULT]: defaultCurve };
 
@@ -266,6 +280,7 @@ export class WordView {
         // New template
         if (readingProperties) {
           const templateKey = line.substring(0, line.indexOf(":"));
+          const timesMatch = templateKey.match(/ x\d+$/);
 
           let templateValue = line.substring(line.indexOf(":") + 1).trim();
           // Multiline value
@@ -286,36 +301,49 @@ export class WordView {
           // Remove wrapping quotation marks
           templateValue = normalizeTemplateValue(templateValue);
 
-          const newTemplate = templateValue
+          // Ignore blank templates
+          if (!templateValue) continue;
+
+          templateValue = templateValue
             .replace(/\\"/g, '"')
             .replace(/\\'/g, "'");
-          // Ignore blank templates
-          if (!newTemplate) continue;
+
+          let templateRepeat = 1;
+          let templateUpcase = false;
+          let templateCapitalize = false;
 
           if (
             templateKey.toLowerCase().trim() === "mode" &&
-            newTemplate.toLowerCase().trim() === "cutup"
+            templateValue.toLowerCase().trim() === "cutup"
           ) {
             mode = "cutup";
-          } else if (
-            templateKey.toLowerCase().trim() === "mode" &&
-            (newTemplate.toLowerCase().trim() === "note" ||
-              newTemplate.toLowerCase().trim() === "notes")
-          ) {
-            mode = "notes";
+          } else if (templateKey.length > 1 && timesMatch) {
+            templateRepeat = clamp({
+              value: parseInt(timesMatch[0].replace(" x", "")),
+              min: 1,
+              max: 20,
+            });
           } else if (
             templateKey.length > 1 &&
             templateKey === templateKey.toUpperCase()
           ) {
-            templates.push("upcase!" + newTemplate.toLowerCase());
+            templateValue = templateValue.toLowerCase();
+            templateUpcase = true;
           } else if (
             templateKey.length > 1 &&
             templateKey === capitalize(templateKey)
           ) {
-            templates.push("capitalize!" + newTemplate.toLowerCase());
-          } else {
-            templates.push(newTemplate);
+            templateValue = templateValue.toLowerCase();
+            templateCapitalize = true;
           }
+
+          templates.push({
+            value: templateValue,
+            capitalize: templateCapitalize,
+            upcase: templateUpcase,
+            repeat: templateRepeat,
+          });
+
           continue;
         }
 
@@ -341,6 +369,7 @@ export class WordView {
 
       if (mode === "default") {
         this.customTables.push({
+          path,
           tabName,
           fileName: type,
           templates,
@@ -349,6 +378,12 @@ export class WordView {
         });
       }
     });
+
+    if (
+      folder.name.endsWith(".") ||
+      path.some((folderName) => folderName.endsWith("."))
+    )
+      return;
 
     const getValuesForKey = (
       key: string
@@ -421,7 +456,7 @@ export class WordView {
         }
       }
 
-      // Files in other custom folder
+      // Files in other custom subfolder
       const otherCustomTables = this.customTables.filter(
         // category/[any-filename]
         (customTable) => compareWords(customTable.tabName, key)
@@ -437,6 +472,33 @@ export class WordView {
             values: result,
             curve,
           };
+        }
+      }
+
+      // Filenames or file contents in other custom subfolder
+      if (
+        keyParts.length === 2 &&
+        (keyParts[1] === "*" || keyParts[1] === "!")
+      ) {
+        const otherCustomTables = this.customTables.filter(
+          // category/[any-filename]
+          (customTable) => compareWords(customTable.tabName, keyParts[0])
+        );
+        if (otherCustomTables?.length) {
+          if (keyParts[1] === "*") {
+            result = otherCustomTables.map((table) => table.fileName);
+          } else if (keyParts[1] === "!") {
+            result = otherCustomTables.map((table) =>
+              table.values[DEFAULT].join("\n")
+            );
+          }
+          if (result?.length) {
+            curve = 1;
+            return {
+              values: result,
+              curve,
+            };
+          }
         }
       }
 
@@ -481,9 +543,7 @@ export class WordView {
         const table = randomFrom(tables);
         if (table.templates?.length) {
           // Take random foreign template
-          let template = randomFrom(table.templates);
-          // Cleanup foreign template
-          template = template.replace(/^(capitalize!|upcase!)/, "").trim();
+          let template = randomFrom(table.templates).value;
           // Provide folder and file context for each foreign subkey
           template = template.replace(
             /{+ ?[^}]+ ?}+/g,
@@ -521,65 +581,71 @@ export class WordView {
       return `{${key}}`;
     };
 
-    const generateCustomWord = (): string => {
+    const generateCustomWord = (): string[] => {
       if (mode === "default") {
         if (templates.length) {
           const template = randomFrom(templates);
+          const repeat = template.repeat || 1;
           const previousSubs: Record<string, string> = {};
 
-          let result = template;
-          // Import keys from other folders
-          for (let i = 0; i < 5; i++) {
-            const newResult = result.replace(
-              /{+ ?[^}]+ ?}+/g,
-              replaceKeyWithTemplate
-            );
-            if (newResult === result) break;
-            result = newResult;
-          }
-          // Replace all keys with actual words
-          for (let i = 0; i < 5; i++) {
-            const newResult = result.replace(
-              /{+ ?[^}]+ ?}+/g,
-              replaceKeyWithWord(previousSubs)
-            );
-            if (newResult === result) break;
-            result = newResult;
-          }
-          // Write a/an based on the next word
-          result = result.replace(
-            /{+ ?a ?}+/g,
-            (key: string, index: number, original: string) => {
-              const match = original.substring(index + key.length).match(/\w/);
-              if (match) {
-                return an(match[0]);
-              } else {
-                return key;
-              }
+          const results: string[] = [];
+          for (let _ = 0; _ < repeat; _++) {
+            let result = template.value;
+            // Import keys from other folders
+            for (let i = 0; i < 5; i++) {
+              const newResult = result.replace(
+                /{+ ?[^}]+ ?}+/g,
+                replaceKeyWithTemplate
+              );
+              if (newResult === result) break;
+              result = newResult;
             }
-          );
-          result = result.trim();
+            // Replace all keys with actual words
+            for (let i = 0; i < 5; i++) {
+              const newResult = result.replace(
+                /{+ ?[^}]+ ?}+/g,
+                replaceKeyWithWord(previousSubs)
+              );
+              if (newResult === result) break;
+              result = newResult;
+            }
+            // Write a/an based on the next word
+            result = result.replace(
+              /{+ ?a ?}+/g,
+              (key: string, index: number, original: string) => {
+                const match = original
+                  .substring(index + key.length)
+                  .match(/\w/);
+                if (match) {
+                  return an(match[0]);
+                } else {
+                  return key;
+                }
+              }
+            );
+            result = result.trim();
 
-          // Apply template's casing rules and return
-          if (template.startsWith("capitalize!")) {
-            return capitalize(result.replace("capitalize!", ""));
-          } else if (template.startsWith("upcase!")) {
-            return result.replace("upcase!", "").toUpperCase();
-          } else {
-            return result;
+            // Apply template's casing rules
+            if (template.capitalize) {
+              result = capitalize(result);
+            }
+            if (template.upcase) {
+              result = result.toUpperCase();
+            }
+
+            results.push(result);
           }
+          return results;
         } else {
-          return randomFrom(getValuesForKeys(DEFAULT));
+          return [randomFrom(getValuesForKeys(DEFAULT))];
         }
       } else if (mode === "cutup") {
         const words = values[DEFAULT];
         const length = random(2, 6) + random(2, 6);
         const startFrom = random(0, words.length - length - 1);
-        return words.slice(startFrom, startFrom + length).join(" ");
-      } else if (mode === "notes") {
-        return "WIP";
+        return [words.slice(startFrom, startFrom + length).join(" ")];
       } else {
-        return randomFrom(values[DEFAULT]);
+        return [randomFrom(values[DEFAULT])];
       }
     };
 
@@ -593,17 +659,13 @@ export class WordView {
       .setButtonText(type)
       .setTooltip(`Generate ${type.toLowerCase()}`)
       .onClick(() => {
-        const value = generateCustomWord();
-        if (!value) return;
-        value
-          .split(/< ?br ?\/? ?>|\\n/)
-          .reverse()
-          .forEach((line) => {
-            if (line) {
-              this.words.push([type, line]);
-              this.addResult(type, line);
-            }
-          });
+        const values = generateCustomWord();
+        if (values.every((value) => !value)) return;
+        for (let value of values) {
+          value = value.split(/< ?br ?\/? ?>|\\n/).join("\n");
+          this.words.push([type, value]);
+          this.addResult(type, value);
+        }
       });
   }
 

@@ -50,6 +50,12 @@ export function curveValues(table: {
   return result;
 }
 
+export const clamp = (opts: {
+  min: number;
+  max: number;
+  value: number;
+}): number => Math.min(Math.max(opts.min, opts.value), opts.max);
+
 // function curveStats(values: string[]) {
 //   const stats: Record<string, number> = {};
 //   for (const k of values) {
