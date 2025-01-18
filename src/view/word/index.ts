@@ -1,0 +1,1 @@
+export { WordView } from "./view";

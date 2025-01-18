@@ -6,7 +6,7 @@ import {
   TextAreaComponent,
   debounce,
 } from "obsidian";
-import { SoloToolkitView as View } from "./index";
+import { SoloToolkitView as View } from "../index";
 import {
   generateWord,
   random,
@@ -16,70 +16,26 @@ import {
   capitalize,
   compareWords,
   trim,
-  identity,
   curveValues,
   an,
   sum,
   findWordKey,
-  normalizeTemplateValue,
-  clamp,
-} from "../utils";
-import { TabSelect } from "./shared/tabselect";
-
-interface CustomTable {
-  [section: string]: string[];
-}
-interface CustomTableTemplate {
-  value: string;
-  capitalize?: boolean;
-  upcase?: boolean;
-  repeat?: number;
-}
-interface CustomTableCurves {
-  [section: string]: number;
-}
-type CustomTableMode = "default" | "cutup" | "markov";
-export interface CustomTableCategory {
-  path: string[];
-  tabName: string;
-  fileName: string;
-  templates: CustomTableTemplate[];
-  values: CustomTable;
-  curves: CustomTableCurves;
-}
-
-const MAX_REMEMBER_SIZE = 100;
-const DEFAULT = "DEFAULT";
-
-const wordLabels: { [word: string]: string } = {
-  promptSubject: "Subject",
-  promptAction: "Action",
-  promptGoal: "Goal",
-
-  npcName: "Name",
-  npcAspects: "Aspects",
-  npcSkills: "Skills",
-  npcJob: "Occupation",
-
-  locName: "Name",
-  locDescription: "Description",
-  locBuilding: "Town",
-  locWilderness: "Wilderness",
-};
-const wordTooltips: { [word: string]: string } = {
-  promptSubject: "a subject",
-  promptAction: "an action",
-
-  npcName: "a name",
-  npcAspects: "character aspects",
-  npcSkills: "character skills",
-  npcJob: "an occupation",
-
-  locName: "a town name",
-  locDescription: "generic description",
-  locBuilding: "town encounter",
-  locWilderness: "wilderness encounter",
-};
+} from "../../utils";
+import { TabSelect } from "../shared/tabselect";
+import {
+  wordLabels,
+  wordTooltips,
+  DEFAULT,
+  MAX_REMEMBER_SIZE,
+} from "./constants";
+import {
+  CustomTableCategory,
+  CustomTableMode,
+  CustomTableTemplate,
+  CustomTable,
+  CustomTableCurves,
+} from "./types";
+import { parseFileContent, parseKeyWithCurve } from "./parser";
 
 export class WordView {
   view: View;
@@ -248,133 +204,22 @@ export class WordView {
   }
 
   createCustomWordBtn(folder: TFolder, file: TFile, path: string[]) {
-    const [defaultKey, defaultCurve] = this.parseKeyWithCurve(file.basename);
+    const [defaultKey, defaultCurve] = parseKeyWithCurve(file.basename);
     const tabName = folder.name.replace(/\.$/, "");
     const type = defaultKey;
-    let mode: CustomTableMode = "default";
 
+    let mode: CustomTableMode = "default";
     const templates: CustomTableTemplate[] = [];
     const values: CustomTable = { [DEFAULT]: [] };
     const curves: CustomTableCurves = { [DEFAULT]: defaultCurve };
 
     this.view.app.vault.read(file).then((content: string) => {
-      if (!content) return;
-
-      const lines = content.split("\n").map(trim).filter(identity);
-
-      let currentKey = "";
-      let readingProperties = false;
-
-      for (let i = 0; i < lines.length; i++) {
-        const line: string = lines[i];
-
-        // Switch properties parsing mode
-        if (i == 0 && line === "---") {
-          readingProperties = true;
-          continue;
-        } else if (readingProperties && line === "---") {
-          readingProperties = false;
-          continue;
-        }
-
-        // New template
-        if (readingProperties) {
-          const templateKey = line.substring(0, line.indexOf(":"));
-          const timesMatch = templateKey.match(/ x\d+$/);
-
-          let templateValue = line.substring(line.indexOf(":") + 1).trim();
-          // Multiline value
-          if (templateValue === "|-") {
-            i++;
-            const newTemplateValue: string[] = [];
-            while (!lines[i].includes(":") && lines[i] !== "---") {
-              let newLine = lines[i].trim();
-              newLine = normalizeTemplateValue(newLine);
-              if (newLine) {
-                newTemplateValue.push(newLine);
-              }
-              i++;
-            }
-            templateValue = newTemplateValue.join("<br/>");
-            i--;
-          }
-          // Remove wrapping quotation marks
-          templateValue = normalizeTemplateValue(templateValue);
-
-          // Ignore blank templates
-          if (!templateValue) continue;
-
-          templateValue = templateValue
-            .replace(/\\"/g, '"')
-            .replace(/\\'/g, "'");
-
-          let templateRepeat = 1;
-          let templateUpcase = false;
-          let templateCapitalize = false;
-
-          if (
-            templateKey.toLowerCase().trim() === "mode" &&
-            templateValue.toLowerCase().trim() === "cutup"
-          ) {
-            mode = "cutup";
-          } else if (
-            templateKey.toLowerCase().trim() === "mode" &&
-            templateValue.toLowerCase().trim() === "markov"
-          ) {
-            mode = "markov";
-          } else if (templateKey.length > 1 && timesMatch) {
-            templateRepeat = clamp({
-              value: parseInt(timesMatch[0].replace(" x", "")),
-              min: 1,
-              max: 20,
-            });
-          } else if (
-            templateKey.length > 1 &&
-            templateKey === templateKey.toUpperCase()
-          ) {
-            templateValue = templateValue.toLowerCase();
-            templateUpcase = true;
-          } else if (
-            templateKey.length > 1 &&
-            templateKey === capitalize(templateKey)
-          ) {
-            templateValue = templateValue.toLowerCase();
-            templateCapitalize = true;
-          }
-
-          templates.push({
-            value: templateValue,
-            capitalize: templateCapitalize,
-            upcase: templateUpcase,
-            repeat: templateRepeat,
-          });
-
-          continue;
-        }
-
-        // Treat headers as template keys
-        if (line.startsWith("#")) {
-          const [key, curve] = this.parseKeyWithCurve(
-            line.replace(/#/g, "").trim().toLowerCase()
-          );
-
-          currentKey = key;
-          values[currentKey] = [];
-          curves[currentKey] = curve;
-          continue;
-        }
-
-        if (mode === "default") {
-          values[DEFAULT].push(line);
-          if (currentKey) values[currentKey].push(line);
-        } else if (mode === "cutup") {
-          values[DEFAULT].push(...line.split(/ +/));
-        } else if (mode === "markov") {
-          values[DEFAULT].push(
-            ...line.split(/ +/).map((word) => word.replace(/[^\w\d']/g, ""))
-          );
-        }
-      }
+      mode = parseFileContent({
+        content,
+        templates,
+        values,
+        curves,
+      });
 
       if (mode === "default") {
         this.customTables.push({
@@ -659,10 +504,8 @@ export class WordView {
         const result: string[] = [randomFrom(words)];
         let nextWords: string[] = [];
         for (let i = 0; i < length; i++) {
-          nextWords = words.filter(
-            (_word, index, arr) =>
-              (arr[index - 1] || "").toLowerCase() ===
-              (result[i] || "").toLowerCase()
+          nextWords = words.filter((_word, index, arr) =>
+            compareWords(arr[index - 1], result[i])
           );
           if (nextWords.length) {
             result.push(randomFrom(nextWords));
@@ -758,18 +601,6 @@ export class WordView {
     for (const word of this.words) {
       const [type, value] = word;
       this.addResult(type, value, true);
-    }
-  }
-
-  private parseKeyWithCurve(value: string): [string, number] {
-    const match = value.match(/ \d+d$/i);
-    if (match) {
-      return [
-        value.replace(match[0], "").trim(),
-        parseInt(match[0].replace(/\D/g, "")),
-      ];
-    } else {
-      return [value, 1];
     }
   }
 }
