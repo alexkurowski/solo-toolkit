@@ -38,7 +38,7 @@ interface CustomTableTemplate {
 interface CustomTableCurves {
   [section: string]: number;
 }
-type CustomTableMode = "default" | "cutup";
+type CustomTableMode = "default" | "cutup" | "markov";
 export interface CustomTableCategory {
   path: string[];
   tabName: string;
@@ -317,6 +317,11 @@ export class WordView {
             templateValue.toLowerCase().trim() === "cutup"
           ) {
             mode = "cutup";
+          } else if (
+            templateKey.toLowerCase().trim() === "mode" &&
+            templateValue.toLowerCase().trim() === "markov"
+          ) {
+            mode = "markov";
           } else if (templateKey.length > 1 && timesMatch) {
             templateRepeat = clamp({
               value: parseInt(timesMatch[0].replace(" x", "")),
@@ -364,6 +369,10 @@ export class WordView {
           if (currentKey) values[currentKey].push(line);
         } else if (mode === "cutup") {
           values[DEFAULT].push(...line.split(/ +/));
+        } else if (mode === "markov") {
+          values[DEFAULT].push(
+            ...line.split(/ +/).map((word) => word.replace(/[^\w\d']/g, ""))
+          );
         }
       }
 
@@ -644,6 +653,24 @@ export class WordView {
         const length = random(2, 6) + random(2, 6);
         const startFrom = random(0, words.length - length - 1);
         return [words.slice(startFrom, startFrom + length).join(" ")];
+      } else if (mode === "markov") {
+        const words = values[DEFAULT];
+        const length = random(4, 8) + random(4, 8);
+        const result: string[] = [randomFrom(words)];
+        let nextWords: string[] = [];
+        for (let i = 0; i < length; i++) {
+          nextWords = words.filter(
+            (_word, index, arr) =>
+              (arr[index - 1] || "").toLowerCase() ===
+              (result[i] || "").toLowerCase()
+          );
+          if (nextWords.length) {
+            result.push(randomFrom(nextWords));
+          } else {
+            result.push(randomFrom(words));
+          }
+        }
+        return [result.filter((word) => !!word).join(" ")];
       } else {
         return [randomFrom(values[DEFAULT])];
       }
