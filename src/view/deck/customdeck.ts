@@ -1,7 +1,5 @@
 import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
-import { Card } from "./deck";
-import { randomFrom } from "./dice";
-import { identity, shuffle, trim } from "./helpers";
+import { trim, identity, Card, randomFrom, shuffle } from "../../utils";
 
 export class CustomDeck {
   vault: Vault;

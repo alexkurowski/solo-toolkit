@@ -9,17 +9,10 @@ import {
 import { SoloToolkitView as View } from "../index";
 import {
   generateWord,
-  random,
   randomFrom,
   clickToCopy,
-  getDefaultDictionary,
   capitalize,
-  compareWords,
   trim,
-  curveValues,
-  an,
-  sum,
-  findWordKey,
 } from "../../utils";
 import { TabSelect } from "../shared/tabselect";
 import {
@@ -28,17 +21,13 @@ import {
   DEFAULT,
   MAX_REMEMBER_SIZE,
 } from "./constants";
-import {
-  CustomTableCategory,
-  CustomTableMode,
-  CustomTableTemplate,
-  CustomTable,
-  CustomTableCurves,
-} from "./types";
-import { parseFileContent, parseKeyWithCurve } from "./parser";
+import { CustomTableCategory } from "./types";
+import { parseKeyWithCurve } from "./parser";
+import { CustomDict } from "./customdict";
 
 export class WordView {
   view: View;
+  dicts: Record<string, CustomDict>;
   customTables: CustomTableCategory[];
   words: [string, string][];
 
@@ -51,6 +40,7 @@ export class WordView {
   constructor(view: View) {
     this.view = view;
     this.words = [];
+    this.dicts = {};
   }
 
   create() {
@@ -204,320 +194,25 @@ export class WordView {
   }
 
   createCustomWordBtn(folder: TFolder, file: TFile, path: string[]) {
-    const [defaultKey, defaultCurve] = parseKeyWithCurve(file.basename);
     const tabName = folder.name.replace(/\.$/, "");
-    const type = defaultKey;
+    const [type] = parseKeyWithCurve(file.basename);
 
-    let mode: CustomTableMode = "default";
-    const templates: CustomTableTemplate[] = [];
-    const values: CustomTable = { [DEFAULT]: [] };
-    const curves: CustomTableCurves = { [DEFAULT]: defaultCurve };
-
-    this.view.app.vault.read(file).then((content: string) => {
-      mode = parseFileContent({
-        content,
-        templates,
-        values,
-        curves,
-      });
-
-      if (mode === "default") {
-        this.customTables.push({
-          path,
-          tabName,
-          fileName: type,
-          templates,
-          values,
-          curves,
-        });
-      }
+    const dictKey = [...path, type].join("/");
+    if (!this.dicts[dictKey]) {
+      this.dicts[dictKey] = new CustomDict(this, tabName);
+    }
+    this.dicts[dictKey].parseFile(file, {
+      path,
+      tabName,
+      fileName: type,
     });
 
+    // Skip creating tab/button for hidden folder
     if (
       folder.name.endsWith(".") ||
       path.some((folderName) => folderName.endsWith("."))
     )
       return;
-
-    const getValuesForKey = (
-      key: string
-    ): { values: string[]; curve: number } => {
-      let result: string[] | undefined;
-      let curve: number = 1;
-
-      // Sections in this file
-      const sectionKey = findWordKey(values, key);
-      if (sectionKey) {
-        result = values[sectionKey];
-        if (result?.length) {
-          curve = curves[sectionKey] || 1;
-          return { values: result, curve };
-        }
-      }
-
-      // Sections in other custom files
-      const keyParts = key.split("/").map(trim);
-      const otherCustomTable =
-        this.customTables.find(
-          // category/filename
-          (customTable) =>
-            compareWords(customTable.tabName, keyParts[0]) &&
-            compareWords(customTable.fileName, keyParts[1])
-        ) ||
-        this.customTables.find(
-          // [same-category]/filename
-          (customTable) =>
-            compareWords(customTable.tabName, tabName) &&
-            compareWords(customTable.fileName, keyParts[0])
-        ) ||
-        this.customTables.find(
-          // [any-category]/filename
-          (customTable) => compareWords(customTable.fileName, keyParts[0])
-        );
-      if (otherCustomTable) {
-        // Return all values if there are no sections present or specified
-        if (
-          keyParts.length === 1 ||
-          Object.keys(otherCustomTable.values).length === 1
-        ) {
-          result = otherCustomTable.values[DEFAULT];
-          if (result?.length) {
-            curve = otherCustomTable.curves[DEFAULT] || 1;
-            return { values: result, curve };
-          }
-        }
-
-        // Lookup section for format category/filename/section
-        for (let i = 0; i < keyParts.length; i++) {
-          // Search by parts in case section also has '/' in it
-          // 'section', then 'filename/section', and so on
-          const otherTableKey = keyParts
-            .slice(keyParts.length - i - 1)
-            .join("/");
-
-          const otherTableMatchedSectionKey = findWordKey(
-            otherCustomTable.values,
-            otherTableKey
-          );
-
-          if (otherTableMatchedSectionKey) {
-            result = otherCustomTable.values[otherTableMatchedSectionKey];
-            if (result?.length) {
-              curve = otherCustomTable.curves[otherTableMatchedSectionKey] || 1;
-              return { values: result, curve };
-            }
-          }
-        }
-      }
-
-      // Files in other custom subfolder
-      const otherCustomTables = this.customTables.filter(
-        // category/[any-filename]
-        (customTable) => compareWords(customTable.tabName, key)
-      );
-      if (otherCustomTables?.length) {
-        result = otherCustomTables.map((table) => table.values[DEFAULT]).flat();
-        if (result?.length) {
-          const curveSum = sum(
-            otherCustomTables.map((table) => table.curves[DEFAULT])
-          );
-          curve = Math.round(curveSum / otherCustomTables.length) || 1;
-          return {
-            values: result,
-            curve,
-          };
-        }
-      }
-
-      // Filenames or file contents in other custom subfolder
-      if (
-        keyParts.length === 2 &&
-        (keyParts[1] === "*" || keyParts[1] === "!")
-      ) {
-        const otherCustomTables = this.customTables.filter(
-          // category/[any-filename]
-          (customTable) => compareWords(customTable.tabName, keyParts[0])
-        );
-        if (otherCustomTables?.length) {
-          if (keyParts[1] === "*") {
-            result = otherCustomTables.map((table) => table.fileName);
-          } else if (keyParts[1] === "!") {
-            result = otherCustomTables.map((table) =>
-              table.values[DEFAULT].join("\n")
-            );
-          }
-          if (result?.length) {
-            curve = 1;
-            return {
-              values: result,
-              curve,
-            };
-          }
-        }
-      }
-
-      // Default generic
-      result = getDefaultDictionary(key);
-      if (result?.length) return { values: result, curve: 1 };
-
-      return { values: [], curve: 1 };
-    };
-
-    const getValuesForKeys = (key: string): string[] => {
-      const keys = key.split("|").map(trim);
-      const result = keys.map(getValuesForKey).map(curveValues).flat();
-      if (result?.length) {
-        return result;
-      } else {
-        return [`{${key}}`];
-      }
-    };
-
-    const replaceKeyWithWord =
-      (lastSubs: Record<string, string>) =>
-      (wrapperKey: string): string => {
-        const key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
-        if (!key) return "";
-        return (lastSubs[key] = randomFrom(
-          getValuesForKeys(key),
-          lastSubs[key] || null
-        ));
-      };
-
-    const replaceKeyWithTemplate = (wrapperKey: string): string => {
-      const key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
-      if (!key) return "";
-      // Find files from another custom folder
-      const tables = this.customTables.filter(
-        // category/[any-filename]
-        (customTable) => compareWords(customTable.tabName, key)
-      );
-      if (tables.length) {
-        // Take random file from folder
-        const table = randomFrom(tables);
-        if (table.templates?.length) {
-          // Take random foreign template
-          let template = randomFrom(table.templates).value;
-          // Provide folder and file context for each foreign subkey
-          template = template.replace(
-            /{+ ?[^}]+ ?}+/g,
-            (wrappedSubKey: string) => {
-              let subKey = wrappedSubKey
-                .replace(/{|}/g, "")
-                .trim()
-                .toLowerCase();
-              if (subKey.includes("|")) {
-                // Apply pipe and leave only a single key
-                subKey = randomFrom(subKey.split("|")).trim();
-              }
-              if (subKey.includes("/")) {
-                // Key already has some kind of context
-                return `{${subKey}}`;
-              }
-
-              // Check if key is a section in that table
-              if (findWordKey(table.values, subKey)) {
-                // Specify full folder/file/section path to that table
-                return `{${table.tabName}/${table.fileName}/${subKey}}`;
-              } else {
-                // Key is not a section in that table
-                return `{${subKey}}`;
-              }
-            }
-          );
-          if (template) {
-            return template;
-          }
-        } else if (table) {
-          return `{${table.tabName}/${table.fileName}}`;
-        }
-      }
-      return `{${key}}`;
-    };
-
-    const generateCustomWord = (): string[] => {
-      if (mode === "default") {
-        if (templates.length) {
-          const template = randomFrom(templates);
-          const repeat = template.repeat || 1;
-          const previousSubs: Record<string, string> = {};
-
-          const results: string[] = [];
-          for (let _ = 0; _ < repeat; _++) {
-            let result = template.value;
-            // Import keys from other folders
-            for (let i = 0; i < 5; i++) {
-              const newResult = result.replace(
-                /{+ ?[^}]+ ?}+/g,
-                replaceKeyWithTemplate
-              );
-              if (newResult === result) break;
-              result = newResult;
-            }
-            // Replace all keys with actual words
-            for (let i = 0; i < 5; i++) {
-              const newResult = result.replace(
-                /{+ ?[^}]+ ?}+/g,
-                replaceKeyWithWord(previousSubs)
-              );
-              if (newResult === result) break;
-              result = newResult;
-            }
-            // Write a/an based on the next word
-            result = result.replace(
-              /{+ ?a ?}+/g,
-              (key: string, index: number, original: string) => {
-                const match = original
-                  .substring(index + key.length)
-                  .match(/\w/);
-                if (match) {
-                  return an(match[0]);
-                } else {
-                  return key;
-                }
-              }
-            );
-            result = result.trim();
-
-            // Apply template's casing rules
-            if (template.capitalize) {
-              result = capitalize(result);
-            }
-            if (template.upcase) {
-              result = result.toUpperCase();
-            }
-
-            results.push(result);
-          }
-          return results;
-        } else {
-          return [randomFrom(getValuesForKeys(DEFAULT))];
-        }
-      } else if (mode === "cutup") {
-        const words = values[DEFAULT];
-        const length = random(2, 6) + random(2, 6);
-        const startFrom = random(0, words.length - length - 1);
-        return [words.slice(startFrom, startFrom + length).join(" ")];
-      } else if (mode === "markov") {
-        const words = values[DEFAULT];
-        const length = random(4, 8) + random(4, 8);
-        const result: string[] = [randomFrom(words)];
-        let nextWords: string[] = [];
-        for (let i = 0; i < length; i++) {
-          nextWords = words.filter((_word, index, arr) =>
-            compareWords(arr[index - 1], result[i])
-          );
-          if (nextWords.length) {
-            result.push(randomFrom(nextWords));
-          } else {
-            result.push(randomFrom(words));
-          }
-        }
-        return [result.filter((word) => !!word).join(" ")];
-      } else {
-        return [randomFrom(values[DEFAULT])];
-      }
-    };
 
     if (!this.tabContentEls[tabName]) {
       this.tabContentEls[tabName] =
@@ -529,9 +224,10 @@ export class WordView {
       .setButtonText(type)
       .setTooltip(`Generate ${type.toLowerCase()}`)
       .onClick(() => {
-        const values = generateCustomWord();
+        const values = this.dicts[dictKey].generateWord();
         if (values.every((value) => !value)) return;
         for (let value of values) {
+          if (value === `{${DEFAULT}}`) continue;
           value = value.split(/< ?br ?\/? ?>|\\n/).join("\n");
           this.words.push([type, value]);
           this.addResult(type, value);

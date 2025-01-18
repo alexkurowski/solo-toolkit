@@ -1,8 +1,8 @@
 import { ButtonComponent, TFolder } from "obsidian";
-import { SoloToolkitView as View } from "./index";
-import { Card, DefaultDeck, clickToCopyImage, clickToCopy } from "../utils";
-import { TabSelect } from "./shared/tabselect";
-import { CustomDeck } from "src/utils/customdeck";
+import { SoloToolkitView as View } from "../index";
+import { Card, DefaultDeck, clickToCopyImage, clickToCopy } from "../../utils";
+import { TabSelect } from "../shared/tabselect";
+import { CustomDeck } from "./customdeck";
 
 const MAX_REMEMBER_SIZE = 100;
 

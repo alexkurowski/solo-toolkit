@@ -13,17 +13,27 @@ import {
   CustomTableCurves,
 } from "./types";
 
-export const parseFileContent = (data: {
-  content: string;
+export const parseFileContent = (
+  content: string
+): {
+  mode: CustomTableMode;
   templates: CustomTableTemplate[];
   values: CustomTable;
   curves: CustomTableCurves;
-}): CustomTableMode => {
-  const { content, templates, values, curves } = data;
-
+} => {
   let mode: CustomTableMode = "default";
+  const templates: CustomTableTemplate[] = [];
+  const values: CustomTable = { [DEFAULT]: [] };
+  const curves: CustomTableCurves = {};
 
-  if (!content) return mode;
+  if (!content) {
+    return {
+      mode,
+      templates,
+      values,
+      curves,
+    };
+  }
 
   const lines = content.split("\n").map(trim).filter(identity);
 
@@ -142,7 +152,12 @@ export const parseFileContent = (data: {
     }
   }
 
-  return mode;
+  return {
+    mode,
+    templates,
+    values,
+    curves,
+  };
 };
 
 export const parseKeyWithCurve = (value: string): [string, number] => {
