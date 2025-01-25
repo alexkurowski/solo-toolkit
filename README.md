@@ -71,6 +71,7 @@ a little
 - Refer to all sections in all notes from a specific folder: `{folder_name}`.
 - Refer to multiple sections by listing them separately: `{name|food}`.
 - Get a random note title inside a subfolder: `{folder_name/*}`. In order to display note's content instead of its name: `{folder_name/!}`.
+- Repeat the same word multiple times: `{noun} and {<noun}`.
 - Utilize built-in dictionaries by using any of the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`, `{a}`.
 - Add bell curve probability by adding Xd at the end of note name or section (e.g. `Clues 2d.md` or `# Food 3d`).
 - Template key can be capitalized (e.g. `Loves: {food}`) if you'd like to ensure sentence capitalization.

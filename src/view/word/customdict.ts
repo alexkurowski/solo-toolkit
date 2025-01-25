@@ -80,7 +80,7 @@ export class CustomDict {
           // Replace all keys with actual words
           for (let i = 0; i < 5; i++) {
             const newResult = result.replace(
-              /{+ ?[^}]+ ?}+/g,
+              /{+ ?<? ?[^}]+ ?}+/g,
               this.replaceKeyWithWord(previousSubs)
             );
             if (newResult === result) break;
@@ -274,8 +274,14 @@ export class CustomDict {
 
   private replaceKeyWithWord(lastSubs: Record<string, string>) {
     return (wrapperKey: string): string => {
-      const key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
+      let key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
       if (!key) return "";
+      if (key.startsWith("<")) {
+        key = key.replace("<", "").trim();
+        if (lastSubs[key]) {
+          return lastSubs[key];
+        }
+      }
       return (lastSubs[key] = randomFrom(
         this.getValuesForKeys(key),
         lastSubs[key] || null
