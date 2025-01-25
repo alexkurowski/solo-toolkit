@@ -1,5 +1,6 @@
 import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
-import { trim, identity, Card, randomFrom, shuffle } from "../../utils";
+import { Card } from "./types";
+import { trim, identity, randomFrom, shuffle } from "../../utils";
 
 export class CustomDeck {
   vault: Vault;
@@ -85,6 +86,7 @@ export class CustomDeck {
 
     if (typeof card === "string") {
       return {
+        original: card,
         image: card,
         flip: randomFrom(this.flip),
         url: card,
@@ -99,12 +101,14 @@ export class CustomDeck {
         const image =
           `data:${contentType};base64,` + arrayBufferToBase64(bytes);
         return {
+          original: card,
           image,
           flip: randomFrom(this.flip),
           file: card,
         };
       } catch (error) {
         return {
+          original: "",
           image: "",
           flip: 0,
         };
@@ -116,6 +120,13 @@ export class CustomDeck {
     this.cards = [...this.deckCards];
     shuffle(this.cards);
     this.cardsLength = this.cards.length;
+  }
+
+  shuffleIn(card: TFile | string) {
+    if (card && this.cards.indexOf(card) === -1) {
+      this.cards.push(card);
+      shuffle(this.cards);
+    }
   }
 
   size(): [number, number] {

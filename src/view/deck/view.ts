@@ -1,19 +1,22 @@
-import { ButtonComponent, setTooltip, TFolder } from "obsidian";
+import { ButtonComponent, setTooltip, TFile, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "../index";
-import { Card, DefaultDeck, clickToCopyImage, clickToCopy } from "../../utils";
+import { clickToCopyImage, clickToCopy } from "../../utils";
 import { TabSelect } from "../shared/tabselect";
+import { DefaultDeck } from "./defaultdeck";
 import { CustomDeck } from "./customdeck";
+import { Card } from "./types";
 
 const MAX_REMEMBER_SIZE = 100;
 const BLANK_CARD =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
+type DrawType = string;
 type DrawnCard = Card;
 
 export class DeckView {
   view: View;
   decks: Record<string, DefaultDeck | CustomDeck>;
-  drawn: DrawnCard[];
+  drawn: [DrawType, DrawnCard][];
 
   tab: string;
   tabSelect: TabSelect;
@@ -104,8 +107,8 @@ export class DeckView {
     this.updateCount();
   }
 
-  addResult(card: DrawnCard, immediate = false) {
-    const { image, flip, file, path, url } = card;
+  addResult(type: DrawType, card: DrawnCard, immediate = false) {
+    const { original, image, flip, file, path, url } = card;
 
     const parentElClass = ["deck-result", "image-result-content"];
     if (flip) parentElClass.push(`deck-flip${flip}`);
@@ -146,44 +149,61 @@ export class DeckView {
       event.preventDefault();
       const isShown = zoomEl.hasClass("shown");
       zoomEl.toggleClass("shown", !isShown);
-      switch (this.view.settings.deckClipboardMode) {
-        case "md":
-          if (file) {
-            if (flip) {
-              clickToCopy(`![[${file.path}|srt-flip${flip}]]`)(event);
-            } else {
-              clickToCopy(`![[${file.path}]]`)(event);
+      if (event.button === 2) {
+        this.drawn.splice(
+          this.drawn.findLastIndex(
+            (drawn) => drawn[0] === type && drawn[1] === card
+          ),
+          1
+        );
+        parentEl.remove();
+        const deck = this.decks[type];
+        if (typeof original === "string") {
+          deck.shuffleIn(original);
+        } else if (original instanceof TFile && deck instanceof CustomDeck) {
+          deck.shuffleIn(original);
+        }
+        this.updateCount();
+      } else {
+        switch (this.view.settings.deckClipboardMode) {
+          case "md":
+            if (file) {
+              if (flip) {
+                clickToCopy(`![[${file.path}|srt-flip${flip}]]`)(event);
+              } else {
+                clickToCopy(`![[${file.path}]]`)(event);
+              }
+            } else if (path) {
+              const resourcePath =
+                this.view.app.vault.adapter.getResourcePath(path);
+              if (flip) {
+                clickToCopy(`![srt-flip${flip}](${resourcePath})`)(event);
+              } else {
+                clickToCopy(`![srt-flip0](${resourcePath})`)(event);
+              }
+            } else if (url) {
+              if (flip) {
+                clickToCopy(`![srt-flip${flip}](${url})`)(event);
+              } else {
+                clickToCopy(`![img](${url})`)(event);
+              }
             }
-          } else if (path) {
-            const resourcePath =
-              this.view.app.vault.adapter.getResourcePath(path);
-            if (flip) {
-              clickToCopy(`![srt-flip${flip}](${resourcePath})`)(event);
-            } else {
-              clickToCopy(`![srt-flip0](${resourcePath})`)(event);
+            return;
+          case "path":
+            if (file) {
+              clickToCopy(file.path)(event);
+            } else if (path) {
+              clickToCopy(path)(event);
+            } else if (url) {
+              clickToCopy(url)(event);
             }
-          } else if (url) {
-            if (flip) {
-              clickToCopy(`![srt-flip${flip}](${url})`)(event);
-            } else {
-              clickToCopy(`![img](${url})`)(event);
+            return;
+          case "png":
+            if (file || path) {
+              clickToCopyImage(image, flip || 0)(event);
             }
-          }
-          return;
-        case "path":
-          if (file) {
-            clickToCopy(file.path)(event);
-          } else if (path) {
-            clickToCopy(path)(event);
-          } else if (url) {
-            clickToCopy(url)(event);
-          }
-          return;
-        case "png":
-          if (file || path) {
-            clickToCopyImage(image, flip || 0)(event);
-          }
-          return;
+            return;
+        }
       }
     };
     if (!this.view.isMobile) {
@@ -220,8 +240,8 @@ export class DeckView {
       .onClick(async () => {
         const card = await this.decks[tabName].draw();
         if (!this.view.settings.deckFlip) card.flip = 0;
-        this.drawn.push(card);
-        this.addResult(card);
+        this.drawn.push([tabName, card]);
+        this.addResult(tabName, card);
         this.updateCount();
       });
 
@@ -258,8 +278,8 @@ export class DeckView {
           .setButtonText("Draw")
           .onClick(async () => {
             const card = await this.decks[tabName].draw();
-            this.drawn.push(card);
-            this.addResult(card);
+            this.drawn.push([tabName, card]);
+            this.addResult(tabName, card);
             this.updateCount();
           });
 
@@ -295,7 +315,8 @@ export class DeckView {
     }
 
     for (const drawn of this.drawn) {
-      this.addResult(drawn, true);
+      const [type, card] = drawn;
+      this.addResult(type, card, true);
     }
 
     // Add blank cards for the grid

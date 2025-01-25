@@ -20,6 +20,7 @@ You can add any number of your own decks by creating folders of images in a spec
 
 - Cards can be rotated in your custom deck. Create a note inside your deck folder and add a word `flip` to randomize upright and upside down cards. Other options are `flip2` for upright and tapped, `flip3` for upright and tapped in both directions, `flip4` for random rotation.
 - Cards can be added as URLs instead of image files. Create a note inside your deck folder and paste links to images you want to use.
+- Right click on a card will shuffle it back in.
 
 ### Random generators
 
