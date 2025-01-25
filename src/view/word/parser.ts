@@ -152,6 +152,26 @@ export const parseFileContent = (
     }
   }
 
+  // Assign weight for each list
+  if (mode === "default") {
+    for (const key in values) {
+      const total = values[key].length;
+      if (total === 0) continue;
+      for (let index = 0; index < total; index++) {
+        const value = values[key][index];
+        const match = value.match(/ +!\d+$/);
+        if (match) {
+          const times = parseInt(match[0].replace(/\D/g, ""));
+          const newValue = value.replace(match[0], "");
+          values[key][index] = newValue;
+          for (let i = 0; i < times; i++) {
+            values[key].push(newValue);
+          }
+        }
+      }
+    }
+  }
+
   return {
     mode,
     templates,

@@ -140,6 +140,8 @@ export class CustomDict {
     }
   }
 
+  //
+
   private getValuesForKey(key: string): { values: string[]; curve: number } {
     let result: string[] | undefined;
     let curve: number = 1;
