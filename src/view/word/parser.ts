@@ -159,13 +159,15 @@ export const parseFileContent = (
       if (total === 0) continue;
       for (let index = 0; index < total; index++) {
         const value = values[key][index];
-        const match = value.match(/ +!\d+$/);
+        const match = value.match(/ +[\^!]\d+$/);
         if (match) {
           const times = parseInt(match[0].replace(/\D/g, ""));
-          const newValue = value.replace(match[0], "");
-          values[key][index] = newValue;
-          for (let i = 0; i < times; i++) {
-            values[key].push(newValue);
+          if (times && times > 0) {
+            const newValue = value.replace(match[0], "");
+            values[key][index] = newValue;
+            for (let i = 0; i < times - 1; i++) {
+              values[key].push(newValue);
+            }
           }
         }
       }
