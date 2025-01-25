@@ -4,10 +4,11 @@ import { trim, identity, Card, randomFrom, shuffle } from "../../utils";
 export class CustomDeck {
   vault: Vault;
   type: string;
-  cards: TFile[];
-  deckCards: TFile[];
+  cards: (TFile | string)[];
+  deckCards: (TFile | string)[];
   cardsLength: number = 0;
   flip: number[] = [0];
+  initialShuffleDone: boolean = false;
 
   private supportedExtensions = [
     "jpg",
@@ -25,16 +26,18 @@ export class CustomDeck {
 
     this.cards = [];
     this.deckCards = [];
-    this.parseFolder(folder);
-    this.shuffle();
   }
 
-  update(folder: TFolder) {
+  async update(folder: TFolder) {
     this.deckCards = [];
-    this.parseFolder(folder);
+    await this.parseFolder(folder);
+    if (!this.initialShuffleDone) {
+      this.shuffle();
+      this.initialShuffleDone = true;
+    }
   }
 
-  parseFolder(folder: TFolder) {
+  async parseFolder(folder: TFolder) {
     this.flip = [0];
 
     for (const child of folder.children) {
@@ -42,27 +45,31 @@ export class CustomDeck {
         if (this.supportedExtensions.includes(child.extension)) {
           this.deckCards.push(child);
         } else if (child.extension === "md") {
-          this.vault.read(child).then((content: string) => {
-            if (!content) return;
+          const content = await this.vault.read(child);
+          if (!content) continue;
 
-            const lines = content.split("\n").map(trim).filter(identity);
+          const lines = content.split("\n").map(trim).filter(identity);
 
-            for (let line of lines) {
-              line = line.toLowerCase();
-              if (line === "flip") {
-                this.flip = [0, 2];
-              }
-              if (line === "flip2") {
-                this.flip = [0, 1];
-              }
-              if (line === "flip3") {
-                this.flip = [0, 1, 3];
-              }
-              if (line === "flip4") {
-                this.flip = [0, 1, 2, 3];
-              }
+          for (let line of lines) {
+            line = line.trim();
+            const normalizedLine = line.toLowerCase();
+            if (normalizedLine === "flip") {
+              this.flip = [0, 2];
             }
-          });
+            if (normalizedLine === "flip2") {
+              this.flip = [0, 1];
+            }
+            if (normalizedLine === "flip3") {
+              this.flip = [0, 1, 3];
+            }
+            if (normalizedLine === "flip4") {
+              this.flip = [0, 1, 2, 3];
+            }
+
+            if (line.startsWith("http")) {
+              this.deckCards.push(line);
+            }
+          }
         }
       }
       // NOTE: Commented out to skip nested folders
@@ -74,25 +81,34 @@ export class CustomDeck {
 
   async draw(): Promise<Card> {
     if (!this.cards.length) this.shuffle();
-    const file = this.cards.pop();
+    const card = this.cards.pop();
 
-    try {
-      if (!file) throw "No cards";
-      const bytes = await this.vault.readBinary(file);
-      const contentType =
-        "image/" +
-        file.extension.replace("jpg", "jpeg").replace("svg", "svg+xml");
-      const image = `data:${contentType};base64,` + arrayBufferToBase64(bytes);
+    if (typeof card === "string") {
       return {
-        image,
+        image: card,
         flip: randomFrom(this.flip),
-        file,
+        url: card,
       };
-    } catch (error) {
-      return {
-        image: "",
-        flip: 0,
-      };
+    } else {
+      try {
+        if (!card) throw "No cards";
+        const bytes = await this.vault.readBinary(card);
+        const contentType =
+          "image/" +
+          card.extension.replace("jpg", "jpeg").replace("svg", "svg+xml");
+        const image =
+          `data:${contentType};base64,` + arrayBufferToBase64(bytes);
+        return {
+          image,
+          flip: randomFrom(this.flip),
+          file: card,
+        };
+      } catch (error) {
+        return {
+          image: "",
+          flip: 0,
+        };
+      }
     }
   }
 

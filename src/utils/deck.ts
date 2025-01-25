@@ -12,6 +12,7 @@ export interface Card {
   flip?: number;
   file?: TFile;
   path?: string;
+  url?: string;
 }
 
 type Path = string;

@@ -103,7 +103,7 @@ export class DeckView {
   }
 
   addResult(card: DrawnCard, immediate = false) {
-    const { image, flip, file, path } = card;
+    const { image, flip, file, path, url } = card;
 
     const parentElClass = ["deck-result", "image-result-content"];
     if (flip) parentElClass.push(`deck-flip${flip}`);
@@ -145,6 +145,12 @@ export class DeckView {
             } else {
               clickToCopy(`![srt-flip0](${resourcePath})`)(event);
             }
+          } else if (url) {
+            if (flip) {
+              clickToCopy(`![srt-flip${flip}](${url})`)(event);
+            } else {
+              clickToCopy(`![img](${url})`)(event);
+            }
           }
           return;
         case "path":
@@ -152,10 +158,14 @@ export class DeckView {
             clickToCopy(file.path)(event);
           } else if (path) {
             clickToCopy(path)(event);
+          } else if (url) {
+            clickToCopy(url)(event);
           }
           return;
         case "png":
-          clickToCopyImage(image, flip || 0)(event);
+          if (file || path) {
+            clickToCopyImage(image, flip || 0)(event);
+          }
           return;
       }
     };
@@ -221,30 +231,33 @@ export class DeckView {
     this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
     this.tabSelect.addOption(tabName, tabName);
 
-    const deck = this.decks[tabName];
-    if (deck instanceof CustomDeck) {
-      deck.update(folder);
-    } else {
+    if (!this.decks[tabName] || !(this.decks[tabName] instanceof CustomDeck)) {
       this.decks[tabName] = new CustomDeck(this.view.app.vault, folder);
     }
+    const deck = this.decks[tabName];
+    if (deck instanceof CustomDeck) {
+      deck.update(folder).then(() => {
+        new ButtonComponent(this.tabContentEls[tabName])
+          .setButtonText("Draw")
+          .onClick(async () => {
+            const card = await this.decks[tabName].draw();
+            this.drawn.push(card);
+            this.addResult(card);
+            this.updateCount();
+          });
 
-    new ButtonComponent(this.tabContentEls[tabName])
-      .setButtonText("Draw")
-      .onClick(async () => {
-        const card = await this.decks[tabName].draw();
-        this.drawn.push(card);
-        this.addResult(card);
+        new ButtonComponent(this.tabContentEls[tabName])
+          .setButtonText("Shuffle")
+          .onClick(() => {
+            this.decks[tabName].shuffle();
+            this.updateCount();
+          });
+
+        this.tabContentEls[tabName].createDiv("deck-size");
+
         this.updateCount();
       });
-
-    new ButtonComponent(this.tabContentEls[tabName])
-      .setButtonText("Shuffle")
-      .onClick(() => {
-        this.decks[tabName].shuffle();
-        this.updateCount();
-      });
-
-    this.tabContentEls[tabName].createDiv("deck-size");
+    }
   }
 
   updateCount() {
@@ -253,8 +266,10 @@ export class DeckView {
         (this.tabContentEls[this.tab]?.children?.length || 0) - 1
       ];
 
-    const [current, max] = this.decks[this.tab]?.size?.() || [];
-    sizeEl.setText(`${current || 0} / ${max || 0}`);
+    if (sizeEl) {
+      const [current, max] = this.decks[this.tab]?.size?.() || [];
+      sizeEl.setText(`${current || 0} / ${max || 0}`);
+    }
   }
 
   repopulateResults() {
