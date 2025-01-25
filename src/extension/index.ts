@@ -15,8 +15,8 @@ import {
 } from "@codemirror/view";
 import { editorLivePreviewField } from "obsidian";
 import { CountWidget, COUNT_REGEX } from "./count";
-import { TrackWidget, TRACK_REGEX } from "./track";
-import { ClockWidget, CLOCK_REGEX } from "./clock";
+import { TrackWidget, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "./track";
+import { ClockWidget, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "./clock";
 import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../main";
 
@@ -89,6 +89,7 @@ class TrackPlugin implements PluginValue {
           const text = view.state.doc.sliceString(from, to).trim();
           const meta = `${from}:${to}:${text}`;
 
+          // `3`
           if (COUNT_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
@@ -104,6 +105,7 @@ class TrackPlugin implements PluginValue {
             );
           }
 
+          // `1/6`
           if (pluginRef?.settings?.inlineProgressMode === "track") {
             if (TRACK_REGEX.test(text)) {
               buildMeta.push(meta);
@@ -139,6 +141,45 @@ class TrackPlugin implements PluginValue {
             }
           }
 
+          // `boxes:1/10`
+          if (EXPLICIT_TRACK_REGEX.test(text)) {
+            buildMeta.push(meta);
+            builder.add(
+              from,
+              to,
+              Decoration.replace({
+                widget: new TrackWidget({
+                  originalNode: node.node,
+                  originalText: text,
+                  dirty,
+                  showEdit: !isDynamicEdit,
+                }),
+              })
+            );
+          }
+
+          // `clock:1/6` / `smclock: 1/6`
+          if (EXPLICIT_CLOCK_REGEX.test(text)) {
+            let size = "clock";
+            if (text.startsWith("`s")) size = "small_clock";
+            if (text.startsWith("`l")) size = "big_clock";
+            buildMeta.push(meta);
+            builder.add(
+              from,
+              to,
+              Decoration.replace({
+                widget: new ClockWidget({
+                  originalNode: node.node,
+                  originalText: text,
+                  size,
+                  dirty,
+                  showEdit: !isDynamicEdit,
+                }),
+              })
+            );
+          }
+
+          // ` `
           if (SPACE_REGEX.test(text)) {
             const thisWidgetIndex = widgetIndex;
             buildMeta.push(meta);

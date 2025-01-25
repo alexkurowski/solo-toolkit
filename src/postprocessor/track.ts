@@ -2,6 +2,7 @@ import { App, setTooltip, TFile } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
 
 export const TRACK_REGEX = /^`[+-]?\d+\/\d+`$/;
+export const EXPLICIT_TRACK_REGEX = /^`(b:|boxes:) ?[+-]?\d+\/\d+`$/;
 const TRACK_REGEX_G = /`[+-]?\d+\/\d+`/g;
 
 const MIN_VALUE = 0;

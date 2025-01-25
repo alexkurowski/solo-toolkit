@@ -95,7 +95,13 @@ Code blocks with a single number in it (e.g. `` `5` ``) will be rendered with - 
 
 #### Progress trackers
 
-Similar to counters, code blocks with two numbers separated by a slash (e.g. `` `1/5` ``) will be rendered as a set of checkable boxes. Useful for PbtA-style clocks and general progress tracking.
+Code blocks with two numbers separated by a slash (e.g. `` `1/5` ``) will be rendered as a set of checkable boxes or as a clock. Useful for PbtA-style clocks and general progress tracking.
+
+To use specific tracker style:
+- Boxes — `` `boxes: 1/5` `` or `` `b:1/5` ``
+- Clock — `` `clock: 1/5` `` or `` `c:1/5` ``
+- Smaller clock — `` `smclock: 1/5` `` or `` `sc:1/5` ``
+- Larger clock — `` `lgclock: 1/5` `` or `` `lc:1/5` ``
 
 #### Tab stops
 

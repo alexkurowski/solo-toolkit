@@ -3,6 +3,7 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
 
 export const TRACK_REGEX = /^`[+-]?\d+\/\d+`$/;
+export const EXPLICIT_TRACK_REGEX = /^`(b:|boxes:) ?[+-]?\d+\/\d+`$/;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;

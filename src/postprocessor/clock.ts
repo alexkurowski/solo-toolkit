@@ -2,6 +2,8 @@ import { TFile, App, setTooltip } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
 
 export const CLOCK_REGEX = /^`[+-]?\d+\/\d+`$/;
+export const EXPLICIT_CLOCK_REGEX =
+  /^`((s|l)?c:|(sm|lg)?clock:) ?[+-]?\d+\/\d+`$/;
 const CLOCK_REGEX_G = /`[+-]?\d+\/\d+`/g;
 
 const MIN_VALUE = 0;
@@ -15,6 +17,7 @@ export class ClockWidget {
   lineStart: number;
   lineEnd: number;
   index: number;
+  prefix: string;
   value: number;
   max: number;
   size: number;
@@ -33,7 +36,7 @@ export class ClockWidget {
     this.lineStart = opts.lineStart;
     this.lineEnd = opts.lineEnd;
     this.index = opts.index;
-    [this.value, this.max] = this.parseValue(opts.originalText);
+    [this.prefix, this.value, this.max] = this.parseValue(opts.originalText);
 
     if (this.max < MIN_MAX) this.max = MIN_MAX;
     if (this.max > MAX_MAX) this.max = MAX_MAX;
@@ -52,9 +55,21 @@ export class ClockWidget {
     }
   }
 
-  parseValue(text: string): [number, number] {
+  parseValue(text: string): [string, number, number] {
+    let prefix = "";
+    let value = 0;
+    let max = 0;
     const split = text.replace(/`/g, "").split("/");
-    return [parseInt(split[0]) || 0, parseInt(split[1]) || 0];
+    if (split[0].includes(":")) {
+      const match = split[0].match(/\d/);
+      if (match) {
+        prefix = split[0].substring(0, match.index);
+        split[0] = split[0].replace(prefix, "");
+      }
+    }
+    value = parseInt(split[0]) || 0;
+    max = parseInt(split[1]) || 0;
+    return [prefix, value, max];
   }
 
   updateDoc() {
@@ -64,7 +79,7 @@ export class ClockWidget {
       regex: CLOCK_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
-      newValue: `\`${this.value}/${this.max}\``,
+      newValue: `\`${this.prefix}${this.value}/${this.max}\``,
       replaceIndex: this.index,
     });
   }

@@ -228,7 +228,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Style of inline progress trackers")
+      .setName("Default style of inline progress trackers")
       .setDesc("Boxes can count up to 200, clocks up to 16")
       .addDropdown((dropdown) => {
         dropdown
