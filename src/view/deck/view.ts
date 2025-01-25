@@ -1,10 +1,12 @@
-import { ButtonComponent, TFolder } from "obsidian";
+import { ButtonComponent, setTooltip, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "../index";
 import { Card, DefaultDeck, clickToCopyImage, clickToCopy } from "../../utils";
 import { TabSelect } from "../shared/tabselect";
 import { CustomDeck } from "./customdeck";
 
 const MAX_REMEMBER_SIZE = 100;
+const BLANK_CARD =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 type DrawnCard = Card;
 
@@ -116,10 +118,25 @@ export class DeckView {
 
     if (!image) return;
 
-    parentEl.createEl("img").setAttr("src", image);
+    const imgEl = parentEl.createEl("img");
+    imgEl.setAttr("src", image);
+    imgEl.onerror = () => {
+      imgEl.setAttr("src", BLANK_CARD);
+      if (file) {
+        setTooltip(imgEl, `Failed to load ${file.name}`);
+      } else if (path) {
+        setTooltip(imgEl, `Failed to load ${path}`);
+      } else if (url) {
+        setTooltip(imgEl, `Failed to load ${url}`);
+      }
+    };
 
     const zoomEl = parentEl.createDiv("image-result-zoom");
-    zoomEl.createEl("img").setAttr("src", image);
+    const zoomImgEl = zoomEl.createEl("img");
+    zoomImgEl.setAttr("src", image);
+    zoomImgEl.onerror = () => {
+      zoomEl.remove();
+    };
     zoomEl.onmousedown = (event) => {
       event.stopPropagation();
       zoomEl.removeClass("shown");
