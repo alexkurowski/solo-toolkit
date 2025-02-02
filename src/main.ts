@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { Plugin, TFile, TFolder, WorkspaceLeaf } from "obsidian";
 import { registerIcons, unregisterIcons } from "./icons";
 import {
   SoloToolkitSettingTab,
@@ -6,6 +6,7 @@ import {
   DEFAULT_SETTINGS,
 } from "./settings";
 import { SoloToolkitView, VIEW_TYPE } from "./view";
+import { VttView, VTT_VIEW_TYPE, VTT_EXT } from "./view/vtt";
 import { soloToolkitExtension } from "./extension";
 import { soloToolkitPostprocessor } from "./postprocessor";
 import { exportDeck } from "./utils/deck";
@@ -31,12 +32,21 @@ export default class SoloToolkitPlugin extends Plugin {
     this.registerMarkdownPostProcessor(soloToolkitPostprocessor(this));
     this.registerEditorExtension(soloToolkitExtension(this));
 
+    this.registerView(VTT_VIEW_TYPE, (leaf) => new VttView(leaf, this));
+    this.registerExtensions([VTT_EXT], VTT_VIEW_TYPE);
+
     this.addRibbonIcon("srt-ribbon", "Solo RPG Toolkit", () => this.openView());
 
     this.addCommand({
       id: "open-toolkit",
       name: "Open toolkit",
       callback: () => this.openView(),
+    });
+
+    this.addCommand({
+      id: "create-new-vtt",
+      name: "Create new VTT",
+      callback: () => this.createVttFile(),
     });
 
     this.addSettingTab(new SoloToolkitSettingTab(this.app, this));
@@ -63,6 +73,33 @@ export default class SoloToolkitPlugin extends Plugin {
 
     if (leaf) {
       workspace.revealLeaf(leaf);
+    }
+  }
+
+  async createVttFile(folder?: TFolder) {
+    const targetFolder = folder
+      ? folder
+      : this.app.fileManager.getNewFileParent(
+          this.app.workspace.getActiveFile()?.path || ""
+        );
+
+    try {
+      const file: TFile = await (this.app.fileManager as any).createNewFile(
+        targetFolder,
+        `Untitled.${VTT_EXT}`
+      );
+
+      const leaf = this.app.workspace.getLeaf("tab");
+      await leaf.openFile(file, { active: true });
+      await leaf.setViewState({
+        type: VTT_VIEW_TYPE,
+        state: leaf.view.getState(),
+      });
+      this.app.workspace.revealLeaf(
+        this.app.workspace.getLeavesOfType(VTT_VIEW_TYPE)[0]
+      );
+    } catch (e) {
+      console.error("Error creating vtt:", e);
     }
   }
 

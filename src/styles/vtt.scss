@@ -1,0 +1,79 @@
+.srt-vtt-root {
+  position: absolute;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  padding: 12px 12px 32px;
+  background: #111;
+  overflow: hidden !important;
+}
+
+.srt-vtt-board {
+  position: absolute;
+  inset: 0;
+}
+
+.srt-vtt-deck {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+
+  &:hover {
+    .srt-vtt-deck-border {
+      border-color: #fa0;
+    }
+  }
+
+  .srt-vtt-deck-fg {
+    position: relative;
+    background-color: #fafafa;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    width: 96px;
+    height: 136px;
+  }
+
+  .srt-vtt-deck-bg {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    right: 0;
+    width: 96px;
+    height: 136px;
+    background: #444;
+  }
+
+  .srt-vtt-deck-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: -8px;
+    border: 3px solid #444;
+    border-radius: 8px;
+    transition: border-color 0.3s;
+    pointer-events: none;
+  }
+}
+
+.srt-vtt-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #fafafa;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid #444;
+  border-radius: 8px;
+  width: 96px;
+  height: 136px;
+  transition: border-color 0.3s;
+
+  &:hover {
+    border-color: #fa0;
+  }
+}
