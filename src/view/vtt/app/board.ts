@@ -1,5 +1,4 @@
-import { Menu, MenuItem, Notice, TFolder } from "obsidian";
-import { Deck } from "./deck";
+import { Menu, MenuItem, TFolder } from "obsidian";
 import { Dnd } from "./dnd";
 import { VttApp } from "./main";
 import { Parent, Vec2 } from "./types";
@@ -7,7 +6,7 @@ import { newVec2 } from "./utils";
 
 export class Board {
   dnd: Dnd;
-  position: Vec2 = newVec2();
+  position: Vec2 = newVec2(-80, -80);
   contextMenuPosition: Vec2 = newVec2();
   zoom: number = 1;
   el: HTMLElement;
@@ -16,25 +15,40 @@ export class Board {
   constructor(private parent: Parent, private ctx: VttApp) {
     this.dnd = this.parent.dnd;
     this.el = this.parent.el.createDiv("srt-vtt-board");
+    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
 
     this.menu = new Menu();
     this.parseDefaultDecks();
     this.parseCustomDecks();
 
-    parent.dnd.makeDraggable(this, {
-      startDragOnParent: true,
-      rightBtn: true,
-      onMove: () => {
-        this.parent.el.style.backgroundPosition = `${this.position.x}px ${this.position.y}px`;
-      },
-      onClick: (event: MouseEvent) => {
-        this.contextMenuPosition = {
-          x: this.position.x + event.clientX,
-          y: this.position.y + event.clientY,
-        };
-        this.menu.showAtMouseEvent(event);
-      },
-    });
+    // parent.dnd.makeDraggable(this, {
+    //   startDragOnParent: true,
+    //   rightBtn: true,
+    //   onMove: () => {
+    //     this.parent.el.style.backgroundPosition = `${this.position.x}px ${this.position.y}px`;
+    //   },
+    //   onClick: (event: MouseEvent) => {
+    //     const rect = this.parent.el.getBoundingClientRect();
+    //     const offsetX = event.clientX - rect.left;
+    //     const offsetY = event.clientY - rect.top;
+    //     this.contextMenuPosition = {
+    //       x: -this.position.x + offsetX,
+    //       y: -this.position.y + offsetY,
+    //     };
+    //     this.menu.showAtMouseEvent(event);
+    //   },
+    // });
+
+    this.el.oncontextmenu = (event: MouseEvent) => {
+      const rect = this.parent.el.getBoundingClientRect();
+      const offsetX = event.clientX - rect.left;
+      const offsetY = event.clientY - rect.top;
+      this.contextMenuPosition = {
+        x: -this.position.x + offsetX,
+        y: -this.position.y + offsetY,
+      };
+      this.menu.showAtMouseEvent(event);
+    };
     this.el.parentElement?.addEventListener(
       "mousewheel",
       this.handleScroll.bind(this)

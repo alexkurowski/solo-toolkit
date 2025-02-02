@@ -79,4 +79,14 @@
   &:hover {
     border-color: #fa0;
   }
+
+  &.srt-vtt-card-flip-90 {
+    transform: rotate(90deg);
+  }
+  &.srt-vtt-card-flip-180 {
+    transform: rotate(180deg);
+  }
+  &.srt-vtt-card-flip-270 {
+    transform: rotate(270deg);
+  }
 }

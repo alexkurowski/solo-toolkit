@@ -38,14 +38,8 @@ export class Deck {
         this.draw();
       })
     );
-    this.menu.addSeparator();
     this.menu.addItem((item: MenuItem) =>
       item.setTitle("Shuffle").onClick(() => {
-        this.shuffle();
-      })
-    );
-    this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Reset").onClick(() => {
         this.reset();
       })
     );
@@ -66,7 +60,7 @@ export class Deck {
   }
 
   addCard(newCard: Partial<Card>) {
-    const card = new Card(this.parent, newCard);
+    const card = new Card(this.parent, this, newCard);
     this.cards.push(card);
   }
 

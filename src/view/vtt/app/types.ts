@@ -20,6 +20,7 @@ export interface DragOptions {
   onClick?: (event?: MouseEvent) => void;
   startDragOnParent?: boolean;
   rightBtn?: boolean;
+  propagateClick?: boolean;
 }
 
 export interface Parent {

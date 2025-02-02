@@ -94,12 +94,7 @@ export class CustomDeck {
     } else {
       try {
         if (!card) throw "No cards";
-        const bytes = await this.vault.readBinary(card);
-        const contentType =
-          "image/" +
-          card.extension.replace("jpg", "jpeg").replace("svg", "svg+xml");
-        const image =
-          `data:${contentType};base64,` + arrayBufferToBase64(bytes);
+        const image = this.vault.getResourcePath(card);
         return {
           original: card,
           image,

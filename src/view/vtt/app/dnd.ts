@@ -29,7 +29,9 @@ export class Dnd {
 
   makeDraggable(draggable: Draggable, options?: DragOptions) {
     const handleMouseDown = (event: MouseEvent) => {
-      event.stopPropagation();
+      if (!options?.propagateClick) {
+        event.stopPropagation();
+      }
 
       if (
         (options?.rightBtn && event.button !== 2) ||

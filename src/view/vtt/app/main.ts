@@ -80,13 +80,7 @@ export class VttApp {
     for (const child of folder.children) {
       if (child instanceof TFile) {
         if (child.extension in this.supportedExtensions) {
-          const image =
-            `data:image/${
-              this.supportedExtensions[
-                child.extension as keyof typeof this.supportedExtensions
-              ]
-            };base64,` +
-            arrayBufferToBase64(await this.vault.readBinary(child));
+          const image = this.vault.getResourcePath(child);
           deck.addCard({ image });
         }
       }
