@@ -16,9 +16,12 @@
 
 .srt-vtt-deck {
   position: absolute;
-  top: 0;
+  top: -10px;
   left: 0;
+  width: 96px;
+  height: 142px;
   border-radius: 8px;
+  overflow: hidden;
 
   &:hover {
     .srt-vtt-deck-border {
@@ -28,30 +31,30 @@
 
   .srt-vtt-deck-fg {
     position: relative;
+    top: 3px;
+    left: 3px;
     background-color: #fafafa;
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    width: 96px;
-    height: 136px;
+    width: 90px;
+    height: 130px;
+    border-radius: 6px;
   }
 
   .srt-vtt-deck-bg {
     position: absolute;
-    top: 8px;
+    top: 10px;
     left: 0;
     right: 0;
     width: 96px;
-    height: 136px;
+    height: 132px;
     background: #444;
   }
 
   .srt-vtt-deck-border {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: -8px;
+    inset: 0;
     border: 3px solid #444;
     border-radius: 8px;
     transition: border-color 0.3s;

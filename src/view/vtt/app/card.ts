@@ -1,19 +1,20 @@
 import { CardId, Parent, Vec2 } from "./types";
-import { newVec2 } from "./utils";
+import { generateId, newVec2 } from "./utils";
 
 export class Card {
-  id: CardId;
+  id: CardId = generateId("c");
   position: Vec2 = newVec2();
+  drawn: boolean = false;
   image: string;
   el: HTMLElement;
-  drawn: boolean = false;
 
   constructor(private parent: Parent, params?: Partial<Card>) {
+    if (params) Object.assign(this, params);
+
     this.el = this.parent.el.createDiv("srt-vtt-card");
     this.parent.dnd.makeDraggable(this, {
       onClick: this.hide.bind(this),
     });
-    if (params) Object.assign(this, params);
 
     this.el.style.display = "none";
     this.el.style.backgroundImage = `url(${this.image})`;
@@ -28,8 +29,8 @@ export class Card {
     this.parent.dnd.moveToTop(this.el);
   }
 
-  hide(event: MouseEvent) {
-    if (event.shiftKey) {
+  hide(event?: MouseEvent) {
+    if (!event || event.shiftKey) {
       this.drawn = false;
       this.el.style.display = "none";
     }

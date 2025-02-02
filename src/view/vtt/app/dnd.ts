@@ -1,7 +1,7 @@
 import { Draggable, DragOptions, Vec2 } from "./types";
 import { identity, newVec2 } from "./utils";
 
-const DRAG_START_DISTANCE = 6;
+const DRAG_START_DISTANCE = 4;
 const CLICK_TIME_DELTA = 600;
 
 export class Dnd {
@@ -29,6 +29,8 @@ export class Dnd {
 
   makeDraggable(draggable: Draggable, options?: DragOptions) {
     const handleMouseDown = (event: MouseEvent) => {
+      event.stopPropagation();
+
       if (
         (options?.rightBtn && event.button !== 2) ||
         (!options?.rightBtn && event.button !== 0)
@@ -36,7 +38,6 @@ export class Dnd {
         return;
       }
 
-      event.stopPropagation();
       this.dragging = draggable;
       this.dragOptions = options || null;
       this.isDragging = false;
