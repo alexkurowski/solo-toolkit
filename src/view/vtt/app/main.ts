@@ -1,4 +1,11 @@
-import { arrayBufferToBase64, TFile, TFolder, Vault } from "obsidian";
+import {
+  arrayBufferToBase64,
+  Menu,
+  MenuItem,
+  TFile,
+  TFolder,
+  Vault,
+} from "obsidian";
 import { getDeck } from "src/utils";
 import { Board } from "./board";
 import { Deck } from "./deck";
@@ -12,6 +19,7 @@ export class VttApp {
   decks: Deck[] = [];
   dnd: Dnd;
   el: HTMLElement;
+  menu: Menu;
 
   private supportedExtensions = {
     jpg: "jpg",
@@ -27,10 +35,14 @@ export class VttApp {
     this.dnd = new Dnd();
     this.el = el as HTMLElement;
 
-    this.board = new Board(this, this);
+    this.board = new Board(this);
 
-    this.el.style.backgroundImage =
-      "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHFJREFUWIXt0bEJxDAUBNG1OBC/GPXf2KJEwTlyZnAwgRTsq2BgrjHGv6pkW7Z1mlZVkqTe++aUd8221lqac+5uefU7de2j7Q74kkAqgVQCqQRSCaQSSCWQSiCVQCqBVAKpBFIJpBJIJZBKIJVA6vjAG8fRFkLBinVjAAAAAElFTkSuQmCC)";
+    this.menu = new Menu();
+    this.parseDefaultDecks();
+    this.parseCustomDecks();
+    this.el.oncontextmenu = (event: MouseEvent) => {
+      this.menu.showAtMouseEvent(event);
+    };
   }
 
   update(fileData: string) {
@@ -41,6 +53,40 @@ export class VttApp {
     this.dnd.cleanup();
   }
 
+  //
+  // Deck parser
+  //
+  parseDefaultDecks() {
+    this.menu.addItem((item: MenuItem) =>
+      item.setTitle("Add: standard").onClick(() => {
+        this.addDefaultDeck("standard", this.board.getMousePosition());
+      })
+    );
+    this.menu.addItem((item: MenuItem) =>
+      item.setTitle("Add: tarot").onClick(() => {
+        this.addDefaultDeck("tarot", this.board.getMousePosition());
+      })
+    );
+  }
+
+  parseCustomDecks() {
+    const customDeckRoot = "Assets/Decks";
+    const folder = this.vault.getFolderByPath(customDeckRoot);
+    if (!folder) return;
+
+    for (const child of folder.children) {
+      if (!(child instanceof TFolder)) continue;
+      this.menu.addItem((item: MenuItem) =>
+        item.setTitle(`Add: ${child.name}`).onClick(() => {
+          this.addCustomDeck(child, this.board.getMousePosition());
+        })
+      );
+    }
+  }
+
+  //
+  // Actions
+  //
   addDefaultDeck(type: "standard" | "tarot", position: Vec2) {
     const deck = new Deck(this.board, this, {
       position,
@@ -70,7 +116,7 @@ export class VttApp {
     this.decks.push(deck);
   }
 
-  async addCustomDeck(folder: TFolder, position: Vec2) {
+  addCustomDeck(folder: TFolder, position: Vec2) {
     const deck = new Deck(this.board, this, {
       position,
       image:
@@ -88,5 +134,11 @@ export class VttApp {
 
     deck.shuffle();
     this.decks.push(deck);
+  }
+
+  removeDeck(deck: Deck) {
+    deck.cards.forEach((card) => card.el.remove());
+    deck.el.remove();
+    this.decks.splice(this.decks.indexOf(deck), 1);
   }
 }

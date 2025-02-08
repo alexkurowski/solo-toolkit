@@ -6,19 +6,19 @@ export type Vec2 = {
 };
 
 export interface Draggable {
+  id: string;
   position: Vec2;
   el: HTMLElement;
-}
-
-export interface DragOptions {
-  modifyMovement?: (nextPosition: Vec2) => Vec2;
-  modifyPosition?: (nextPosition: Vec2) => Vec2;
-  modifyTransform?: (nextTransform: string) => string;
+  updateTransform: () => void;
+  updateSelected: (isSelected: boolean) => void;
+  onClick?: (event?: MouseEvent) => void;
+  onLongClick?: (event?: MouseEvent) => void;
   onDrag?: () => void;
   onMove?: () => void;
   onDrop?: () => void;
-  onClick?: (event?: MouseEvent) => void;
-  startDragOnParent?: boolean;
+}
+
+export interface DraggableOptions {
   rightBtn?: boolean;
   propagateClick?: boolean;
 }

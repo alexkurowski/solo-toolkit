@@ -1,6 +1,6 @@
 import { IdType, Vec2 } from "./types";
 
-const generateString = () => Math.random().toString(36).substring(2, 8);
+export const generateString = () => Math.random().toString(36).substring(2, 8);
 export const generateId = <Id extends IdType>(type: Id): `${Id}${string}` =>
   `${type}${generateString()}${generateString()}`;
 

@@ -6,6 +6,7 @@ import { generateId, newVec2 } from "./utils";
 export class Card {
   id: CardId = generateId("c");
   position: Vec2 = newVec2();
+  rotation: number = 0;
   drawn: boolean = false;
   image: string;
   el: HTMLElement;
@@ -18,16 +19,26 @@ export class Card {
   ) {
     if (params) Object.assign(this, params);
 
+    // Create element
     this.el = this.parent.el.createDiv("srt-vtt-card");
+    this.el.style.display = "none";
+    this.el.style.backgroundImage = `url(${this.image})`;
+    this.updateTransform();
 
+    // Make draggable
+    this.parent.dnd.makeDraggable(this, {
+      propagateClick: true,
+    });
+
+    // Create context menu
     this.menu = new Menu();
     this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Turn").onClick(() => {
+      item.setTitle("Rotate").onClick(() => {
         this.turnBy(90);
       })
     );
     this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Flip").onClick(() => {
+      item.setTitle("Rotate twice").onClick(() => {
         this.turnBy(180);
       })
     );
@@ -41,22 +52,38 @@ export class Card {
       event.stopPropagation();
       this.menu.showAtMouseEvent(event);
     };
-
-    this.parent.dnd.makeDraggable(this, {
-      onClick: this.hide.bind(this),
-      propagateClick: true,
-    });
-
-    this.el.style.display = "none";
-    this.el.style.backgroundImage = `url(${this.image})`;
-    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
   }
 
-  draw(at: Vec2) {
+  //
+  // Element updates
+  //
+  updateSelected(isSelected: boolean) {
+    if (isSelected) {
+      this.el.classList.add("srt-vtt-card-selected");
+    } else {
+      this.el.classList.remove("srt-vtt-card-selected");
+    }
+  }
+
+  updateTransform() {
+    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px) rotate(${this.rotation}deg)`;
+  }
+
+  //
+  // Event handlers
+  //
+  onClick() {
+    this.parent.dnd.toggleSelect(this);
+  }
+
+  //
+  // Card actions
+  //
+  drawAt(at: Vec2) {
     this.drawn = true;
     this.position = at;
     this.el.style.display = "";
-    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
+    this.updateTransform();
     this.parent.dnd.moveToTop(this.el);
   }
 
@@ -68,23 +95,9 @@ export class Card {
   }
 
   turnBy(degrees: number) {
-    const currentTurn = this.el.classList.contains("srt-vtt-card-flip-90")
-      ? 90
-      : this.el.classList.contains("srt-vtt-card-flip-180")
-      ? 180
-      : this.el.classList.contains("srt-vtt-card-flip-270")
-      ? 270
-      : 0;
-
-    let newTurn = currentTurn + degrees;
-    if (newTurn >= 360) newTurn -= 360;
-    if (newTurn < 0) newTurn += 360;
-
-    this.el.classList.remove(
-      "srt-vtt-card-flip-90",
-      "srt-vtt-card-flip-180",
-      "srt-vtt-card-flip-270"
-    );
-    this.el.classList.add(`srt-vtt-card-flip-${newTurn}`);
+    this.rotation += degrees;
+    if (this.rotation >= 360) this.rotation -= 360;
+    if (this.rotation < 0) this.rotation += 360;
+    this.updateTransform();
   }
 }

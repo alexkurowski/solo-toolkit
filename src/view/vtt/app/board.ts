@@ -1,92 +1,141 @@
-import { Menu, MenuItem, TFolder } from "obsidian";
 import { Dnd } from "./dnd";
 import { VttApp } from "./main";
-import { Parent, Vec2 } from "./types";
-import { newVec2 } from "./utils";
+import { Vec2 } from "./types";
+import { generateString, newVec2 } from "./utils";
+
+const MIN_SCALE = 0.2;
+const MAX_SCALE = 3;
+const SCALE_FACTOR = 0.0075;
 
 export class Board {
   dnd: Dnd;
-  position: Vec2 = newVec2(-80, -80);
-  contextMenuPosition: Vec2 = newVec2();
+  position: Vec2 = newVec2(0, 0);
+  scale: number = 1;
+  private mousePosition: Vec2 = newVec2();
   zoom: number = 1;
   el: HTMLElement;
-  menu: Menu;
+  bg: SVGElement;
+  parentRect: DOMRect;
+  dbg: HTMLElement;
 
-  constructor(private parent: Parent, private ctx: VttApp) {
+  constructor(private parent: VttApp) {
     this.dnd = this.parent.dnd;
+
+    const bgParentId = generateString();
+    const bgParent = this.parent.el.createSvg("svg", "canvas-background");
+    this.bg = bgParent.createSvg("pattern", {
+      attr: {
+        id: bgParentId,
+        patternUnits: "userSpaceOnUse",
+      },
+    });
+    this.bg.createSvg("circle", {
+      attr: {
+        cx: 0.7,
+        cy: 0.7,
+        r: 0.7,
+      },
+    });
+    bgParent.createSvg("rect", {
+      attr: {
+        x: 0,
+        y: 0,
+        width: "100%",
+        height: "100%",
+        fill: `url(#${bgParentId})`,
+      },
+    });
+
     this.el = this.parent.el.createDiv("srt-vtt-board");
-    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
+    this.parentRect = this.parent.el.getBoundingClientRect();
+    // this.dbg = this.el.createDiv("srt-vtt-debug");
+    this.updateTransform();
 
-    this.menu = new Menu();
-    this.parseDefaultDecks();
-    this.parseCustomDecks();
-
-    // parent.dnd.makeDraggable(this, {
-    //   startDragOnParent: true,
-    //   rightBtn: true,
-    //   onMove: () => {
-    //     this.parent.el.style.backgroundPosition = `${this.position.x}px ${this.position.y}px`;
-    //   },
-    //   onClick: (event: MouseEvent) => {
-    //     const rect = this.parent.el.getBoundingClientRect();
-    //     const offsetX = event.clientX - rect.left;
-    //     const offsetY = event.clientY - rect.top;
-    //     this.contextMenuPosition = {
-    //       x: -this.position.x + offsetX,
-    //       y: -this.position.y + offsetY,
-    //     };
-    //     this.menu.showAtMouseEvent(event);
-    //   },
-    // });
-
-    this.el.oncontextmenu = (event: MouseEvent) => {
-      const rect = this.parent.el.getBoundingClientRect();
-      const offsetX = event.clientX - rect.left;
-      const offsetY = event.clientY - rect.top;
-      this.contextMenuPosition = {
-        x: -this.position.x + offsetX,
-        y: -this.position.y + offsetY,
-      };
-      this.menu.showAtMouseEvent(event);
-    };
+    this.el.parentElement?.addEventListener("wheel", this.onScroll.bind(this));
     this.el.parentElement?.addEventListener(
-      "mousewheel",
-      this.handleScroll.bind(this)
+      "mousemove",
+      this.onMouseMove.bind(this)
     );
+    new ResizeObserver(() => {
+      this.parentRect = this.parent.el.getBoundingClientRect();
+      this.updateTransform();
+    }).observe(this.parent.el);
   }
 
-  handleScroll(event: WheelEvent) {
-    this.position.x -= event.deltaX;
-    this.position.y -= event.deltaY;
-    this.parent.el.style.backgroundPosition = `${this.position.x}px ${this.position.y}px`;
-    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
-  }
+  //
+  // Element updates
+  //
+  updateTransform() {
+    if (this.bg.parentElement) {
+      const center = this.getCenter();
 
-  parseDefaultDecks() {
-    this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Add: standard").onClick(() => {
-        this.ctx.addDefaultDeck("standard", this.contextMenuPosition);
-      })
-    );
-    this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Add: tarot").onClick(() => {
-        this.ctx.addDefaultDeck("tarot", this.contextMenuPosition);
-      })
-    );
-  }
+      this.el.style.transform = `translate(${center.x}px, ${center.y}px) scale(${this.scale}) translate(${this.position.x}px, ${this.position.y}px)`;
 
-  parseCustomDecks() {
-    const customDeckRoot = "Assets/Decks";
-    const folder = this.ctx.vault.getFolderByPath(customDeckRoot);
-    if (!folder) return;
-
-    for (const child of folder.children) {
-      if (!(child instanceof TFolder)) continue;
-      this.menu.addItem((item: MenuItem) =>
-        item.setTitle(`Add: ${child.name}`).onClick(() => {
-          this.ctx.addCustomDeck(child, this.contextMenuPosition);
-        })
-      );
+      let bgSize = 20 * this.scale;
+      if (bgSize < 10) bgSize += 10;
+      this.bg.setAttrs({
+        x: center.x + (this.position.x % (bgSize * this.scale)),
+        y: center.y + (this.position.y % (bgSize * this.scale)),
+        width: bgSize,
+        height: bgSize,
+      });
     }
+  }
+
+  //
+  // Event handlers
+  //
+  onScroll(event: WheelEvent) {
+    if (event.ctrlKey || event.metaKey) {
+      const prevScale = this.scale;
+      this.scale -= event.deltaY * SCALE_FACTOR;
+      if (this.scale > MAX_SCALE) this.scale = MAX_SCALE;
+      if (this.scale < MIN_SCALE) this.scale = MIN_SCALE;
+
+      const scaledBy = prevScale / this.scale;
+      const targetX = -this.mousePosition.x;
+      const targetY = -this.mousePosition.y;
+
+      this.position.x = targetX - (targetX - this.position.x) * scaledBy;
+      this.position.y = targetY - (targetY - this.position.y) * scaledBy;
+
+      this.updateTransform();
+      this.dnd.scale = this.scale;
+    } else {
+      this.position.x -= event.deltaX * (1 / this.scale);
+      this.position.y -= event.deltaY * (1 / this.scale);
+      this.updateTransform();
+    }
+  }
+
+  onMouseMove(event: MouseEvent) {
+    const center = this.getCenter();
+    const offsetX = event.clientX - this.parentRect.left;
+    const offsetY = event.clientY - this.parentRect.top;
+    this.mousePosition.x = (offsetX - center.x) / this.scale - this.position.x;
+    this.mousePosition.y = (offsetY - center.y) / this.scale - this.position.y;
+
+    if (this.dbg) {
+      this.dbg.style.transform = `translate(${this.mousePosition.x - 10}px, ${
+        this.mousePosition.y - 10
+      }px)`;
+    }
+  }
+
+  private getCenter(): Vec2 {
+    return {
+      x: (this.bg.parentElement?.clientWidth || 0) / 2,
+      y: (this.bg.parentElement?.clientHeight || 0) / 2,
+    };
+  }
+
+  //
+  // Board actions
+  //
+  getMousePosition(): Vec2 {
+    return {
+      x: this.mousePosition.x,
+      y: this.mousePosition.y,
+    };
   }
 }

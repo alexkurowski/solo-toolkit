@@ -8,6 +8,7 @@ import { shuffle } from "../../../utils";
 export class Deck {
   id: DeckId = generateId("d");
   position: Vec2 = newVec2();
+  rotation: number = 0;
   cards: Card[] = [];
   image: string;
   el: HTMLElement;
@@ -25,17 +26,17 @@ export class Deck {
     this.el.createDiv("srt-vtt-deck-bg");
     this.el.createDiv("srt-vtt-deck-fg");
     this.el.createDiv("srt-vtt-deck-border");
+    this.el.style.backgroundImage = `url(${this.image})`;
+    this.updateTransform();
 
     // Make draggable
-    this.parent.dnd.makeDraggable(this, {
-      onClick: this.draw.bind(this),
-    });
+    this.parent.dnd.makeDraggable(this);
 
     // Create context menu
     this.menu = new Menu();
     this.menu.addItem((item: MenuItem) =>
       item.setTitle("Draw").onClick(() => {
-        this.draw();
+        this.drawCard();
       })
     );
     this.menu.addItem((item: MenuItem) =>
@@ -46,19 +47,44 @@ export class Deck {
     this.menu.addSeparator();
     this.menu.addItem((item: MenuItem) =>
       item.setTitle("Remove").onClick(() => {
-        this.destroy();
+        this.ctx.removeDeck(this);
       })
     );
     this.el.oncontextmenu = (event: MouseEvent) => {
       event.stopPropagation();
       this.menu.showAtMouseEvent(event);
     };
+  }
 
-    // Finish up elements
-    this.el.style.backgroundImage = `url(${this.image})`;
+  //
+  // Element updates
+  //
+  updateSelected(isSelected: boolean) {
+    if (isSelected) {
+      this.el.classList.add("srt-vtt-deck-selected");
+    } else {
+      this.el.classList.remove("srt-vtt-deck-selected");
+    }
+  }
+
+  updateTransform() {
     this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
   }
 
+  //
+  // Event handlers
+  //
+  onClick() {
+    this.drawCard();
+  }
+
+  onLongClick() {
+    this.parent.dnd.toggleSelect(this);
+  }
+
+  //
+  // Deck actions
+  //
   addCard(newCard: Partial<Card>) {
     const card = new Card(this.parent, this, newCard);
     this.cards.push(card);
@@ -79,7 +105,7 @@ export class Deck {
     this.shuffle();
   }
 
-  draw() {
+  drawCard() {
     const card = this.cards.find((card) => !card.drawn);
     if (card) {
       const at = {
@@ -92,17 +118,9 @@ export class Deck {
             card.drawn && card.position.x === at.x && card.position.y === at.y
         )
       ) {
-        at.x += 20;
+        at.x += 30;
       }
-      card.draw(at);
+      card.drawAt(at);
     }
-  }
-
-  destroy() {
-    for (const card of this.cards) {
-      card.el.remove();
-    }
-    this.el.remove();
-    this.ctx.decks.splice(this.ctx.decks.indexOf(this), 1);
   }
 }

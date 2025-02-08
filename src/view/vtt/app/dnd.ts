@@ -1,12 +1,17 @@
-import { Draggable, DragOptions, Vec2 } from "./types";
-import { identity, newVec2 } from "./utils";
+import { Draggable, DraggableOptions, Vec2 } from "./types";
+import { newVec2 } from "./utils";
 
 const DRAG_START_DISTANCE = 4;
 const CLICK_TIME_DELTA = 600;
+const LONG_CLICK_TIME_DELTA = 800;
 
 export class Dnd {
-  private dragging: Draggable | null = null;
-  private dragOptions: DragOptions | null = null;
+  scale = 1;
+
+  private draggables: Set<Draggable> = new Set();
+
+  private currentDraggable: Draggable | null = null;
+  private longPressTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private dragStartPosition: Vec2 = newVec2();
   private dragStartAt: number = 0;
@@ -27,7 +32,7 @@ export class Dnd {
     document.removeEventListener("mouseup", this.mouseUpHandler);
   }
 
-  makeDraggable(draggable: Draggable, options?: DragOptions) {
+  makeDraggable(draggable: Draggable, options?: DraggableOptions) {
     const handleMouseDown = (event: MouseEvent) => {
       if (!options?.propagateClick) {
         event.stopPropagation();
@@ -40,50 +45,42 @@ export class Dnd {
         return;
       }
 
-      this.dragging = draggable;
-      this.dragOptions = options || null;
+      this.currentDraggable = draggable;
+      if (this.longPressTimeout) clearTimeout(this.longPressTimeout);
+      this.longPressTimeout = setTimeout(() => {
+        this.longPressTimeout = null;
+        this.handleLongPress.bind(this)(event);
+      }, LONG_CLICK_TIME_DELTA);
+
       this.isDragging = false;
       this.dragStartPosition = {
         x: event.clientX,
         y: event.clientY,
       };
       this.dragStartAt = Date.now();
-
-      if (options?.onDrag) {
-        options.onDrag();
-      }
     };
 
-    const el = options?.startDragOnParent
-      ? draggable.el.parentElement
-      : draggable.el;
-    if (el) {
-      el.addEventListener("mousedown", handleMouseDown);
-    }
+    draggable.el.addEventListener("mousedown", handleMouseDown);
   }
 
   handleMouseMove(event: MouseEvent) {
-    if (this.dragging) {
+    if (event.buttons & 1) {
       if (this.isDragging) {
-        const mov = (this.dragOptions?.modifyMovement || identity)({
-          x: event.movementX,
-          y: event.movementY,
-        });
-        this.dragging.position = (this.dragOptions?.modifyPosition || identity)(
-          {
-            x: this.dragging.position.x + mov.x,
-            y: this.dragging.position.y + mov.y,
-          }
-        );
-        this.dragging.el.style.transform = (
-          this.dragOptions?.modifyTransform || identity
-        )(
-          `translate(${this.dragging.position.x}px, ${this.dragging.position.y}px)`
-        );
+        this.forEachDraggable((draggable) => {
+          const moveBy = {
+            x: event.movementX * (1 / this.scale),
+            y: event.movementY * (1 / this.scale),
+          };
+          draggable.position = {
+            x: draggable.position.x + moveBy.x,
+            y: draggable.position.y + moveBy.y,
+          };
+          draggable.updateTransform();
 
-        if (this.dragOptions?.onMove) {
-          this.dragOptions.onMove();
-        }
+          if (draggable.onMove) {
+            draggable.onMove();
+          }
+        });
       } else {
         const distance = Math.sqrt(
           (event.clientX - this.dragStartPosition.x) ** 2 +
@@ -91,31 +88,88 @@ export class Dnd {
         );
         if (distance >= DRAG_START_DISTANCE) {
           this.isDragging = true;
-          this.moveToTop(this.dragging.el);
+
+          if (this.longPressTimeout) {
+            clearTimeout(this.longPressTimeout);
+            this.longPressTimeout = null;
+          }
+
+          if (this.currentDraggable) {
+            this.draggables.add(this.currentDraggable);
+          }
+          this.forEachDraggable((draggable) => {
+            if (draggable.onDrag) {
+              draggable.onDrag();
+            }
+            this.moveToTop(draggable.el);
+          });
         }
       }
     }
   }
 
   handleMouseUp(event: MouseEvent) {
+    if (this.longPressTimeout) {
+      clearTimeout(this.longPressTimeout);
+      this.longPressTimeout = null;
+    }
+
     if (this.isDragging) {
-      if (this.dragOptions?.onDrop) {
-        this.dragOptions.onDrop();
-      }
-    } else {
-      if (Date.now() - this.dragStartAt <= CLICK_TIME_DELTA) {
-        if (this.dragOptions?.onClick) {
-          this.dragOptions.onClick(event);
+      this.forEachDraggable((draggable) => {
+        if (draggable.onDrop) {
+          draggable.onDrop();
         }
+        draggable.updateSelected(false);
+      });
+      this.draggables.clear();
+      this.isDragging = false;
+    } else {
+      if (this.currentDraggable) {
+        if (Date.now() - this.dragStartAt <= CLICK_TIME_DELTA) {
+          if (this.currentDraggable.onClick) {
+            this.currentDraggable.onClick(event);
+          }
+        }
+      } else {
+        this.forEachDraggable((draggable) => {
+          draggable.updateSelected(false);
+        });
+        this.draggables.clear();
       }
     }
 
-    this.dragging = null;
-    this.dragOptions = null;
-    this.isDragging = false;
+    this.currentDraggable = null;
+  }
+
+  handleLongPress(event: MouseEvent) {
+    if (this.currentDraggable && this.currentDraggable.onLongClick) {
+      this.currentDraggable.onLongClick(event);
+    }
+  }
+
+  toggleSelect(draggable: Draggable, force?: boolean) {
+    const willSelect = force ?? !this.draggables.has(draggable);
+    if (willSelect) {
+      this.draggables.add(draggable);
+      draggable.updateSelected(true);
+    } else {
+      this.draggables.delete(draggable);
+      draggable.updateSelected(false);
+    }
   }
 
   moveToTop(el: HTMLElement) {
     el.parentElement?.appendChild(el);
+  }
+
+  private forEachDraggable(callback: (draggable: Draggable) => void) {
+    Array.from(this.draggables)
+      .sort((a: Draggable, b: Draggable) => {
+        return (
+          Array.prototype.indexOf.call(a.el.parentElement?.children, a.el) -
+          Array.prototype.indexOf.call(b.el.parentElement?.children, b.el)
+        );
+      })
+      .forEach(callback);
   }
 }
