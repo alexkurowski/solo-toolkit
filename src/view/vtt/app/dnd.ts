@@ -1,5 +1,5 @@
 import { Draggable, DraggableOptions, Vec2 } from "./types";
-import { newVec2 } from "./utils";
+import { moveToTop, newVec2 } from "./utils";
 
 const DRAG_START_DISTANCE = 4;
 const CLICK_TIME_DELTA = 600;
@@ -101,7 +101,7 @@ export class Dnd {
             if (draggable.onDrag) {
               draggable.onDrag();
             }
-            this.moveToTop(draggable.el);
+            moveToTop(draggable.el);
           });
         }
       }
@@ -119,9 +119,8 @@ export class Dnd {
         if (draggable.onDrop) {
           draggable.onDrop();
         }
-        draggable.updateSelected(false);
       });
-      this.draggables.clear();
+      this.deselectAll();
       this.isDragging = false;
     } else {
       if (this.currentDraggable) {
@@ -131,10 +130,7 @@ export class Dnd {
           }
         }
       } else {
-        this.forEachDraggable((draggable) => {
-          draggable.updateSelected(false);
-        });
-        this.draggables.clear();
+        this.deselectAll();
       }
     }
 
@@ -158,8 +154,11 @@ export class Dnd {
     }
   }
 
-  moveToTop(el: HTMLElement) {
-    el.parentElement?.appendChild(el);
+  deselectAll() {
+    this.draggables.forEach((draggable) => {
+      draggable.updateSelected(false);
+    });
+    this.draggables.clear();
   }
 
   private forEachDraggable(callback: (draggable: Draggable) => void) {

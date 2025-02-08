@@ -1,6 +1,13 @@
 import { DeckId, Parent, Vec2 } from "./types";
 import { Card } from "./card";
-import { generateId, newVec2 } from "./utils";
+import {
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  generateId,
+  newVec2,
+  snap,
+  SNAP,
+} from "./utils";
 import { Menu, MenuItem } from "obsidian";
 import { VttApp } from "./main";
 import { shuffle } from "../../../utils";
@@ -9,6 +16,7 @@ export class Deck {
   id: DeckId = generateId("d");
   position: Vec2 = newVec2();
   rotation: number = 0;
+  size: Vec2 = newVec2(CARD_WIDTH, CARD_HEIGHT);
   cards: Card[] = [];
   image: string;
   el: HTMLElement;
@@ -24,9 +32,15 @@ export class Deck {
     // Create element
     this.el = this.parent.el.createDiv("srt-vtt-deck");
     this.el.createDiv("srt-vtt-deck-bg");
-    this.el.createDiv("srt-vtt-deck-fg");
+    this.el.createEl(this.image ? "img" : "div", {
+      attr: {
+        class: "srt-vtt-deck-fg",
+        src: this.image,
+      },
+    });
     this.el.createDiv("srt-vtt-deck-border");
-    this.el.style.backgroundImage = `url(${this.image})`;
+    this.el.style.width = `${this.size.x}px`;
+    this.el.style.height = `${this.size.y}px`;
     this.updateTransform();
 
     // Make draggable
@@ -68,7 +82,13 @@ export class Deck {
   }
 
   updateTransform() {
-    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
+    let x = this.position.x;
+    let y = this.position.y;
+    if (SNAP) {
+      x = snap(x);
+      y = snap(y);
+    }
+    this.el.style.transform = `translate(${x}px, ${y}px)`;
   }
 
   //
@@ -76,10 +96,17 @@ export class Deck {
   //
   onClick() {
     this.drawCard();
+    this.parent.dnd.deselectAll();
   }
 
   onLongClick() {
     this.parent.dnd.toggleSelect(this);
+  }
+
+  onDrop() {
+    if (SNAP) {
+      this.snapToGrid();
+    }
   }
 
   //
@@ -109,8 +136,8 @@ export class Deck {
     const card = this.cards.find((card) => !card.drawn);
     if (card) {
       const at = {
-        x: this.position.x + 120,
-        y: this.position.y - 2,
+        x: this.position.x + snap(this.size.x),
+        y: this.position.y,
       };
       while (
         this.cards.find(
@@ -118,9 +145,14 @@ export class Deck {
             card.drawn && card.position.x === at.x && card.position.y === at.y
         )
       ) {
-        at.x += 30;
+        at.x += 40;
       }
       card.drawAt(at);
     }
+  }
+
+  private snapToGrid() {
+    this.position.x = snap(this.position.x);
+    this.position.y = snap(this.position.y);
   }
 }

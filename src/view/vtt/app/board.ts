@@ -4,7 +4,7 @@ import { Vec2 } from "./types";
 import { generateString, newVec2 } from "./utils";
 
 const MIN_SCALE = 0.2;
-const MAX_SCALE = 3;
+const MAX_SCALE = 4;
 const SCALE_FACTOR = 0.0075;
 
 export class Board {

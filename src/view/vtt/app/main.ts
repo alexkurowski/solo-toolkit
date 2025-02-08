@@ -10,7 +10,7 @@ import { getDeck } from "src/utils";
 import { Board } from "./board";
 import { Deck } from "./deck";
 import { Dnd } from "./dnd";
-import { Vec2 } from "./types";
+import { SubMenuItem, Vec2 } from "./types";
 import standardImages from "src/icons/deck";
 import tarotImages from "src/icons/tarot";
 
@@ -20,6 +20,7 @@ export class VttApp {
   dnd: Dnd;
   el: HTMLElement;
   menu: Menu;
+  deckSubmenu: Menu;
 
   private supportedExtensions = {
     jpg: "jpg",
@@ -38,6 +39,10 @@ export class VttApp {
     this.board = new Board(this);
 
     this.menu = new Menu();
+    this.menu.addItem((item: MenuItem & SubMenuItem) => {
+      item.setTitle("Add deck");
+      this.deckSubmenu = item.setSubmenu();
+    });
     this.parseDefaultDecks();
     this.parseCustomDecks();
     this.el.oncontextmenu = (event: MouseEvent) => {
@@ -57,13 +62,13 @@ export class VttApp {
   // Deck parser
   //
   parseDefaultDecks() {
-    this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Add: standard").onClick(() => {
+    this.deckSubmenu.addItem((item: MenuItem) =>
+      item.setTitle("Standard").onClick(() => {
         this.addDefaultDeck("standard", this.board.getMousePosition());
       })
     );
-    this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Add: tarot").onClick(() => {
+    this.deckSubmenu.addItem((item: MenuItem) =>
+      item.setTitle("Sarot").onClick(() => {
         this.addDefaultDeck("tarot", this.board.getMousePosition());
       })
     );
@@ -72,12 +77,14 @@ export class VttApp {
   parseCustomDecks() {
     const customDeckRoot = "Assets/Decks";
     const folder = this.vault.getFolderByPath(customDeckRoot);
-    if (!folder) return;
+    if (!folder?.children?.length) return;
+
+    this.deckSubmenu.addSeparator();
 
     for (const child of folder.children) {
       if (!(child instanceof TFolder)) continue;
-      this.menu.addItem((item: MenuItem) =>
-        item.setTitle(`Add: ${child.name}`).onClick(() => {
+      this.deckSubmenu.addItem((item: MenuItem) =>
+        item.setTitle(child.name).onClick(() => {
           this.addCustomDeck(child, this.board.getMousePosition());
         })
       );
@@ -90,8 +97,6 @@ export class VttApp {
   addDefaultDeck(type: "standard" | "tarot", position: Vec2) {
     const deck = new Deck(this.board, this, {
       position,
-      image:
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
     });
 
     if (type === "standard") {
@@ -119,8 +124,6 @@ export class VttApp {
   addCustomDeck(folder: TFolder, position: Vec2) {
     const deck = new Deck(this.board, this, {
       position,
-      image:
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
     });
 
     for (const child of folder.children) {

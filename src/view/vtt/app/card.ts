@@ -1,12 +1,21 @@
 import { Menu, MenuItem } from "obsidian";
 import { Deck } from "./deck";
 import { CardId, Parent, Vec2 } from "./types";
-import { generateId, newVec2 } from "./utils";
+import {
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  generateId,
+  moveToTop,
+  newVec2,
+  snap,
+  SNAP,
+} from "./utils";
 
 export class Card {
   id: CardId = generateId("c");
   position: Vec2 = newVec2();
   rotation: number = 0;
+  size: Vec2 = newVec2(CARD_WIDTH, CARD_HEIGHT);
   drawn: boolean = false;
   image: string;
   el: HTMLElement;
@@ -22,7 +31,14 @@ export class Card {
     // Create element
     this.el = this.parent.el.createDiv("srt-vtt-card");
     this.el.style.display = "none";
-    this.el.style.backgroundImage = `url(${this.image})`;
+    this.el.style.width = `${this.size.x}px`;
+    this.el.style.height = `${this.size.y}px`;
+    this.el.createEl(this.image ? "img" : "div", {
+      attr: {
+        class: "srt-vtt-card-fg",
+        src: this.image,
+      },
+    });
     this.updateTransform();
 
     // Make draggable
@@ -33,12 +49,17 @@ export class Card {
     // Create context menu
     this.menu = new Menu();
     this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Rotate").onClick(() => {
+      item.setTitle("Rotate CW").onClick(() => {
         this.turnBy(90);
       })
     );
     this.menu.addItem((item: MenuItem) =>
-      item.setTitle("Rotate twice").onClick(() => {
+      item.setTitle("Rotate CCW").onClick(() => {
+        this.turnBy(-90);
+      })
+    );
+    this.menu.addItem((item: MenuItem) =>
+      item.setTitle("Flip").onClick(() => {
         this.turnBy(180);
       })
     );
@@ -66,7 +87,13 @@ export class Card {
   }
 
   updateTransform() {
-    this.el.style.transform = `translate(${this.position.x}px, ${this.position.y}px) rotate(${this.rotation}deg)`;
+    let x = this.position.x;
+    let y = this.position.y;
+    if (SNAP) {
+      x = snap(x);
+      y = snap(y);
+    }
+    this.el.style.transform = `translate(${x}px, ${y}px) rotate(${this.rotation}deg)`;
   }
 
   //
@@ -74,6 +101,12 @@ export class Card {
   //
   onClick() {
     this.parent.dnd.toggleSelect(this);
+  }
+
+  onDrop() {
+    if (SNAP) {
+      this.snapToGrid();
+    }
   }
 
   //
@@ -84,7 +117,7 @@ export class Card {
     this.position = at;
     this.el.style.display = "";
     this.updateTransform();
-    this.parent.dnd.moveToTop(this.el);
+    moveToTop(this.el);
   }
 
   hide(event?: MouseEvent) {
@@ -99,5 +132,10 @@ export class Card {
     if (this.rotation >= 360) this.rotation -= 360;
     if (this.rotation < 0) this.rotation += 360;
     this.updateTransform();
+  }
+
+  private snapToGrid() {
+    this.position.x = snap(this.position.x);
+    this.position.y = snap(this.position.y);
   }
 }

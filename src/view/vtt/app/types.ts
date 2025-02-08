@@ -1,3 +1,4 @@
+import { Menu } from "obsidian";
 import { Dnd } from "./dnd";
 
 export type Vec2 = {
@@ -32,3 +33,7 @@ export type CardId = `c${string}`;
 export type DeckId = `d${string}`;
 export type DiceId = `r${string}`;
 export type IdType = CardId | DeckId | DiceId;
+
+export type SubMenuItem = {
+  setSubmenu: () => Menu;
+}
