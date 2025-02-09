@@ -6,6 +6,8 @@ import { SubMenuItem, Vec2 } from "./types";
 import standardImages from "src/icons/deck";
 import tarotImages from "src/icons/tarot";
 import { Dice } from "./dice";
+import { trim } from "src/utils";
+import { identity } from "./utils";
 
 export class VttApp {
   board: Board;
@@ -69,7 +71,7 @@ export class VttApp {
       })
     );
     this.deckSubmenu.addItem((item: MenuItem) =>
-      item.setTitle("Sarot").onClick(() => {
+      item.setTitle("Tarot").onClick(() => {
         this.addDefaultDeck("tarot", this.board.getMenuPosition());
       })
     );
@@ -109,6 +111,7 @@ export class VttApp {
   addDefaultDeck(type: "standard" | "tarot", position: Vec2) {
     const deck = new Deck(this.board, this, {
       position,
+      flip: 1,
     });
 
     if (type === "standard") {
@@ -133,7 +136,7 @@ export class VttApp {
     this.decks.push(deck);
   }
 
-  addCustomDeck(folder: TFolder, position: Vec2) {
+  async addCustomDeck(folder: TFolder, position: Vec2) {
     const deck = new Deck(this.board, this, {
       position,
     });
@@ -143,6 +146,32 @@ export class VttApp {
         if (child.extension in this.supportedExtensions) {
           const image = this.vault.getResourcePath(child);
           deck.addCard({ image });
+        } else if (child.extension === "md") {
+          const content = await this.vault.cachedRead(child);
+          if (!content) continue;
+
+          const lines = content.split("\n").map(trim).filter(identity);
+
+          for (let line of lines) {
+            line = line.trim();
+            const normalizedLine = line.toLowerCase();
+            if (normalizedLine === "flip") {
+              deck.setFlip(1);
+            }
+            if (normalizedLine === "flip2") {
+              deck.setFlip(2);
+            }
+            if (normalizedLine === "flip3") {
+              deck.setFlip(3);
+            }
+            if (normalizedLine === "flip4") {
+              deck.setFlip(4);
+            }
+
+            if (line.startsWith("http")) {
+              deck.addCard({ image: line });
+            }
+          }
         }
       }
     }

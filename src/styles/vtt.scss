@@ -147,9 +147,24 @@
   .srt-vtt-dice-bg {
   }
 
+  svg {
+    path:first-of-type {
+      transition: stroke 0.3s;
+    }
+  }
+
+  &:hover {
+    svg {
+      path:first-of-type {
+        stroke: #fa0 !important;
+        fill: #fa0 !important;
+      }
+    }
+  }
+
   &.srt-vtt-dice-selected {
     svg {
-      path {
+      path:first-of-type {
         stroke: #fa0 !important;
         fill: #fa0 !important;
       }

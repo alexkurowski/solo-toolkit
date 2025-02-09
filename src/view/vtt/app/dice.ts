@@ -72,13 +72,22 @@ export class Dice {
         }
         const x = center + Math.cos((deg * Math.PI) / 180) * l;
         const y = center + Math.sin((deg * Math.PI) / 180) * l;
-        return `${x} ${y}`;
+        return `${x.toFixed(4)} ${y.toFixed(4)}`;
       });
       svg.createSvg("path", {
         attr: {
           d: `M${points.join("L")}Z`,
           "stroke-linejoin": "round",
           "stroke-width": 10,
+          stroke: "#444",
+          fill: "#444",
+        },
+      });
+      svg.createSvg("path", {
+        attr: {
+          d: `M${points.join("L")}Z`,
+          "stroke-linejoin": "round",
+          "stroke-width": 4,
           stroke: "#fff",
           fill: "#fff",
         },
@@ -151,12 +160,18 @@ export class Dice {
     this.parent.dnd.toggleSelect(this);
   }
 
+  onDrop() {
+    if (SNAP) {
+      this.snapToGrid();
+    }
+  }
+
   //
   // Dice actions
   //
   roll() {
     this.el.style.pointerEvents = "none";
-    this.rollEl.style.animation = "0.8s 1 normal srt-vtt-roll";
+    this.rollEl.style.animation = "0.8s 1 ease-in-out srt-vtt-roll";
 
     let frameCounter = 1;
     const nextFrame = () => {
@@ -175,5 +190,10 @@ export class Dice {
     };
 
     nextFrame();
+  }
+
+  private snapToGrid() {
+    this.position.x = snap(this.position.x);
+    this.position.y = snap(this.position.y);
   }
 }

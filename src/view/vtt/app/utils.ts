@@ -1,6 +1,6 @@
 import { IdType, Vec2 } from "./types";
 
-export const SNAP = true;
+export const SNAP = false;
 export const SNAP_GRID = 20;
 export const CARD_WIDTH = 96;
 export const CARD_HEIGHT = 136;
@@ -21,4 +21,4 @@ export const moveToTop = (el: HTMLElement) => {
 };
 
 export const snap = (value: number): number =>
-  Math.round(value / SNAP_GRID) * SNAP_GRID;
+  Math.floor(value / SNAP_GRID) * SNAP_GRID;

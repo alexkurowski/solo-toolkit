@@ -7,10 +7,18 @@ import {
   newVec2,
   snap,
   SNAP,
+  SNAP_GRID,
 } from "./utils";
 import { Menu, MenuItem } from "obsidian";
 import { VttApp } from "./main";
-import { shuffle } from "../../../utils";
+import { randomFrom, shuffle } from "../../../utils";
+
+const FLIP_ROTATION: Record<number, number[]> = {
+  1: [0, 180],
+  2: [0, 90],
+  3: [0, 90, 270],
+  4: [0, 90, 180, 270],
+};
 
 export class Deck {
   id: DeckId = generateId("d");
@@ -18,9 +26,11 @@ export class Deck {
   rotation: number = 0;
   size: Vec2 = newVec2(CARD_WIDTH, CARD_HEIGHT);
   cards: Card[] = [];
+  flip: number = 0;
   image: string;
   el: HTMLElement;
   menu: Menu;
+  rotateMenuItem: MenuItem;
 
   constructor(
     private parent: Parent,
@@ -58,6 +68,17 @@ export class Deck {
         this.reset();
       })
     );
+    this.menu.addSeparator();
+    this.menu.addItem((item: MenuItem) => {
+      this.rotateMenuItem = item;
+      item.setTitle("Rotate").onClick(() => {
+        if (this.flip) {
+          this.setFlip(0);
+        } else {
+          this.setFlip(1);
+        }
+      });
+    });
     this.menu.addSeparator();
     this.menu.addItem((item: MenuItem) =>
       item.setTitle("Remove").onClick(() => {
@@ -121,6 +142,11 @@ export class Deck {
     this.cards.splice(this.cards.indexOf(card), 1);
   }
 
+  setFlip(newFlip: number) {
+    this.flip = newFlip;
+    this.rotateMenuItem.setChecked(newFlip > 0);
+  }
+
   shuffle() {
     shuffle(this.cards);
   }
@@ -136,16 +162,26 @@ export class Deck {
     const card = this.cards.find((card) => !card.drawn);
     if (card) {
       const at = {
-        x: this.position.x + snap(this.size.x),
+        x: this.position.x + this.size.x + SNAP_GRID,
         y: this.position.y,
       };
+      if (SNAP) {
+        at.x = snap(at.x);
+        at.y = snap(at.y);
+      }
       while (
         this.cards.find(
           (card) =>
             card.drawn && card.position.x === at.x && card.position.y === at.y
         )
       ) {
-        at.x += 40;
+        at.x += SNAP_GRID * 2;
+      }
+      if (this.flip) {
+        const possibleRotations = FLIP_ROTATION[this.flip];
+        if (possibleRotations) {
+          card.rotation = randomFrom(possibleRotations);
+        }
       }
       card.drawAt(at);
     }
