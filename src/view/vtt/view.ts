@@ -56,7 +56,7 @@ export class VttView extends TextFileView {
   }
 
   async render(file: TFile) {
-    const fileData = await this.app.vault.read(file);
+    const fileData = await this.app.vault.cachedRead(file);
     this.setViewData(fileData);
 
     const container = this.getContainer();
