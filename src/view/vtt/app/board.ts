@@ -12,6 +12,7 @@ export class Board {
   position: Vec2 = newVec2(0, 0);
   scale: number = 1;
   private mousePosition: Vec2 = newVec2();
+  private menuPosition: Vec2 = newVec2();
   zoom: number = 1;
   el: HTMLElement;
   bg: SVGElement;
@@ -136,6 +137,19 @@ export class Board {
     return {
       x: this.mousePosition.x,
       y: this.mousePosition.y,
+    };
+  }
+
+  setMenuPosition() {
+    this.menuPosition = {
+      ...this.mousePosition,
+    };
+  }
+
+  getMenuPosition(): Vec2 {
+    return {
+      x: this.menuPosition.x,
+      y: this.menuPosition.y,
     };
   }
 }

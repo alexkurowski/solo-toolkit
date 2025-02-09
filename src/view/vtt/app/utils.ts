@@ -4,6 +4,7 @@ export const SNAP = true;
 export const SNAP_GRID = 20;
 export const CARD_WIDTH = 96;
 export const CARD_HEIGHT = 136;
+export const DICE_SIZE = 56;
 
 export const generateString = () => Math.random().toString(36).substring(2, 8);
 export const generateId = <Id extends IdType>(type: Id): `${Id}${string}` =>

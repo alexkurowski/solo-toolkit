@@ -1,4 +1,4 @@
-import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
+import { Vault, TFile, TFolder } from "obsidian";
 import { Card } from "./types";
 import { trim, identity, randomFrom, shuffle } from "../../utils";
 
