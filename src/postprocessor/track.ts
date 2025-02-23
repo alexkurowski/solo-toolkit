@@ -15,6 +15,7 @@ export class TrackWidget {
   lineStart: number;
   lineEnd: number;
   index: number;
+  prefix: string;
   value: number;
   max: number;
   btnEls: HTMLElement[];
@@ -32,7 +33,7 @@ export class TrackWidget {
     this.lineStart = opts.lineStart;
     this.lineEnd = opts.lineEnd;
     this.index = opts.index;
-    [this.value, this.max] = this.parseValue(opts.originalText);
+    [this.prefix, this.value, this.max] = this.parseValue(opts.originalText);
 
     if (this.max < MIN_MAX) this.max = MIN_MAX;
     if (this.max > MAX_MAX) this.max = MAX_MAX;
@@ -40,9 +41,21 @@ export class TrackWidget {
     if (this.value > this.max) this.value = this.max;
   }
 
-  parseValue(text: string): [number, number] {
+  parseValue(text: string): [string, number, number] {
+    let prefix = "";
+    let value = 0;
+    let max = 0;
     const split = text.replace(/`/g, "").split("/");
-    return [parseInt(split[0]) || 0, parseInt(split[1]) || 0];
+    if (split[0].includes(":")) {
+      const match = split[0].match(/\d/);
+      if (match) {
+        prefix = split[0].substring(0, match.index);
+        split[0] = split[0].replace(prefix, "");
+      }
+    }
+    value = parseInt(split[0]) || 0;
+    max = parseInt(split[1]) || 0;
+    return [prefix, value, max];
   }
 
   updateButtonClasses() {
@@ -63,7 +76,7 @@ export class TrackWidget {
       regex: TRACK_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
-      newValue: `\`${this.value}/${this.max}\``,
+      newValue: `\`${this.prefix}${this.value}/${this.max}\``,
       replaceIndex: this.index,
     });
   }

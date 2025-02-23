@@ -11,6 +11,7 @@ const MAX_MAX = 200;
 
 export class TrackWidget extends WidgetType {
   node: SyntaxNode;
+  prefix: string;
   value: number;
   max: number;
   dirty: () => void;
@@ -25,7 +26,7 @@ export class TrackWidget extends WidgetType {
   }) {
     super();
     this.node = opts.originalNode;
-    [this.value, this.max] = this.parseValue(opts.originalText);
+    [this.prefix, this.value, this.max] = this.parseValue(opts.originalText);
     if (this.max < MIN_MAX) this.max = MIN_MAX;
     if (this.max > MAX_MAX) this.max = MAX_MAX;
     if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
@@ -34,9 +35,21 @@ export class TrackWidget extends WidgetType {
     this.showEdit = opts.showEdit;
   }
 
-  parseValue(text: string): [number, number] {
+  parseValue(text: string): [string, number, number] {
+    let prefix = "";
+    let value = 0;
+    let max = 0;
     const split = text.replace(/`/g, "").split("/");
-    return [parseInt(split[0]) || 0, parseInt(split[1]) || 0];
+    if (split[0].includes(":")) {
+      const match = split[0].match(/\d/);
+      if (match) {
+        prefix = split[0].substring(0, match.index);
+        split[0] = split[0].replace(prefix, "");
+      }
+    }
+    value = parseInt(split[0]) || 0;
+    max = parseInt(split[1]) || 0;
+    return [prefix, value, max];
   }
 
   updateButtonClasses() {
@@ -71,7 +84,7 @@ export class TrackWidget extends WidgetType {
         {
           from: this.node.from,
           to: this.node.to,
-          insert: `${this.value}/${this.max}`,
+          insert: `${this.prefix}${this.value}/${this.max}`,
         },
       ],
     });
