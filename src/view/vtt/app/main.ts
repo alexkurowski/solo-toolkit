@@ -1,4 +1,4 @@
-import { Menu, MenuItem, TFile, TFolder, Vault } from "obsidian";
+import { App, Menu, MenuItem, TFile, TFolder, Vault } from "obsidian";
 import { Board } from "./board";
 import { Deck } from "./deck";
 import { Dnd } from "./dnd";
@@ -8,6 +8,7 @@ import tarotImages from "src/icons/tarot";
 import { Dice } from "./dice";
 import { trim } from "src/utils";
 import { identity } from "./utils";
+import { VttMediaModal } from "./media_modal";
 
 export class VttApp {
   board: Board;
@@ -29,7 +30,7 @@ export class VttApp {
     svg: "svg",
   };
 
-  constructor(el: Element, public vault: Vault, private fileData: string) {
+  constructor(el: Element, public app: App, private fileData: string) {
     this.dnd = new Dnd();
     this.el = el as HTMLElement;
 
@@ -47,6 +48,12 @@ export class VttApp {
       this.diceSubmenu = item.setSubmenu();
     });
     this.addDefaultDice();
+    this.menu.addSeparator();
+    this.menu.addItem((item: MenuItem) => {
+      item.setTitle("Add media from web").onClick(() => {
+        new VttMediaModal(this.app).open();
+      });
+    });
     this.el.oncontextmenu = (event: MouseEvent) => {
       this.board.setMenuPosition();
       this.menu.showAtMouseEvent(event);
@@ -79,7 +86,7 @@ export class VttApp {
 
   parseCustomDecks() {
     const customDeckRoot = "Assets/Decks";
-    const folder = this.vault.getFolderByPath(customDeckRoot);
+    const folder = this.app.vault.getFolderByPath(customDeckRoot);
     if (!folder?.children?.length) return;
 
     this.deckSubmenu.addSeparator();
@@ -144,10 +151,10 @@ export class VttApp {
     for (const child of folder.children) {
       if (child instanceof TFile) {
         if (child.extension in this.supportedExtensions) {
-          const image = this.vault.getResourcePath(child);
+          const image = this.app.vault.getResourcePath(child);
           deck.addCard({ image });
         } else if (child.extension === "md") {
-          const content = await this.vault.cachedRead(child);
+          const content = await this.app.vault.cachedRead(child);
           if (!content) continue;
 
           const lines = content.split("\n").map(trim).filter(identity);

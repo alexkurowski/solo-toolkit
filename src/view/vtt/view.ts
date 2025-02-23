@@ -65,7 +65,7 @@ export class VttView extends TextFileView {
     if (this.root) {
       this.root.update(fileData);
     } else {
-      this.root = new VttApp(container, this.app.vault, fileData);
+      this.root = new VttApp(container, this.app, fileData);
     }
   }
 }
