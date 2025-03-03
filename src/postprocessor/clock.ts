@@ -76,7 +76,7 @@ export class ClockWidget {
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
-      regex: CLOCK_REGEX_G,
+      regex: this.prefix ? EXPLICIT_CLOCK_REGEX : CLOCK_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
       newValue: `\`${this.prefix}${this.value}/${this.max}\``,

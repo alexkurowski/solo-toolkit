@@ -73,7 +73,7 @@ export class TrackWidget {
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
-      regex: TRACK_REGEX_G,
+      regex: this.prefix ? EXPLICIT_TRACK_REGEX : TRACK_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
       newValue: `\`${this.prefix}${this.value}/${this.max}\``,
