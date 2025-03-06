@@ -4,6 +4,7 @@ import { replaceInFile } from "src/utils/plugin";
 export const TRACK_REGEX = /^`[+-]?\d+\/\d+`$/;
 export const EXPLICIT_TRACK_REGEX = /^`(b:|boxes:) ?[+-]?\d+\/\d+`$/;
 const TRACK_REGEX_G = /`[+-]?\d+\/\d+`/g;
+const EXPLICIT_TRACK_REGEX_G = /`(b:|boxes:) ?[+-]?\d+\/\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
@@ -73,7 +74,7 @@ export class TrackWidget {
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
-      regex: this.prefix ? EXPLICIT_TRACK_REGEX : TRACK_REGEX_G,
+      regex: this.prefix ? EXPLICIT_TRACK_REGEX_G : TRACK_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
       newValue: `\`${this.prefix}${this.value}/${this.max}\``,

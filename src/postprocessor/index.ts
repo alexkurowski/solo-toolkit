@@ -2,6 +2,7 @@ import { MarkdownPostProcessorContext, TFile } from "obsidian";
 import { CountWidget, COUNT_REGEX } from "./count";
 import { TrackWidget, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "./track";
 import { ClockWidget, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "./clock";
+import { DiceWidget, DICE_REGEX } from "./dice";
 import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../main";
 
@@ -23,7 +24,10 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
     const lineEnd = section.lineEnd;
     let countMatchIndex = 0;
     let trackMatchIndex = 0;
+    let expTrackMatchIndex = 0;
     let clockMatchIndex = 0;
+    let expClockMatchIndex = 0;
+    let diceMatchIndex = 0;
     let spaceMatchIndex = 0;
 
     for (let i = 0; i < nodeList.length; i++) {
@@ -71,6 +75,19 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
         }
       }
 
+      // `d20`
+      if (DICE_REGEX.test(mdText)) {
+        const widget = new DiceWidget({
+          app: plugin.app,
+          file,
+          lineStart,
+          lineEnd,
+          index: diceMatchIndex++,
+          originalText: mdText,
+        });
+        node.replaceWith(widget.toDOM());
+      }
+
       // `boxes:1/10`
       if (EXPLICIT_TRACK_REGEX.test(mdText)) {
         const widget = new TrackWidget({
@@ -78,7 +95,7 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
           file,
           lineStart,
           lineEnd,
-          index: trackMatchIndex++,
+          index: expTrackMatchIndex++,
           originalText: mdText,
         });
         node.replaceWith(widget.toDOM());
@@ -94,7 +111,7 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
           file,
           lineStart,
           lineEnd,
-          index: clockMatchIndex++,
+          index: expClockMatchIndex++,
           originalText: mdText,
           size,
         });

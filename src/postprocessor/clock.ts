@@ -5,6 +5,7 @@ export const CLOCK_REGEX = /^`[+-]?\d+\/\d+`$/;
 export const EXPLICIT_CLOCK_REGEX =
   /^`((s|l)?c:|(sm|lg)?clock:) ?[+-]?\d+\/\d+`$/;
 const CLOCK_REGEX_G = /`[+-]?\d+\/\d+`/g;
+const EXPLICIT_CLOCK_REGEX_G = /`((s|l)?c:|(sm|lg)?clock:) ?[+-]?\d+\/\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
@@ -76,7 +77,7 @@ export class ClockWidget {
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
-      regex: this.prefix ? EXPLICIT_CLOCK_REGEX : CLOCK_REGEX_G,
+      regex: this.prefix ? EXPLICIT_CLOCK_REGEX_G : CLOCK_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
       newValue: `\`${this.prefix}${this.value}/${this.max}\``,
