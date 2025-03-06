@@ -17,6 +17,7 @@ import { editorLivePreviewField } from "obsidian";
 import { CountWidget, COUNT_REGEX } from "./count";
 import { TrackWidget, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "./track";
 import { ClockWidget, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "./clock";
+import { DiceWidget, DICE_REGEX } from "./dice";
 import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../main";
 
@@ -97,6 +98,22 @@ class TrackPlugin implements PluginValue {
               to,
               Decoration.replace({
                 widget: new CountWidget({
+                  originalNode: node.node,
+                  originalText: text,
+                  dirty,
+                }),
+              })
+            );
+          }
+
+          // `d20`
+          if (DICE_REGEX.test(text)) {
+            buildMeta.push(meta);
+            builder.add(
+              from,
+              to,
+              Decoration.replace({
+                widget: new DiceWidget({
                   originalNode: node.node,
                   originalText: text,
                   dirty,

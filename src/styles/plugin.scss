@@ -5,7 +5,7 @@
   flex-wrap: nowrap;
   gap: var(--size-4-1);
   font-weight: 500;
-  vertical-align: middle;
+  vertical-align: bottom;
 
   span {
     display: inline-block;
@@ -25,12 +25,13 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--size-4-1);
-  vertical-align: middle;
+  margin-top: var(--size-4-1);
+  vertical-align: bottom;
 
   .srt-track-btn {
     display: inline-block;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border: 2px solid var(--text-normal);
     border-radius: var(--radius-s);
     background-color: transparent;
@@ -74,7 +75,7 @@
   justify-content: center;
   flex-grow: 0;
   flex-shrink: 0;
-  vertical-align: middle;
+  vertical-align: bottom;
 
   .srt-clock-svg {
     cursor: pointer;
@@ -99,6 +100,38 @@
 
     svg {
       color: var(--text-faint);
+    }
+  }
+}
+
+.srt-dice {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  vertical-align: bottom;
+
+  svg path {
+    stroke: currentColor;
+    fill: currentColor;
+  }
+
+  .srt-dice-btn {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--background-primary);
+    background: transparent !important;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  &.srt-dice-d4 {
+    svg {
+      position: relative;
+      top: 2px;
     }
   }
 }
