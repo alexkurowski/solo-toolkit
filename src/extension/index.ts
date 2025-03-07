@@ -149,7 +149,7 @@ class TrackPlugin implements PluginValue {
                   widget: new ClockWidget({
                     originalNode: node.node,
                     originalText: text,
-                    size: pluginRef?.settings?.inlineProgressMode || "clock",
+                    defaultSize: pluginRef?.settings?.inlineProgressMode || "",
                     dirty,
                     showEdit: !isDynamicEdit,
                   }),
@@ -177,9 +177,6 @@ class TrackPlugin implements PluginValue {
 
           // `clock:1/6` / `smclock: 1/6`
           if (EXPLICIT_CLOCK_REGEX.test(text)) {
-            let size = "clock";
-            if (text.startsWith("`s")) size = "small_clock";
-            if (text.startsWith("`l")) size = "big_clock";
             buildMeta.push(meta);
             builder.add(
               from,
@@ -188,7 +185,7 @@ class TrackPlugin implements PluginValue {
                 widget: new ClockWidget({
                   originalNode: node.node,
                   originalText: text,
-                  size,
+                  defaultSize: pluginRef?.settings?.inlineProgressMode || "",
                   dirty,
                   showEdit: !isDynamicEdit,
                 }),

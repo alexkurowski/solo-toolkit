@@ -117,6 +117,8 @@ export class DiceView {
     const total = sum(this.rolls[max].map(first));
     const singleStr = `d${max}: ${value}`;
     const totalStr = `${size}d${max}: ${total}`;
+    const inlineSingleStr = `d${max} = ${value}`;
+    const inlineTotalStr = `d${max} = ${total}`;
     switch (this.view.settings.diceClipboardMode) {
       case "plain":
         return [singleStr, totalStr];
@@ -134,6 +136,12 @@ export class DiceView {
         return [`\`[${singleStr}]\``, `\`[${totalStr}]\``];
       case "code+curly":
         return [`\`{${singleStr}}\``, `\`{${totalStr}}\``];
+      case "inline":
+        return [`\`${inlineSingleStr}\``, `\`${inlineTotalStr}\``];
+      case "inline-small":
+        return [`\`${inlineSingleStr}\``, `\`${inlineTotalStr}\``];
+      case "inline-large":
+        return [`\`${inlineSingleStr}\``, `\`${inlineTotalStr}\``];
       default:
         return [singleStr, totalStr];
     }

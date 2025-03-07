@@ -2,8 +2,10 @@ import { TFile, App, setTooltip } from "obsidian";
 import { roll, rollIntervals } from "src/utils";
 import { replaceInFile } from "src/utils/plugin";
 
-export const DICE_REGEX = /^`d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
-const DICE_REGEX_G = /`d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`/g;
+export const DICE_REGEX =
+  /^`(sm|lg|s|l)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
+const DICE_REGEX_G =
+  /`(sm|lg|s|l)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`/g;
 
 export class DiceWidget {
   app: App;
@@ -11,6 +13,7 @@ export class DiceWidget {
   lineStart: number;
   lineEnd: number;
   index: number;
+  prefix: string;
   max: number;
   value: number;
   color: string;
@@ -29,28 +32,44 @@ export class DiceWidget {
     this.lineStart = opts.lineStart;
     this.lineEnd = opts.lineEnd;
     this.index = opts.index;
-    [this.max, this.color, this.value] = this.parseValue(opts.originalText);
+    [this.prefix, this.max, this.color, this.value] = this.parseValue(
+      opts.originalText
+    );
+
+    if (this.value < 1) this.value = 1;
+
+    if (this.prefix.startsWith("s")) {
+      this.size = 30;
+    } else if (this.prefix.startsWith("l")) {
+      this.size = 42;
+    } else {
+      this.size = 36;
+    }
   }
 
-  parseValue(text: string): [number, string, number] {
+  parseValue(text: string): [string, number, string, number] {
+    let prefix = "";
     let max = 20;
     let color = "";
     let value = 20;
     const match = text
       .replace(/`/g, "")
-      .match(/d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
+      .match(/(sm|lg|s|l)?d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
     if (match?.[1]) {
-      max = parseInt(match[1]) || 20;
+      prefix = match[1];
     }
     if (match?.[2]) {
-      color = match[2];
+      max = parseInt(match[2]) || 20;
     }
-    if (match?.[4]) {
-      value = parseInt(match[4]) || max;
+    if (match?.[3]) {
+      color = match[3];
+    }
+    if (match?.[5]) {
+      value = parseInt(match[5]) || max;
     } else {
       value = max;
     }
-    return [max, color, value];
+    return [prefix, max, color, value];
   }
 
   updateDoc() {
@@ -60,7 +79,7 @@ export class DiceWidget {
       regex: DICE_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
-      newValue: `\`d${this.max}${this.color} = ${this.value}\``,
+      newValue: `\`${this.prefix}d${this.max}${this.color} = ${this.value}\``,
       replaceIndex: this.index,
     });
   }

@@ -38,7 +38,7 @@ export class CustomDict {
     }
   ) {
     const [_, defaultCurve] = parseKeyWithCurve(file.basename);
-    this.view.view.app.vault.read(file).then((content: string) => {
+    this.view.view.app.vault.cachedRead(file).then((content: string) => {
       const parsed = parseFileContent(content);
       this.mode = parsed.mode;
       this.templates = parsed.templates;

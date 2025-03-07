@@ -69,7 +69,7 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
             lineEnd,
             index: clockMatchIndex++,
             originalText: mdText,
-            size: plugin.settings.inlineProgressMode || "clock",
+            defaultSize: plugin?.settings?.inlineProgressMode || "",
           });
           node.replaceWith(widget.toDOM());
         }
@@ -103,9 +103,6 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
 
       // `clock:1/6` / `smclock: 1/6`
       if (EXPLICIT_CLOCK_REGEX.test(mdText)) {
-        let size = "clock";
-        if (mdText.startsWith("`s")) size = "small_clock";
-        if (mdText.startsWith("`l")) size = "big_clock";
         const widget = new ClockWidget({
           app: plugin.app,
           file,
@@ -113,7 +110,7 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
           lineEnd,
           index: expClockMatchIndex++,
           originalText: mdText,
-          size,
+          defaultSize: plugin?.settings?.inlineProgressMode || "",
         });
         node.replaceWith(widget.toDOM());
       }

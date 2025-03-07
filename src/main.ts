@@ -19,8 +19,10 @@ export default class SoloToolkitPlugin extends Plugin {
     await this.loadSettings();
 
     registerIcons();
-    await exportDeck(this.app.vault, "standard", deckImages);
-    await exportDeck(this.app.vault, "tarot", tarotImages);
+    if (!this.settings.disableDefaultWords) {
+      await exportDeck(this.app.vault, "standard", deckImages);
+      await exportDeck(this.app.vault, "tarot", tarotImages);
+    }
 
     this.registerView(
       VIEW_TYPE,

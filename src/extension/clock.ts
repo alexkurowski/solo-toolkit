@@ -23,7 +23,7 @@ export class ClockWidget extends WidgetType {
   constructor(opts: {
     originalNode: SyntaxNode;
     originalText: string;
-    size: string;
+    defaultSize: string;
     dirty: () => void;
     showEdit: boolean;
   }) {
@@ -34,16 +34,19 @@ export class ClockWidget extends WidgetType {
     if (this.max > MAX_MAX) this.max = MAX_MAX;
     if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
     if (this.value > this.max) this.value = this.max;
-    switch (opts.size) {
-      case "small_clock":
-        this.size = 40;
-        break;
-      case "big_clock":
-        this.size = 80;
-        break;
-      default:
-        this.size = 50;
+
+    if (this.prefix.startsWith("s")) {
+      this.size = 40;
+    } else if (this.prefix.startsWith("l")) {
+      this.size = 80;
+    } else if (opts.defaultSize === "small_clock") {
+      this.size = 40;
+    } else if (opts.defaultSize === "big_clock") {
+      this.size = 80;
+    } else {
+      this.size = 50;
     }
+
     this.dirty = opts.dirty;
     this.showEdit = opts.showEdit;
   }

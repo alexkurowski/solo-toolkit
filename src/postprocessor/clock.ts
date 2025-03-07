@@ -30,7 +30,7 @@ export class ClockWidget {
     lineEnd: number;
     index: number;
     originalText: string;
-    size: string;
+    defaultSize: string;
   }) {
     this.app = opts.app;
     this.file = opts.file;
@@ -44,15 +44,16 @@ export class ClockWidget {
     if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
     if (this.value > this.max) this.value = this.max;
 
-    switch (opts.size) {
-      case "small_clock":
-        this.size = 40;
-        break;
-      case "big_clock":
-        this.size = 80;
-        break;
-      default:
-        this.size = 50;
+    if (this.prefix.startsWith("s")) {
+      this.size = 40;
+    } else if (this.prefix.startsWith("l")) {
+      this.size = 80;
+    } else if (opts.defaultSize === "small_clock") {
+      this.size = 40;
+    } else if (opts.defaultSize === "big_clock") {
+      this.size = 80;
+    } else {
+      this.size = 50;
     }
   }
 

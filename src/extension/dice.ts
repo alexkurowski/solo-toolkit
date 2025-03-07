@@ -3,15 +3,17 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
 import { roll, rollIntervals } from "src/utils";
 
-export const DICE_REGEX = /^`d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
+export const DICE_REGEX =
+  /^`(sm|lg|s|l)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
 let rollLock = false;
 
 export class DiceWidget extends WidgetType {
   node: SyntaxNode;
-  value: number;
+  prefix: string;
   max: number;
+  value: number;
   color: string;
-  size: number = 30;
+  size: number;
   dirty: () => void;
 
   constructor(opts: {
@@ -21,31 +23,46 @@ export class DiceWidget extends WidgetType {
   }) {
     super();
     this.node = opts.originalNode;
-    [this.max, this.color, this.value] = this.parseValue(opts.originalText);
+    [this.prefix, this.max, this.color, this.value] = this.parseValue(
+      opts.originalText
+    );
+
     if (this.value < 1) this.value = 1;
-    if (this.value > this.max) this.value = this.max;
+
+    if (this.prefix.startsWith("s")) {
+      this.size = 30;
+    } else if (this.prefix.startsWith("l")) {
+      this.size = 42;
+    } else {
+      this.size = 36;
+    }
+
     this.dirty = opts.dirty;
   }
 
-  parseValue(text: string): [number, string, number] {
+  parseValue(text: string): [string, number, string, number] {
+    let prefix = "";
     let max = 20;
     let color = "";
     let value = 20;
     const match = text
       .replace(/`/g, "")
-      .match(/d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
+      .match(/(sm|lg|s|l)?d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
     if (match?.[1]) {
-      max = parseInt(match[1]) || 20;
+      prefix = match[1];
     }
     if (match?.[2]) {
-      color = match[2];
+      max = parseInt(match[2]) || 20;
     }
-    if (match?.[4]) {
-      value = parseInt(match[4]) || max;
+    if (match?.[3]) {
+      color = match[3];
+    }
+    if (match?.[5]) {
+      value = parseInt(match[5]) || max;
     } else {
       value = max;
     }
-    return [max, color, value];
+    return [prefix, max, color, value];
   }
 
   focusOnNode(view: EditorView) {
@@ -69,7 +86,7 @@ export class DiceWidget extends WidgetType {
         {
           from: this.node.from,
           to: this.node.to,
-          insert: `d${this.max}${this.color} = ${this.value}`,
+          insert: `${this.prefix}d${this.max}${this.color} = ${this.value}`,
         },
       ],
     });

@@ -46,7 +46,7 @@ export class CustomDeck {
         if (this.supportedExtensions.includes(child.extension)) {
           this.deckCards.push(child);
         } else if (child.extension === "md") {
-          const content = await this.vault.read(child);
+          const content = await this.vault.cachedRead(child);
           if (!content) continue;
 
           const lines = content.split("\n").map(trim).filter(identity);
