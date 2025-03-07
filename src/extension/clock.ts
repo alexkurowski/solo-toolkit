@@ -30,6 +30,7 @@ export class ClockWidget extends WidgetType {
     super();
     this.node = opts.originalNode;
     [this.prefix, this.value, this.max] = this.parseValue(opts.originalText);
+
     if (this.max < MIN_MAX) this.max = MIN_MAX;
     if (this.max > MAX_MAX) this.max = MAX_MAX;
     if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
