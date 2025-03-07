@@ -179,9 +179,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .addOption("code+parenthesis", "`(d6: 4)`")
           .addOption("code+square", "`[d6: 4]`")
           .addOption("code+curly", "`{d6: 4}`")
-          .addOption("inline", "`d6 = 4`")
-          .addOption("inline-small", "`smd6 = 4`")
-          .addOption("inline-large", "`lgd6 = 4`");
+          .addOption("inline", "`d6 = 4`");
         dropdown.setValue(this.plugin.settings.diceClipboardMode || "");
         dropdown.onChange(async (value: DiceClipboardMode) => {
           this.plugin.settings.diceClipboardMode = value;

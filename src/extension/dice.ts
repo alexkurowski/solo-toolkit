@@ -1,15 +1,16 @@
 import { setTooltip } from "obsidian";
 import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
-import { roll, rollIntervals } from "src/utils";
+import { nroll, rollIntervals } from "src/utils";
 
 export const DICE_REGEX =
-  /^`(sm|lg|s|l)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
+  /^`(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
 let rollLock = false;
 
 export class DiceWidget extends WidgetType {
   node: SyntaxNode;
   prefix: string;
+  quantity: number;
   max: number;
   value: number;
   color: string;
@@ -23,9 +24,8 @@ export class DiceWidget extends WidgetType {
   }) {
     super();
     this.node = opts.originalNode;
-    [this.prefix, this.max, this.color, this.value] = this.parseValue(
-      opts.originalText
-    );
+    [this.prefix, this.quantity, this.max, this.color, this.value] =
+      this.parseValue(opts.originalText);
 
     if (this.value < 1) this.value = 1;
 
@@ -40,29 +40,33 @@ export class DiceWidget extends WidgetType {
     this.dirty = opts.dirty;
   }
 
-  parseValue(text: string): [string, number, string, number] {
+  parseValue(text: string): [string, number, number, string, number] {
     let prefix = "";
+    let quantity = 1;
     let max = 20;
     let color = "";
     let value = 20;
     const match = text
       .replace(/`/g, "")
-      .match(/(sm|lg|s|l)?d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
+      .match(/(sm|lg|s|l)?(\d+)?d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
     if (match?.[1]) {
       prefix = match[1];
     }
     if (match?.[2]) {
-      max = parseInt(match[2]) || 20;
+      quantity = parseInt(match[2]) || 1;
     }
     if (match?.[3]) {
-      color = match[3];
+      max = parseInt(match[3]) || 20;
     }
-    if (match?.[5]) {
-      value = parseInt(match[5]) || max;
+    if (match?.[4]) {
+      color = match[4];
+    }
+    if (match?.[6]) {
+      value = parseInt(match[6]) || max;
     } else {
       value = max;
     }
-    return [prefix, max, color, value];
+    return [prefix, quantity, max, color, value];
   }
 
   focusOnNode(view: EditorView) {
@@ -86,7 +90,9 @@ export class DiceWidget extends WidgetType {
         {
           from: this.node.from,
           to: this.node.to,
-          insert: `${this.prefix}d${this.max}${this.color} = ${this.value}`,
+          insert: `${this.prefix}${this.quantity > 1 ? this.quantity : ""}d${
+            this.max
+          }${this.color} = ${this.value}`,
         },
       ],
     });
@@ -156,7 +162,7 @@ export class DiceWidget extends WidgetType {
   toDOM(view: EditorView): HTMLElement {
     const el = document.createElement("span");
     el.classList.add("srt-dice", `srt-dice-d${this.max}`);
-    setTooltip(el, `d${this.max}`);
+    setTooltip(el, `${this.quantity > 1 ? this.quantity : ""}d${this.max}`);
 
     const svgEl = el.createSvg("svg", {
       cls: "srt-dice-svg",
@@ -174,7 +180,7 @@ export class DiceWidget extends WidgetType {
 
     let i = 0;
     const reroll = () => {
-      this.value = roll(this.max, this.value);
+      this.value = nroll(this.quantity, this.max, this.value);
       valueEl.innerText = this.value.toString();
 
       i++;
@@ -188,7 +194,6 @@ export class DiceWidget extends WidgetType {
     };
     valueEl.onclick = () => {
       if (rollLock) return;
-      this.value = roll(this.max, this.value);
       rollLock = true;
       setTimeout(reroll, rollIntervals[i]);
       setTimeout(() => {

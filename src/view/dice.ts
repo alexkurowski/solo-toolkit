@@ -118,7 +118,7 @@ export class DiceView {
     const singleStr = `d${max}: ${value}`;
     const totalStr = `${size}d${max}: ${total}`;
     const inlineSingleStr = `d${max} = ${value}`;
-    const inlineTotalStr = `d${max} = ${total}`;
+    const inlineTotalStr = `${size > 1 ? size : ""}d${max} = ${total}`;
     switch (this.view.settings.diceClipboardMode) {
       case "plain":
         return [singleStr, totalStr];
