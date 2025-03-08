@@ -105,6 +105,12 @@ To use specific tracker style:
 - Smaller clock — `` `smclock: 1/5` `` or `` `sc:1/5` ``
 - Larger clock — `` `lgclock: 1/5` `` or `` `lc:1/5` ``
 
+#### Dice
+
+Code block with dice notation (e.g. `` `d6` `` or `` `2d8` ``) will be rendered as a dice button that can be rolled by clicking on it.
+
+To change a die color — `` `d6|red` `` or `` `d6|#fb464c` ``
+
 #### Tab stops
 
 Code blocks with only spaces (e.g. `` ` ` ``) will be rendered as a blank space with a set width. Useful when you need a table-like formatting without an actual table.
