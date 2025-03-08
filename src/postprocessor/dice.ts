@@ -3,9 +3,9 @@ import { nroll, rollIntervals } from "src/utils";
 import { replaceInFile } from "src/utils/plugin";
 
 export const DICE_REGEX =
-  /^`(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
+  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
 const DICE_REGEX_G =
-  /`(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`/g;
+  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`/g;
 
 export class DiceWidget {
   app: App;
@@ -13,6 +13,7 @@ export class DiceWidget {
   lineStart: number;
   lineEnd: number;
   index: number;
+  disabled: boolean;
   prefix: string;
   quantity: number;
   max: number;
@@ -33,8 +34,7 @@ export class DiceWidget {
     this.lineStart = opts.lineStart;
     this.lineEnd = opts.lineEnd;
     this.index = opts.index;
-    [this.prefix, this.quantity, this.max, this.color, this.value] =
-      this.parseValue(opts.originalText);
+    this.parseValue(opts.originalText);
 
     if (this.value < 1) this.value = 1;
 
@@ -47,33 +47,38 @@ export class DiceWidget {
     }
   }
 
-  parseValue(text: string): [string, number, number, string, number] {
-    let prefix = "";
-    let quantity = 1;
-    let max = 20;
-    let color = "";
-    let value = 20;
+  parseValue(text: string) {
+    this.disabled = false;
+    this.prefix = "";
+    this.quantity = 1;
+    this.max = 20;
+    this.color = "";
+    this.value = 20;
+
     const match = text
       .replace(/`/g, "")
-      .match(/(sm|lg|s|l)?(\d+)?d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
+      .match(/(!)?(sm|lg|s|l)?(\d+)?d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
+
     if (match?.[1]) {
-      prefix = match[1];
+      this.disabled = true;
     }
     if (match?.[2]) {
-      quantity = parseInt(match[2]) || 1;
+      this.prefix = match[2];
     }
     if (match?.[3]) {
-      max = parseInt(match[3]) || 20;
+      this.quantity = parseInt(match[3]) || 1;
     }
     if (match?.[4]) {
-      color = match[4];
+      this.max = parseInt(match[4]) || 20;
     }
-    if (match?.[6]) {
-      value = parseInt(match[6]) || max;
+    if (match?.[5]) {
+      this.color = match[5];
+    }
+    if (match?.[7]) {
+      this.value = parseInt(match[7]) || this.max;
     } else {
-      value = max;
+      this.value = this.max;
     }
-    return [prefix, quantity, max, color, value];
   }
 
   updateDoc() {
@@ -83,9 +88,9 @@ export class DiceWidget {
       regex: DICE_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
-      newValue: `\`${this.prefix}${this.quantity > 1 ? this.quantity : ""}d${
-        this.max
-      }${this.color} = ${this.value}\``,
+      newValue: `\`${this.disabled ? "!" : ""}${this.prefix}${
+        this.quantity > 1 ? this.quantity : ""
+      }d${this.max}${this.color} = ${this.value}\``,
       replaceIndex: this.index,
     });
   }
@@ -146,14 +151,32 @@ export class DiceWidget {
     });
 
     if (this.color) {
-      pathEl.style.stroke = this.color.replace("|", "");
-      pathEl.style.fill = this.color.replace("|", "");
+      let cssValue = this.color.replace("|", "");
+      if (
+        [
+          "red",
+          "orange",
+          "yellow",
+          "green",
+          "cyan",
+          "blue",
+          "purple",
+          "pink",
+        ].includes(cssValue)
+      ) {
+        cssValue = `var(--color-${cssValue})`;
+      }
+      pathEl.style.stroke = cssValue;
+      pathEl.style.fill = cssValue;
     }
   }
 
   toDOM(): HTMLElement {
     const el = document.createElement("span");
     el.classList.add("srt-dice", `srt-dice-d${this.max}`);
+    if (this.disabled) {
+      el.classList.add("srt-dice-disabled");
+    }
     setTooltip(el, `${this.quantity > 1 ? this.quantity : ""}d${this.max}`);
 
     const svgEl = el.createSvg("svg", {
@@ -184,8 +207,19 @@ export class DiceWidget {
       }
     };
     valueEl.onclick = () => {
+      if (this.disabled) return;
       if (i > 0) return;
       setTimeout(reroll, rollIntervals[i]);
+    };
+    valueEl.oncontextmenu = (event) => {
+      event.preventDefault();
+      this.disabled = !this.disabled;
+      if (this.disabled) {
+        el.classList.add("srt-dice-disabled");
+      } else {
+        el.classList.remove("srt-dice-disabled");
+      }
+      this.updateDoc();
     };
 
     el.append(valueEl);
