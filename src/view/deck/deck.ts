@@ -1,8 +1,10 @@
 import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
 import { Card } from "./types";
+import { SoloToolkitView as View } from "../index";
 import { trim, identity, randomFrom, shuffle } from "../../utils";
 
-export class CustomDeck {
+export class Deck {
+  view: View;
   vault: Vault;
   type: string;
   cards: (TFile | string)[];
@@ -21,8 +23,9 @@ export class CustomDeck {
     "svg",
   ];
 
-  constructor(vault: Vault, folder: TFolder) {
-    this.vault = vault;
+  constructor(view: View, folder: TFolder) {
+    this.view = view;
+    this.vault = view.app.vault;
     this.type = folder.name;
 
     this.cards = [];
@@ -40,6 +43,14 @@ export class CustomDeck {
 
   async parseFolder(folder: TFolder) {
     this.flip = [0];
+
+    // Standard deck flip option
+    if (
+      (folder.name === "Standard" || folder.name === "Tarot") &&
+      this.view.settings.deckFlip
+    ) {
+      this.flip = [0, 2];
+    }
 
     for (const child of folder.children) {
       if (child instanceof TFile) {
@@ -77,6 +88,18 @@ export class CustomDeck {
       // if (child instanceof TFolder) {
       //   this.parseFolder(child);
       // }
+    }
+
+    // Remove jokers option
+    if (folder.name === "Standard" && !this.view.settings.deckJokers) {
+      this.deckCards = this.deckCards.filter((card) => {
+        if (card instanceof TFile) {
+          if (card.name === "JokerBlack.png" || card.name === "JokerRed.png") {
+            return false;
+          }
+        }
+        return true;
+      });
     }
   }
 

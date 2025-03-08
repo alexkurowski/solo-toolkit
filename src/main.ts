@@ -8,9 +8,7 @@ import {
 import { SoloToolkitView, VIEW_TYPE } from "./view";
 import { soloToolkitExtension } from "./inline/live";
 import { soloToolkitPostprocessor } from "./inline/read";
-import { exportDeck } from "./utils/deck";
-import deckImages from "./icons/deck";
-import tarotImages from "./icons/tarot";
+import { backwardCompatibleFixes } from "./utils/plugin";
 
 export default class SoloToolkitPlugin extends Plugin {
   settings: SoloToolkitSettings;
@@ -19,8 +17,7 @@ export default class SoloToolkitPlugin extends Plugin {
     await this.loadSettings();
 
     registerIcons();
-    exportDeck(this.app.vault, "standard", deckImages);
-    exportDeck(this.app.vault, "tarot", tarotImages);
+    backwardCompatibleFixes(this.app.vault);
 
     this.registerView(
       VIEW_TYPE,

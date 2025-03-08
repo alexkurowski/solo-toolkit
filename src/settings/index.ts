@@ -146,14 +146,14 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
     new Setting(containerEl).setName("Sidebar — decks").setHeading();
 
     new Setting(containerEl)
-      .setName("Custom decks folder")
+      .setName("Decks folder")
       .setDesc("Additional decks can be added in subfolders in this folder")
       .addText((text) =>
         text
           .setPlaceholder("Decks")
           .setValue(this.plugin.settings.customDeckRoot)
           .onChange(async (value) => {
-            this.plugin.settings.customDeckRoot = value;
+            this.plugin.settings.customDeckRoot = normalizePath(value);
             await this.plugin.saveSettings();
           })
       );
@@ -165,7 +165,6 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
         dropdown
           .addOption("", "Off")
           .addOption("md", "Markdown link (paste into notes)")
-          .addOption("path", "File path (paste into Excalidraw plugin)")
           .addOption("png", "Image (paste outside Obsidian)");
         dropdown.setValue(this.plugin.settings.deckClipboardMode || "");
         dropdown.onChange(async (value: DeckClipboardMode) => {
@@ -176,7 +175,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Default decks — jokers")
-      .setDesc("Don't forget to shuffle after changing this")
+      .setDesc("Requires reset to take effect")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.deckJokers)
@@ -188,7 +187,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Default decks — upside down cards")
-      .setDesc("Don't forget to shuffle after changing this")
+      .setDesc("Requires reset to take effect")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.deckFlip)
@@ -204,14 +203,14 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       .setHeading();
 
     new Setting(containerEl)
-      .setName("Custom tables folder")
+      .setName("Random tables folder")
       .setDesc("Additional random tables can be added in this folder")
       .addText((text) =>
         text
           .setPlaceholder("Tables")
           .setValue(this.plugin.settings.customTableRoot)
           .onChange(async (value) => {
-            this.plugin.settings.customTableRoot = value;
+            this.plugin.settings.customTableRoot = normalizePath(value || "");
             await this.plugin.saveSettings();
           })
       );
@@ -308,6 +307,10 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       });
   }
 }
+
+const normalizePath = (value: string): string => {
+  return (value || "").replace(/^\/+|\/+$/g, "");
+};
 
 const newDesc = (...lines: string[]) => {
   const el = new DocumentFragment();

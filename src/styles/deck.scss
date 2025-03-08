@@ -13,6 +13,17 @@
       line-height: var(--input-height);
       text-align: right;
     }
+
+    .deck-missing {
+      max-width: 100%;
+      text-align: center;
+
+      .deck-missing-message {
+        margin-bottom: var(--size-4-4);
+        color: var(--color-red);
+        white-space: normal;
+      }
+    }
   }
 
   .deck-results {

@@ -1,9 +1,9 @@
 import { ButtonComponent, setTooltip, TFile, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "../index";
-import { clickToCopyImage, clickToCopy } from "../../utils";
+import { clickToCopyImage, clickToCopy, exportDeck } from "../../utils";
+import { defaultDeckImages } from "../../icons";
 import { TabSelect } from "../shared/tabselect";
-import { DefaultDeck } from "./defaultdeck";
-import { CustomDeck } from "./customdeck";
+import { Deck } from "./deck";
 import { Card } from "./types";
 
 const MAX_REMEMBER_SIZE = 100;
@@ -15,7 +15,8 @@ type DrawnCard = Card;
 
 export class DeckView {
   view: View;
-  decks: Record<string, DefaultDeck | CustomDeck>;
+  deckRoot: string;
+  decks: Record<string, Deck>;
   drawn: [DrawType, DrawnCard][];
 
   tab: string;
@@ -31,6 +32,9 @@ export class DeckView {
   }
 
   create() {
+    this.deckRoot = this.view.settings.customDeckRoot || "";
+    this.deckRoot = this.deckRoot.replace(/^\/+|\/+$/g, "");
+
     // Create layout
     if (this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
@@ -55,20 +59,18 @@ export class DeckView {
       );
     }
 
-    // Populate layout
-    this.createDefaultDeck(
-      "Standard",
-      this.view.settings.deckJokers ? [] : ["JokerBlack", "JokerRed"]
-    );
-    this.createDefaultDeck("Tarot", []);
+    let folder: TFolder | null = null;
+    if (this.deckRoot) {
+      folder = this.view.app.vault.getFolderByPath(this.deckRoot);
+      if (!(folder instanceof TFolder)) folder = null;
+    }
 
-    if (this.view.settings.customDeckRoot) {
-      const folder = this.view.app.vault.getFolderByPath(
-        this.view.settings.customDeckRoot
-      );
-      if (folder) {
-        this.createCustomDecks(folder);
-      }
+    // Populate layout
+    this.createDefaultDeck(folder, "Standard");
+    this.createDefaultDeck(folder, "Tarot");
+
+    if (folder) {
+      this.createCustomDecks(folder);
     }
 
     const availableTabs = Object.keys(this.tabContentEls);
@@ -160,7 +162,7 @@ export class DeckView {
         const deck = this.decks[type];
         if (typeof original === "string") {
           deck.shuffleIn(original);
-        } else if (original instanceof TFile && deck instanceof CustomDeck) {
+        } else if (original instanceof TFile && deck instanceof Deck) {
           deck.shuffleIn(original);
         }
         this.updateCount();
@@ -220,64 +222,80 @@ export class DeckView {
     }
   }
 
-  createDefaultDeck(tabName: string, excludedKeys: string[]) {
-    this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
-    this.tabSelect.addOption(tabName, tabName);
+  createDefaultDeck(rootFolder: TFolder | null, tabName: "Standard" | "Tarot") {
+    const folder = rootFolder?.children?.find(
+      (child) => child instanceof TFolder && child.name === tabName
+    );
 
-    const deck = this.decks[tabName];
-    if (deck && deck instanceof DefaultDeck) {
-      deck.update(excludedKeys);
+    if (folder && folder instanceof TFolder) {
+      this.createDeck(folder);
     } else {
-      this.decks[tabName] = new DefaultDeck(
-        tabName,
-        this.view.app.vault,
-        excludedKeys
-      );
+      // Folder is missing, offer to create it
+
+      this.tabContentEls[tabName] =
+        this.tabContainerEl.createDiv("deck-buttons");
+      this.tabSelect.addOption(tabName, tabName);
+
+      const missingEl = this.tabContentEls[tabName].createDiv("deck-missing");
+
+      missingEl
+        .createDiv("deck-missing-message")
+        .setText(`'${this.deckRoot}/${tabName}' not found`);
+
+      new ButtonComponent(missingEl)
+        .setButtonText("Create")
+        .setTooltip(
+          `This will create folder '${this.deckRoot}/${tabName}' and populate it with default card images\n\nYou can change folder location in plugin settings`
+        )
+        .onClick(() => {
+          Promise.all([
+            exportDeck({
+              vault: this.view.app.vault,
+              basePath: this.deckRoot,
+              folderName: "Standard",
+              data: defaultDeckImages.Standard,
+            }),
+            exportDeck({
+              vault: this.view.app.vault,
+              basePath: this.deckRoot,
+              folderName: "Tarot",
+              data: defaultDeckImages.Tarot,
+            }),
+          ]).then(() => {
+            this.view.createTab();
+          });
+        });
     }
-
-    new ButtonComponent(this.tabContentEls[tabName])
-      .setButtonText("Draw")
-      .onClick(async () => {
-        const card = await this.decks[tabName].draw();
-        if (!this.view.settings.deckFlip) card.flip = 0;
-        this.drawn.push([tabName, card]);
-        this.addResult(tabName, card);
-        this.updateCount();
-      });
-
-    new ButtonComponent(this.tabContentEls[tabName])
-      .setButtonText("Shuffle")
-      .onClick(() => {
-        this.decks[tabName].shuffle();
-        this.updateCount();
-      });
-
-    this.tabContentEls[tabName].createDiv("deck-size");
   }
 
   createCustomDecks(folder: TFolder) {
     for (const child of folder.children) {
-      if (child instanceof TFolder) {
-        this.createCustomDeck(child);
+      if (
+        child instanceof TFolder &&
+        child.name !== "Standard" &&
+        child.name !== "Tarot"
+      ) {
+        this.createDeck(child);
       }
     }
   }
 
-  createCustomDeck(folder: TFolder) {
+  createDeck(folder: TFolder) {
     const tabName = folder.name;
     this.tabContentEls[tabName] = this.tabContainerEl.createDiv("deck-buttons");
     this.tabSelect.addOption(tabName, tabName);
 
-    if (!this.decks[tabName] || !(this.decks[tabName] instanceof CustomDeck)) {
-      this.decks[tabName] = new CustomDeck(this.view.app.vault, folder);
+    if (!this.decks[tabName] || !(this.decks[tabName] instanceof Deck)) {
+      this.decks[tabName] = new Deck(this.view, folder);
     }
     const deck = this.decks[tabName];
-    if (deck instanceof CustomDeck) {
+
+    if (deck instanceof Deck) {
       deck.update(folder).then(() => {
         new ButtonComponent(this.tabContentEls[tabName])
           .setButtonText("Draw")
           .onClick(async () => {
-            const card = await this.decks[tabName].draw();
+            const card = await deck.draw();
             this.drawn.push([tabName, card]);
             this.addResult(tabName, card);
             this.updateCount();
@@ -286,7 +304,7 @@ export class DeckView {
         new ButtonComponent(this.tabContentEls[tabName])
           .setButtonText("Shuffle")
           .onClick(() => {
-            this.decks[tabName].shuffle();
+            deck.shuffle();
             this.updateCount();
           });
 
@@ -303,7 +321,7 @@ export class DeckView {
         (this.tabContentEls[this.tab]?.children?.length || 0) - 1
       ];
 
-    if (sizeEl) {
+    if (sizeEl && sizeEl.classList.contains("deck-size")) {
       const [current, max] = this.decks[this.tab]?.size?.() || [];
       sizeEl.setText(`${current || 0} / ${max || 0}`);
     }

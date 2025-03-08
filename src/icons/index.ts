@@ -1,4 +1,11 @@
 import { addIcon, removeIcon } from "obsidian";
+import deckImages from "./deck";
+import tarotImages from "./tarot";
+
+export const defaultDeckImages = {
+  Standard: deckImages,
+  Tarot: tarotImages,
+} as const;
 
 const icons = {
   "srt-ribbon":
