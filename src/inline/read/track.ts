@@ -1,4 +1,4 @@
-import { App, setTooltip, TFile } from "obsidian";
+import { App, TFile } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
 import {
   TrackWidgetBase,

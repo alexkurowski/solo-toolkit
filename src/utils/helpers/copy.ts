@@ -3,7 +3,7 @@ import { Notice } from "obsidian";
 export const clickToCopy = (value: string) => (event?: MouseEvent) => {
   event?.preventDefault();
   navigator.clipboard.writeText(value);
-  new Notice("Copied to clipboard");
+  maybeShowNotice("Copied to clipboard");
 };
 
 export const clickToCopyImage =
@@ -67,3 +67,13 @@ export const clickToCopyImage =
 
     img.src = value;
   };
+
+const NOTICE_TIMEOUT = 4000;
+let lastNoticeAt = 0;
+const maybeShowNotice = (message: string) => {
+  const now = Date.now();
+  if (lastNoticeAt < now - NOTICE_TIMEOUT) {
+    lastNoticeAt = now;
+    new Notice(message);
+  }
+};

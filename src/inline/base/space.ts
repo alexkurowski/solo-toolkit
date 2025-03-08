@@ -50,7 +50,7 @@ export class SpaceWidgetBase implements BaseWidget {
         this.updateWidth(triesLeft - 1);
         return;
       } else {
-        let width = TAB_SIZE - (left % TAB_SIZE) + TAB_SIZE * this.size;
+        const width = TAB_SIZE - (left % TAB_SIZE) + TAB_SIZE * (this.size - 1);
         this.setWidth(width);
       }
     } else {
@@ -60,7 +60,8 @@ export class SpaceWidgetBase implements BaseWidget {
           this.updateWidth(triesLeft - 1);
           return;
         } else {
-          let width = TAB_SIZE - (left % TAB_SIZE) + TAB_SIZE * this.size;
+          const width =
+            TAB_SIZE - (left % TAB_SIZE) + TAB_SIZE * (this.size - 1);
           this.setWidth(width);
         }
       }, RETRY_DELAY);

@@ -56,7 +56,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   deckTarot: true, // deprecated
   deckClipboard: false, // deprecated
   deckClipboardMode: "md",
-  diceClipboardMode: "code",
+  diceClipboardMode: "inline",
   wordClipboardMode: "plain",
   diceDeleteOnCopy: false,
   inlineCounters: false,
@@ -87,6 +87,8 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
+    new Setting(containerEl).setName("Sidebar").setHeading();
+
     new Setting(containerEl)
       .setName("Default sidebar view")
       .addDropdown((dropdown) => {
@@ -102,18 +104,46 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
         });
       });
 
+    // Sidebar dice
+    new Setting(containerEl).setName("Sidebar — dice").setHeading();
+
     new Setting(containerEl)
-      .setName("Custom tables folder")
-      .setDesc("Additional random tables can be added in this folder")
-      .addText((text) =>
-        text
-          .setPlaceholder("Tables")
-          .setValue(this.plugin.settings.customTableRoot)
+      .setName("Dice click behavior")
+      .setDesc("What will be copied when you click on a dice roll")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("inline", "`d6 = 4`")
+          .addOption("plain", "d6: 4")
+          .addOption("parenthesis", "(d6: 4)")
+          .addOption("square", "[d6: 4]")
+          .addOption("curly", "{d6: 4}")
+          .addOption("code", "`d6: 4`")
+          .addOption("code+parenthesis", "`(d6: 4)`")
+          .addOption("code+square", "`[d6: 4]`")
+          .addOption("code+curly", "`{d6: 4}`");
+        dropdown.setValue(this.plugin.settings.diceClipboardMode || "");
+        dropdown.onChange(async (value: DiceClipboardMode) => {
+          this.plugin.settings.diceClipboardMode = value;
+          await this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Remove dice roll on copy")
+      .setDesc(
+        "Right click (long press on mobile) to copy and remove all rolls"
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.diceDeleteOnCopy)
           .onChange(async (value) => {
-            this.plugin.settings.customTableRoot = value;
+            this.plugin.settings.diceDeleteOnCopy = value;
             await this.plugin.saveSettings();
           })
       );
+
+    // Sidebar decks
+    new Setting(containerEl).setName("Sidebar — decks").setHeading();
 
     new Setting(containerEl)
       .setName("Custom decks folder")
@@ -124,6 +154,64 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.customDeckRoot)
           .onChange(async (value) => {
             this.plugin.settings.customDeckRoot = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Click on card")
+      .setDesc("What will be copied when you click on a drawn card")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("", "Off")
+          .addOption("md", "Markdown link (paste into notes)")
+          .addOption("path", "File path (paste into Excalidraw plugin)")
+          .addOption("png", "Image (paste outside Obsidian)");
+        dropdown.setValue(this.plugin.settings.deckClipboardMode || "");
+        dropdown.onChange(async (value: DeckClipboardMode) => {
+          this.plugin.settings.deckClipboardMode = value;
+          await this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Default decks — jokers")
+      .setDesc("Don't forget to shuffle after changing this")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.deckJokers)
+          .onChange(async (value) => {
+            this.plugin.settings.deckJokers = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Default decks — upside down cards")
+      .setDesc("Don't forget to shuffle after changing this")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.deckFlip)
+          .onChange(async (value) => {
+            this.plugin.settings.deckFlip = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // Sidebar oracle and ideas
+    new Setting(containerEl)
+      .setName("Sidebar — oracle & random tables")
+      .setHeading();
+
+    new Setting(containerEl)
+      .setName("Custom tables folder")
+      .setDesc("Additional random tables can be added in this folder")
+      .addText((text) =>
+        text
+          .setPlaceholder("Tables")
+          .setValue(this.plugin.settings.customTableRoot)
+          .onChange(async (value) => {
+            this.plugin.settings.customTableRoot = value;
             await this.plugin.saveSettings();
           })
       );
@@ -143,73 +231,12 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Add 2 jokers to standard deck")
-      .setDesc("Don't forget to shuffle after changing this")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.deckJokers)
-          .onChange(async (value) => {
-            this.plugin.settings.deckJokers = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
-    new Setting(containerEl)
-      .setName("Add upside down cards to default decks")
-      .setDesc("Don't forget to shuffle after changing this")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.deckFlip)
-          .onChange(async (value) => {
-            this.plugin.settings.deckFlip = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
-    new Setting(containerEl)
-      .setName("Dice click behavior")
-      .setDesc("What will be copied when you click on a dice roll result")
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption("plain", "d6: 4")
-          .addOption("parenthesis", "(d6: 4)")
-          .addOption("square", "[d6: 4]")
-          .addOption("curly", "{d6: 4}")
-          .addOption("code", "`d6: 4`")
-          .addOption("code+parenthesis", "`(d6: 4)`")
-          .addOption("code+square", "`[d6: 4]`")
-          .addOption("code+curly", "`{d6: 4}`")
-          .addOption("inline", "`d6 = 4`");
-        dropdown.setValue(this.plugin.settings.diceClipboardMode || "");
-        dropdown.onChange(async (value: DiceClipboardMode) => {
-          this.plugin.settings.diceClipboardMode = value;
-          await this.plugin.saveSettings();
-        });
-      });
-
-    new Setting(containerEl)
-      .setName("Card click behavior")
-      .setDesc("What will be copied when you click on a drawn card")
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption("", "Off")
-          .addOption("md", "Markdown link (paste into notes)")
-          .addOption("path", "File path (paste into Excalidraw plugin)")
-          .addOption("png", "Image (paste outside Obsidian)");
-        dropdown.setValue(this.plugin.settings.deckClipboardMode || "");
-        dropdown.onChange(async (value: DeckClipboardMode) => {
-          this.plugin.settings.deckClipboardMode = value;
-          await this.plugin.saveSettings();
-        });
-      });
-
-    new Setting(containerEl)
-      .setName("Oracle and random table results click behavior")
-      .setDesc("What will be copied when you click on a phrase result")
+      .setName("Click on result")
+      .setDesc("What will be copied when you click on a generated phrase")
       .addDropdown((dropdown) => {
         dropdown
           .addOption("plain", "Plain text")
-          .addOption("code", "Inilne code");
+          .addOption("code", "`Inilne code`");
         dropdown.setValue(this.plugin.settings.wordClipboardMode || "");
         dropdown.onChange(async (value: WordClipboardMode) => {
           this.plugin.settings.wordClipboardMode = value;
@@ -218,37 +245,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Enable inline elements")
-      .setDesc(
-        "Typing `1` will render a dynamic counter, typing `1/5` will render a progress tracker, typing ` ` will render a tab stop"
-      )
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.inlineCounters)
-          .onChange(async (value) => {
-            this.plugin.settings.inlineCounters = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
-    new Setting(containerEl)
-      .setName("Default style of inline progress trackers")
-      .setDesc("Boxes can count up to 200, clocks up to 16")
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption("track", "Boxes")
-          .addOption("clock", "Clock")
-          .addOption("small_clock", "Clock (smaller)")
-          .addOption("big_clock", "Clock (larger)");
-        dropdown.setValue(this.plugin.settings.inlineProgressMode || "");
-        dropdown.onChange(async (value: ProgressMode) => {
-          this.plugin.settings.inlineProgressMode = value;
-          await this.plugin.saveSettings();
-        });
-      });
-
-    new Setting(containerEl)
-      .setName("Yes/no oracle language")
+      .setName("Oracle language")
       .addDropdown((dropdown) => {
         dropdown
           .addOption("en", "English")
@@ -265,5 +262,61 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         });
       });
+
+    // Inline elements
+    new Setting(containerEl).setName("Inline elements").setHeading();
+
+    new Setting(containerEl)
+      .setName("Enable inline elements")
+      .setDesc(
+        newDesc(
+          "Counter — `1`",
+          "Progress boxes — `boxes: 1/5`, `b:1/5`",
+          "Progress clock — `clock: 1/6`, `c:1/6`",
+          "Dice — `d20`, `2d6`",
+          "Tab stop — ` `"
+        )
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.inlineCounters)
+          .onChange(async (value) => {
+            this.plugin.settings.inlineCounters = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Default progress trackers")
+      .setDesc(
+        newDesc(
+          "Default progress — `1/5`",
+          "Boxes can count up to 200, clocks up to 16"
+        )
+      )
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("track", "Boxes")
+          .addOption("clock", "Clock")
+          .addOption("small_clock", "Clock (smaller)")
+          .addOption("big_clock", "Clock (larger)");
+        dropdown.setValue(this.plugin.settings.inlineProgressMode || "");
+        dropdown.onChange(async (value: ProgressMode) => {
+          this.plugin.settings.inlineProgressMode = value;
+          await this.plugin.saveSettings();
+        });
+      });
   }
 }
+
+const newDesc = (...lines: string[]) => {
+  const el = new DocumentFragment();
+
+  for (const line of lines) {
+    const lineEl = document.createElement("div");
+    lineEl.innerText = line;
+    el.append(lineEl);
+  }
+
+  return el;
+};

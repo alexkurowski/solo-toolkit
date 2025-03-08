@@ -1,4 +1,4 @@
-import { TFile, App, setIcon } from "obsidian";
+import { TFile, App } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
 import { CountWidgetBase, COUNT_REGEX, COUNT_REGEX_G } from "../base";
 
