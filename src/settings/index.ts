@@ -1,4 +1,5 @@
 import { App, Setting, PluginSettingTab } from "obsidian";
+import { normalizePath } from "../utils/helpers";
 import SoloToolkitPlugin from "../main";
 
 export type ViewType = "dice" | "deck" | "oracle" | "word";
@@ -164,7 +165,8 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       .addDropdown((dropdown) => {
         dropdown
           .addOption("", "Off")
-          .addOption("md", "Markdown link (paste into notes)")
+          .addOption("md", "Markdown link")
+          .addOption("path", "Vault file path")
           .addOption("png", "Image (paste outside Obsidian)");
         dropdown.setValue(this.plugin.settings.deckClipboardMode || "");
         dropdown.onChange(async (value: DeckClipboardMode) => {
@@ -307,10 +309,6 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       });
   }
 }
-
-const normalizePath = (value: string): string => {
-  return (value || "").replace(/^\/+|\/+$/g, "");
-};
 
 const newDesc = (...lines: string[]) => {
   const el = new DocumentFragment();

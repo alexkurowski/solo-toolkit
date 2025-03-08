@@ -32,9 +32,6 @@ export class DeckView {
   }
 
   create() {
-    this.deckRoot = this.view.settings.customDeckRoot || "";
-    this.deckRoot = this.deckRoot.replace(/^\/+|\/+$/g, "");
-
     // Create layout
     if (this.view.isMobile) {
       this.resultsEl = this.view.tabViewEl.createDiv("deck-results");
@@ -59,18 +56,14 @@ export class DeckView {
       );
     }
 
-    let folder: TFolder | null = null;
-    if (this.deckRoot) {
-      folder = this.view.app.vault.getFolderByPath(this.deckRoot);
-      if (!(folder instanceof TFolder)) folder = null;
-    }
-
     // Populate layout
-    this.createDefaultDeck(folder, "Standard");
-    this.createDefaultDeck(folder, "Tarot");
+    const rootFolder = this.getRootFolder();
 
-    if (folder) {
-      this.createCustomDecks(folder);
+    this.createDefaultDeck(rootFolder, "Standard");
+    this.createDefaultDeck(rootFolder, "Tarot");
+
+    if (rootFolder) {
+      this.createCustomDecks(rootFolder);
     }
 
     const availableTabs = Object.keys(this.tabContentEls);
@@ -80,6 +73,20 @@ export class DeckView {
     this.tabSelect.setValue(this.tab || defaultTab);
 
     this.repopulateResults();
+  }
+
+  private getRootFolder(): TFolder | null {
+    // Update root path
+    this.deckRoot = this.view.settings.customDeckRoot || "";
+    this.deckRoot = this.deckRoot.replace(/^\/+|\/+$/g, "");
+
+    // Find the folder
+    const folder = this.view.app.vault.getFolderByPath(this.deckRoot || "/");
+    if (folder && folder instanceof TFolder) {
+      return folder;
+    } else {
+      return null;
+    }
   }
 
   reset() {
@@ -245,7 +252,7 @@ export class DeckView {
       new ButtonComponent(missingEl)
         .setButtonText("Create")
         .setTooltip(
-          `This will create folder '${this.deckRoot}/${tabName}' and populate it with default card images\n\nYou can change folder location in plugin settings`
+          `Create folder '${this.deckRoot}/${tabName}' and populate it with default card images\n\nYou can change folder location in plugin settings`
         )
         .onClick(() => {
           Promise.all([

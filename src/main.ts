@@ -8,7 +8,7 @@ import {
 import { SoloToolkitView, VIEW_TYPE } from "./view";
 import { soloToolkitExtension } from "./inline/live";
 import { soloToolkitPostprocessor } from "./inline/read";
-import { backwardCompatibleFixes } from "./utils/plugin";
+import { backwardCompatibleFixes } from "./utils/backwardfixes";
 
 export default class SoloToolkitPlugin extends Plugin {
   settings: SoloToolkitSettings;

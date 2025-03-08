@@ -1,4 +1,4 @@
-export const identity = (value: string): string => value;
+export const identity = <T>(value: T): T => value;
 
 export const shuffle = <T>(arr: T[]) => {
   let index = arr.length;
