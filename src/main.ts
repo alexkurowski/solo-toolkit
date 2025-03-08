@@ -6,8 +6,8 @@ import {
   DEFAULT_SETTINGS,
 } from "./settings";
 import { SoloToolkitView, VIEW_TYPE } from "./view";
-import { soloToolkitExtension } from "./extension";
-import { soloToolkitPostprocessor } from "./postprocessor";
+import { soloToolkitExtension } from "./inline/live";
+import { soloToolkitPostprocessor } from "./inline/read";
 import { exportDeck } from "./utils/deck";
 import deckImages from "./icons/deck";
 import tarotImages from "./icons/tarot";

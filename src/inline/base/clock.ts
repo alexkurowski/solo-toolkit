@@ -1,43 +1,29 @@
-import { TFile, App, setTooltip } from "obsidian";
-import { replaceInFile } from "src/utils/plugin";
+import { setTooltip } from "obsidian";
+import { BaseWidget, DomOptions } from "./types";
 
 export const CLOCK_REGEX = /^`[+-]?\d+\/\d+`$/;
 export const EXPLICIT_CLOCK_REGEX =
   /^`((s|l)?c:|(sm|lg)?clock:) ?[+-]?\d+\/\d+`$/;
-const CLOCK_REGEX_G = /`[+-]?\d+\/\d+`/g;
-const EXPLICIT_CLOCK_REGEX_G = /`((s|l)?c:|(sm|lg)?clock:) ?[+-]?\d+\/\d+`/g;
+export const CLOCK_REGEX_G = /`[+-]?\d+\/\d+`/g;
+export const EXPLICIT_CLOCK_REGEX_G =
+  /`((s|l)?c:|(sm|lg)?clock:) ?[+-]?\d+\/\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
 const MAX_MAX = 16;
 const RAD = Math.PI / 180;
 
-export class ClockWidget {
-  app: App;
-  file: TFile;
-  lineStart: number;
-  lineEnd: number;
-  index: number;
+export class ClockWidgetBase implements BaseWidget {
   prefix: string;
   value: number;
   max: number;
   size: number;
 
-  constructor(opts: {
-    app: App;
-    file: TFile;
-    lineStart: number;
-    lineEnd: number;
-    index: number;
-    originalText: string;
-    defaultSize: string;
-  }) {
-    this.app = opts.app;
-    this.file = opts.file;
-    this.lineStart = opts.lineStart;
-    this.lineEnd = opts.lineEnd;
-    this.index = opts.index;
-    [this.prefix, this.value, this.max] = this.parseValue(opts.originalText);
+  el: HTMLElement;
+  svgEl: SVGElement;
+
+  constructor(opts: { originalText: string; defaultSize: string }) {
+    this.parseValue(opts.originalText);
 
     if (this.max < MIN_MAX) this.max = MIN_MAX;
     if (this.max > MAX_MAX) this.max = MAX_MAX;
@@ -57,36 +43,35 @@ export class ClockWidget {
     }
   }
 
-  parseValue(text: string): [string, number, number] {
-    let prefix = "";
-    let value = 0;
-    let max = 0;
+  private parseValue(text: string) {
+    this.prefix = "";
+    this.value = 0;
+    this.max = 0;
+
     const split = text.replace(/`/g, "").split("/");
     if (split[0].includes(":")) {
       const match = split[0].match(/\d/);
       if (match) {
-        prefix = split[0].substring(0, match.index);
-        split[0] = split[0].replace(prefix, "");
+        this.prefix = split[0].substring(0, match.index);
+        split[0] = split[0].replace(this.prefix, "");
       }
     }
-    value = parseInt(split[0]) || 0;
-    max = parseInt(split[1]) || 0;
-    return [prefix, value, max];
+
+    this.value = parseInt(split[0]) || 0;
+    this.max = parseInt(split[1]) || 0;
   }
 
-  updateDoc() {
-    replaceInFile({
-      vault: this.app.vault,
-      file: this.file,
-      regex: this.prefix ? EXPLICIT_CLOCK_REGEX_G : CLOCK_REGEX_G,
-      lineStart: this.lineStart,
-      lineEnd: this.lineEnd,
-      newValue: `\`${this.prefix}${this.value}/${this.max}\``,
-      replaceIndex: this.index,
-    });
+  private addValue(add: number) {
+    this.value = Math.min(Math.max(MIN_VALUE, this.value + add), this.max);
+    setTooltip(this.el, this.value.toString());
+    this.generateSvg();
   }
 
-  calculatePath(
+  getText(wrap = ""): string {
+    return `${wrap}${this.prefix}${this.value}/${this.max}${wrap}`;
+  }
+
+  private calculatePath(
     centerX: number,
     centerY: number,
     size: number,
@@ -106,14 +91,14 @@ export class ClockWidget {
     return `M${x} ${y} ${cx1} ${cy1} A${cr} ${cr} 0 0 0 ${cx2} ${cy2}Z`;
   }
 
-  generateSvg(svgEl: SVGElement) {
-    svgEl.empty();
+  private generateSvg() {
+    this.svgEl.empty();
 
     const center = this.size / 2;
     const radius = center - 2;
 
     if (this.max <= 1) {
-      svgEl.createSvg("circle", {
+      this.svgEl.createSvg("circle", {
         attr: {
           cx: center,
           cy: center,
@@ -126,7 +111,7 @@ export class ClockWidget {
     } else {
       const step = 360 / this.max;
       for (let i = 0; i < this.max; i++) {
-        svgEl.createSvg("path", {
+        this.svgEl.createSvg("path", {
           attr: {
             d: this.calculatePath(center, center, radius, i, step),
             fill: this.value > i ? "currentColor" : "none",
@@ -134,7 +119,7 @@ export class ClockWidget {
           },
         });
       }
-      svgEl.createSvg("circle", {
+      this.svgEl.createSvg("circle", {
         attr: {
           cx: center,
           cy: center,
@@ -147,12 +132,12 @@ export class ClockWidget {
     }
   }
 
-  toDOM(): HTMLElement {
-    const el = document.createElement("span");
-    el.classList.add("srt-clock");
-    setTooltip(el, this.value.toString());
+  generateDOM({ onChange }: DomOptions) {
+    this.el = document.createElement("span");
+    this.el.classList.add("srt-clock");
+    setTooltip(this.el, this.value.toString());
 
-    const svgEl = el.createSvg("svg", {
+    this.svgEl = this.el.createSvg("svg", {
       cls: "srt-clock-svg",
       attr: {
         width: this.size || 50,
@@ -160,26 +145,20 @@ export class ClockWidget {
       },
     });
 
-    this.generateSvg(svgEl);
-
-    svgEl.onclick = (event) => {
+    this.svgEl.onclick = (event) => {
       if (!event.shiftKey) {
-        this.value = Math.min(Math.max(MIN_VALUE, this.value + 1), this.max);
+        this.addValue(1);
       } else {
-        this.value = Math.min(Math.max(MIN_VALUE, this.value - 1), this.max);
+        this.addValue(-1);
       }
-      setTooltip(el, this.value.toString());
-      this.generateSvg(svgEl);
-      this.updateDoc();
+      onChange?.();
     };
-    svgEl.oncontextmenu = (event) => {
+    this.svgEl.oncontextmenu = (event) => {
       event.preventDefault();
-      this.value = Math.min(Math.max(MIN_VALUE, this.value - 1), this.max);
-      setTooltip(el, this.value.toString());
-      this.generateSvg(svgEl);
-      this.updateDoc();
+      this.addValue(-1);
+      onChange?.();
     };
 
-    return el;
+    this.generateSvg();
   }
 }

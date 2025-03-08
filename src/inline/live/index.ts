@@ -19,7 +19,7 @@ import { TrackWidget, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "./track";
 import { ClockWidget, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "./clock";
 import { DiceWidget, DICE_REGEX } from "./dice";
 import { SpaceWidget, SPACE_REGEX } from "./space";
-import Plugin from "../main";
+import Plugin from "../../main";
 
 type BuildMeta = string;
 
@@ -41,12 +41,10 @@ class TrackPlugin implements PluginValue {
     const isLivePreview = update.state.field(editorLivePreviewField);
     const shouldDisable =
       !pluginRef?.settings?.inlineCounters || !isLivePreview;
-    const shouldUpdate = pluginRef?.settings?.inlineDynamicEdit
-      ? update.docChanged || update.viewportChanged || update.selectionSet
-      : update.docChanged || update.viewportChanged;
-    const shouldUpdateButton = pluginRef?.settings?.inlineDynamicEdit
-      ? this.considerNextSelectionChange && update.selectionSet
-      : false;
+    const shouldUpdate =
+      update.docChanged || update.viewportChanged || update.selectionSet;
+    const shouldUpdateButton =
+      this.considerNextSelectionChange && update.selectionSet;
 
     if (shouldDisable) {
       this.decorations = Decoration.none;
@@ -62,7 +60,6 @@ class TrackPlugin implements PluginValue {
   destroy() {}
 
   buildDecorations(view: EditorView) {
-    const isDynamicEdit = pluginRef?.settings?.inlineDynamicEdit;
     const builder = new RangeSetBuilder<Decoration>();
     const buildMeta: BuildMeta[] = [];
     const selection = view.state.selection;
@@ -116,7 +113,6 @@ class TrackPlugin implements PluginValue {
                 widget: new DiceWidget({
                   originalNode: node.node,
                   originalText: text,
-                  dirty,
                 }),
               })
             );
@@ -133,8 +129,6 @@ class TrackPlugin implements PluginValue {
                   widget: new TrackWidget({
                     originalNode: node.node,
                     originalText: text,
-                    dirty,
-                    showEdit: !isDynamicEdit,
                   }),
                 })
               );
@@ -150,8 +144,6 @@ class TrackPlugin implements PluginValue {
                     originalNode: node.node,
                     originalText: text,
                     defaultSize: pluginRef?.settings?.inlineProgressMode || "",
-                    dirty,
-                    showEdit: !isDynamicEdit,
                   }),
                 })
               );
@@ -168,8 +160,6 @@ class TrackPlugin implements PluginValue {
                 widget: new TrackWidget({
                   originalNode: node.node,
                   originalText: text,
-                  dirty,
-                  showEdit: !isDynamicEdit,
                 }),
               })
             );
@@ -186,8 +176,6 @@ class TrackPlugin implements PluginValue {
                   originalNode: node.node,
                   originalText: text,
                   defaultSize: pluginRef?.settings?.inlineProgressMode || "",
-                  dirty,
-                  showEdit: !isDynamicEdit,
                 }),
               })
             );

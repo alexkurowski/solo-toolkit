@@ -1,14 +1,15 @@
 import { setTooltip } from "obsidian";
-import { SyntaxNode } from "@lezer/common";
-import { EditorView, WidgetType } from "@codemirror/view";
-import { nroll, rollIntervals } from "src/utils";
+import { identity, nroll, rollIntervals } from "src/utils";
+import { BaseWidget, DomOptions } from "./types";
 
 export const DICE_REGEX =
   /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
+export const DICE_REGEX_G =
+  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`/g;
+
 let rollLock = false;
 
-export class DiceWidget extends WidgetType {
-  node: SyntaxNode;
+export class DiceWidgetBase implements BaseWidget {
   disabled: boolean;
   prefix: string;
   quantity: number;
@@ -16,15 +17,12 @@ export class DiceWidget extends WidgetType {
   value: number;
   color: string;
   size: number;
-  dirty: () => void;
 
-  constructor(opts: {
-    originalNode: SyntaxNode;
-    originalText: string;
-    dirty: () => void;
-  }) {
-    super();
-    this.node = opts.originalNode;
+  el: HTMLElement;
+  svgEl: SVGElement;
+  valueEl: HTMLElement;
+
+  constructor(opts: { originalText: string }) {
     this.parseValue(opts.originalText);
 
     if (this.value < 1) this.value = 1;
@@ -36,11 +34,9 @@ export class DiceWidget extends WidgetType {
     } else {
       this.size = 36;
     }
-
-    this.dirty = opts.dirty;
   }
 
-  parseValue(text: string) {
+  private parseValue(text: string) {
     this.disabled = false;
     this.prefix = "";
     this.quantity = 1;
@@ -74,37 +70,39 @@ export class DiceWidget extends WidgetType {
     }
   }
 
-  focusOnNode(view: EditorView) {
-    const pos = this.node.to;
-    view.dispatch({
-      selection: { anchor: pos, head: pos },
-    });
-    // FIXME: for some reason this.node.to results in: `1/10`|
-    //        while this.node.to - 1 results in: `1/1|0`
-    //        thus a timeout fix :(
-    setTimeout(() => {
-      view.dispatch({
-        selection: { anchor: pos, head: pos },
-      });
-    }, 33);
+  private roll() {
+    this.value = nroll(this.quantity, this.max, this.value);
+    this.valueEl.innerText = this.value.toString();
   }
 
-  updateDoc(view: EditorView) {
-    view.dispatch({
-      changes: [
-        {
-          from: this.node.from,
-          to: this.node.to,
-          insert: `${this.disabled ? "!" : ""}${this.prefix}${
-            this.quantity > 1 ? this.quantity : ""
-          }d${this.max}${this.color} = ${this.value}`,
-        },
-      ],
-    });
+  private toggleDisable() {
+    this.disabled = !this.disabled;
+    if (this.disabled) {
+      this.el.classList.add("srt-dice-disabled");
+    } else {
+      this.el.classList.remove("srt-dice-disabled");
+    }
   }
 
-  generateSvg(svgEl: SVGElement) {
-    svgEl.empty();
+  getText(wrap = ""): string {
+    return [
+      wrap,
+      this.disabled ? "!" : "",
+      this.prefix,
+      this.quantity > 1 ? this.quantity : "",
+      "d",
+      this.max,
+      this.color,
+      " = ",
+      this.value,
+      wrap,
+    ]
+      .filter(identity)
+      .join("");
+  }
+
+  private generateSvg() {
+    this.svgEl.empty();
 
     const center = this.size / 2;
     const width = center - 3;
@@ -148,7 +146,7 @@ export class DiceWidget extends WidgetType {
       return `${x.toFixed(4)} ${y.toFixed(4)}`;
     });
 
-    const pathEl = svgEl.createSvg("path", {
+    const pathEl = this.svgEl.createSvg("path", {
       attr: {
         d: `M${points.join("L")}Z`,
         "stroke-linejoin": "round",
@@ -179,15 +177,17 @@ export class DiceWidget extends WidgetType {
     }
   }
 
-  toDOM(view: EditorView): HTMLElement {
-    const el = document.createElement("span");
-    el.classList.add("srt-dice", `srt-dice-d${this.max}`);
+  generateDOM({ onChange }: DomOptions) {
+    this.el = document.createElement("span");
+    this.el.classList.add("srt-dice", `srt-dice-d${this.max}`);
     if (this.disabled) {
-      el.classList.add("srt-dice-disabled");
+      this.el.classList.add("srt-dice-disabled");
     }
-    setTooltip(el, `${this.quantity > 1 ? this.quantity : ""}d${this.max}`);
 
-    const svgEl = el.createSvg("svg", {
+    const sizeText = `${this.quantity > 1 ? this.quantity : ""}d${this.max}`;
+    setTooltip(this.el, sizeText);
+
+    this.svgEl = this.el.createSvg("svg", {
       cls: "srt-dice-svg",
       attr: {
         width: this.size || 26,
@@ -195,27 +195,26 @@ export class DiceWidget extends WidgetType {
       },
     });
 
-    this.generateSvg(svgEl);
+    this.generateSvg();
 
-    const valueEl = document.createElement("button");
-    valueEl.classList.add("clickable-icon", "srt-dice-btn");
-    valueEl.innerText = this.value.toString();
+    this.valueEl = this.el.createEl("button");
+    this.valueEl.classList.add("clickable-icon", "srt-dice-btn");
+    this.valueEl.innerText = this.value.toString();
 
     let i = 0;
     const reroll = () => {
-      this.value = nroll(this.quantity, this.max, this.value);
-      valueEl.innerText = this.value.toString();
+      this.roll();
 
       i++;
       if (rollIntervals[i]) {
         setTimeout(reroll, rollIntervals[i] * 0.5);
       } else {
         i = 0;
-        this.updateDoc(view);
+        onChange?.();
         rollLock = false;
       }
     };
-    valueEl.onclick = () => {
+    this.valueEl.onclick = () => {
       if (this.disabled) return;
       if (rollLock) return;
       rollLock = true;
@@ -224,19 +223,11 @@ export class DiceWidget extends WidgetType {
         rollLock = false;
       }, 320);
     };
-    valueEl.oncontextmenu = (event) => {
+    this.valueEl.oncontextmenu = (event) => {
       event.preventDefault();
-      this.disabled = !this.disabled;
-      if (this.disabled) {
-        el.classList.add("srt-dice-disabled");
-      } else {
-        el.classList.remove("srt-dice-disabled");
-      }
-      this.updateDoc(view);
+      if (rollLock) return;
+      this.toggleDisable();
+      onChange?.();
     };
-
-    el.append(valueEl);
-
-    return el;
   }
 }

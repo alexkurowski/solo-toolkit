@@ -4,7 +4,7 @@ import { TrackWidget, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "./track";
 import { ClockWidget, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "./clock";
 import { DiceWidget, DICE_REGEX } from "./dice";
 import { SpaceWidget, SPACE_REGEX } from "./space";
-import Plugin from "../main";
+import Plugin from "../../main";
 
 // Reading view inline elements
 export const soloToolkitPostprocessor = (plugin: Plugin) => {
