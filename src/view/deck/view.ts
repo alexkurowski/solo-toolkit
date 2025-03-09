@@ -252,7 +252,10 @@ export class DeckView {
       new ButtonComponent(missingEl)
         .setButtonText("Create")
         .setTooltip(
-          `Create folder '${this.deckRoot}/${tabName}' and populate it with default card images\n\nYou can change folder location in plugin settings`
+          `Create folder '${this.deckRoot}/${tabName}' and populate it with default card images\n\nYou can change folder location in plugin settings`,
+          {
+            delay: 0,
+          }
         )
         .onClick(() => {
           Promise.all([

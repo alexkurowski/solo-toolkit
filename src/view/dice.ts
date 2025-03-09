@@ -2,11 +2,15 @@ import { ExtraButtonComponent, setTooltip } from "obsidian";
 import { SoloToolkitView as View } from "./index";
 import { clickToCopy, roll, rollIntervals, bounce, sum, first } from "../utils";
 
+type RollValue = number;
+type RollColor = number;
+type Roll = [RollValue, RollColor];
+
 const MAX_REMEMBER_SIZE = 100;
 
 export class DiceView {
   view: View;
-  rolls: { [key: number]: [number, number][] } = {};
+  rolls: { [key: number]: Roll[] } = {};
   btnsEl: HTMLElement;
   resultEls: { [key: number]: HTMLElement } = [];
 
@@ -37,7 +41,7 @@ export class DiceView {
     this.rolls = {};
   }
 
-  addResult(container: HTMLElement, max: number, color: number) {
+  addResult(container: HTMLElement, max: number, color: RollColor) {
     let value = roll(max);
 
     this.rolls[max] = this.rolls[max] || [];
@@ -71,11 +75,15 @@ export class DiceView {
               clickToCopy(total)(event);
               if (this.view.settings.diceDeleteOnCopy) {
                 container.empty();
+                delete this.rolls[max];
+                this.updateTooltip(container, max);
               }
             } else {
               clickToCopy(single)(event);
               if (this.view.settings.diceDeleteOnCopy) {
                 el.remove();
+                this.rolls[max][rollIndex][0] = 0;
+                this.updateTooltip(container, max);
               }
             }
           };
@@ -87,34 +95,54 @@ export class DiceView {
             clickToCopy(total)(event);
             if (this.view.settings.diceDeleteOnCopy) {
               container.empty();
+              delete this.rolls[max];
+              this.updateTooltip(container, max);
             }
             preventClick.set();
           };
 
-          setTooltip(
-            container,
-            `${this.rolls[max].length}d${max}: ${sum(
-              this.rolls[max].map(first)
-            )}`,
-            {
-              delay: 0,
-              placement: "bottom",
-            }
-          );
+          this.updateTooltip(container, max);
         }
       }
     };
     setTimeout(reroll, rollIntervals[i]);
   }
 
-  addImmediateResult(container: HTMLElement, value: number, color: number) {
+  addImmediateResult(
+    container: HTMLElement,
+    value: RollValue,
+    color: RollColor
+  ) {
+    if (!value) return;
     const el = container.createDiv(`dice-result-value dice-color-${color}`);
     el.setText(value.toString());
   }
 
+  private getRolls(dice: number): Roll[] {
+    return this.rolls[dice]?.filter((roll) => first(roll) !== 0) || [];
+  }
+
+  private updateTooltip(container: HTMLElement, max: number) {
+    const rolls = this.getRolls(max);
+    const total = sum(rolls.map(first));
+
+    let text = "";
+    if (rolls.length === 1) {
+      text = `d${max}: ${total}`;
+    } else if (rolls.length > 1) {
+      text = `${rolls.length}d${max}: ${total}`;
+    }
+
+    setTooltip(container, text, {
+      delay: 0,
+      placement: "bottom",
+    });
+  }
+
   formatForClipboard(value: number, max: number): [string, string] {
-    const size = this.rolls[max].length;
-    const total = sum(this.rolls[max].map(first));
+    const rolls = this.getRolls(max);
+    const size = rolls.length;
+    const total = sum(rolls.map(first));
     const singleStr = `d${max}: ${value}`;
     const totalStr = `${size}d${max}: ${total}`;
     const inlineSingleStr = `d${max} = ${value}`;
