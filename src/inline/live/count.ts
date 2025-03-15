@@ -1,6 +1,7 @@
 import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
 import { CountWidgetBase } from "../base";
+import { focusOnNode } from "./shared";
 
 export const COUNT_REGEX = /^`[+-]?\d+`$/;
 
@@ -18,23 +19,7 @@ export class CountWidget extends WidgetType {
 
     this.base = new CountWidgetBase(opts);
     this.node = opts.originalNode;
-
     this.dirty = opts.dirty;
-  }
-
-  focusOnNode(view: EditorView) {
-    const pos = this.node.to;
-    view.dispatch({
-      selection: { anchor: pos, head: pos },
-    });
-    // FIXME: for some reason this.node.to results in: `1`|
-    //        while this.node.to - 1 results in: `|1`
-    //        thus a timeout fix :(
-    setTimeout(() => {
-      view.dispatch({
-        selection: { anchor: pos, head: pos },
-      });
-    }, 33);
   }
 
   updateDoc(view: EditorView) {
@@ -53,7 +38,7 @@ export class CountWidget extends WidgetType {
     this.base.generateDOM({
       onFocus: () => {
         this.dirty();
-        this.focusOnNode(view);
+        focusOnNode(view, this.node);
       },
       onChange: () => this.updateDoc(view),
     });

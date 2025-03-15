@@ -44,6 +44,7 @@ export const parseFileContent = (
     const line: string = lines[i];
 
     // Switch properties parsing mode
+    // TODO: frontmatter
     if (i == 0 && line === "---") {
       readingProperties = true;
       continue;

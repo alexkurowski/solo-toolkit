@@ -49,6 +49,7 @@ export class CountWidgetBase implements BaseWidget {
     };
 
     this.minusEl.onclick = (event) => {
+      event.preventDefault();
       if (event.shiftKey) {
         this.addValue(-10);
       } else {
@@ -63,6 +64,7 @@ export class CountWidgetBase implements BaseWidget {
     };
 
     this.plusEl.onclick = (event) => {
+      event.preventDefault();
       if (event.shiftKey) {
         this.addValue(10);
       } else {

@@ -1,17 +1,31 @@
-import { setTooltip } from "obsidian";
-import { identity, nroll, rollIntervals } from "src/utils";
-import { BaseWidget, DomOptions } from "./types";
+import { Menu, MenuItem, setTooltip } from "obsidian";
+import { capitalize, identity, nroll, rollIntervals } from "src/utils";
+import { BaseWidget, DomOptions, SubMenuItem } from "./types";
 
 export const DICE_REGEX =
-  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`$/;
+  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*( = \d+)?`$/;
 export const DICE_REGEX_G =
-  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)?( = \d+)?`/g;
+  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*( = \d+)?`/g;
+
+const KNOWN_COLORS = [
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "cyan",
+  "blue",
+  "purple",
+  "pink",
+];
+
+const SIZE_DEFAULT = 36;
+const SIZE_SMALL = 30;
+const SIZE_LARGE = 52;
 
 let rollLock = false;
 
 export class DiceWidgetBase implements BaseWidget {
   disabled: boolean;
-  prefix: string;
   quantity: number;
   max: number;
   value: number;
@@ -26,48 +40,55 @@ export class DiceWidgetBase implements BaseWidget {
     this.parseValue(opts.originalText);
 
     if (this.value < 1) this.value = 1;
-
-    if (this.prefix.startsWith("s")) {
-      this.size = 30;
-    } else if (this.prefix.startsWith("l")) {
-      this.size = 42;
-    } else {
-      this.size = 36;
-    }
+    if (this.size < 10) this.size = 10;
   }
 
   private parseValue(text: string) {
     this.disabled = false;
-    this.prefix = "";
     this.quantity = 1;
     this.max = 20;
     this.color = "";
     this.value = 20;
 
-    const match = text
-      .replace(/`/g, "")
-      .match(/(!)?(sm|lg|s|l)?(\d+)?d(\d+)(\|#?[\w\d]+)?( = )?(\d+)?/);
+    const normalized = text.replace(/^`+|`+$/g, "");
 
-    if (match?.[1]) {
-      this.disabled = true;
+    // Split text into parts
+    const [controlWithParams, value] = normalized.split(" = ");
+    const params: string[] = controlWithParams.split("|");
+    const control: string = params.shift()!;
+
+    const cMatch = control.match(/(!)?(sm|lg|s|l)?(\d+)?d(\d+)/);
+    const cDisabled = !!cMatch?.[1];
+    const cSize = cMatch?.[2] || "";
+    const cQuantity = parseInt(cMatch?.[3] || "");
+    const cMax = parseInt(cMatch?.[4] || "");
+
+    this.disabled = cDisabled;
+    this.quantity = cQuantity || 1;
+
+    this.size = SIZE_DEFAULT;
+    if (cSize) {
+      if (cSize.startsWith("s")) {
+        this.size = SIZE_SMALL;
+      } else if (cSize.startsWith("l")) {
+        this.size = SIZE_LARGE;
+      }
     }
-    if (match?.[2]) {
-      this.prefix = match[2];
+
+    this.quantity = cQuantity || 1;
+    this.max = cMax || 20;
+
+    if (params) {
+      for (const param of params) {
+        if (param.match(/^\d+$/)) {
+          this.size = parseInt(param) || this.size;
+        } else {
+          this.color = param;
+        }
+      }
     }
-    if (match?.[3]) {
-      this.quantity = parseInt(match[3]) || 1;
-    }
-    if (match?.[4]) {
-      this.max = parseInt(match[4]) || 20;
-    }
-    if (match?.[5]) {
-      this.color = match[5];
-    }
-    if (match?.[7]) {
-      this.value = parseInt(match[7]) || this.max;
-    } else {
-      this.value = this.max;
-    }
+
+    this.value = parseInt(value || "") || this.max;
   }
 
   private roll() {
@@ -88,11 +109,11 @@ export class DiceWidgetBase implements BaseWidget {
     return [
       wrap,
       this.disabled ? "!" : "",
-      this.prefix,
       this.quantity > 1 ? this.quantity : "",
       "d",
       this.max,
-      this.color,
+      this.color ? `|${this.color}` : "",
+      this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
       " = ",
       this.value,
       wrap,
@@ -158,18 +179,7 @@ export class DiceWidgetBase implements BaseWidget {
 
     if (this.color) {
       let cssValue = this.color.replace("|", "");
-      if (
-        [
-          "red",
-          "orange",
-          "yellow",
-          "green",
-          "cyan",
-          "blue",
-          "purple",
-          "pink",
-        ].includes(cssValue)
-      ) {
+      if (KNOWN_COLORS.includes(cssValue)) {
         cssValue = `var(--color-${cssValue})`;
       }
       pathEl.style.stroke = cssValue;
@@ -177,7 +187,7 @@ export class DiceWidgetBase implements BaseWidget {
     }
   }
 
-  generateDOM({ onChange }: DomOptions) {
+  generateDOM({ onFocus, onChange }: DomOptions) {
     this.el = document.createElement("span");
     this.el.classList.add("srt-dice", `srt-dice-d${this.max}`);
     if (this.disabled) {
@@ -185,7 +195,7 @@ export class DiceWidgetBase implements BaseWidget {
     }
 
     const sizeText = `${this.quantity > 1 ? this.quantity : ""}d${this.max}`;
-    setTooltip(this.el, sizeText);
+    setTooltip(this.el, sizeText, { delay: 0 });
 
     this.svgEl = this.el.createSvg("svg", {
       cls: "srt-dice-svg",
@@ -201,6 +211,107 @@ export class DiceWidgetBase implements BaseWidget {
     this.valueEl.classList.add("clickable-icon", "srt-dice-btn");
     this.valueEl.innerText = this.value.toString();
 
+    const menu = new Menu();
+    menu.addItem((item: MenuItem) =>
+      item
+        .setTitle("Roll")
+        .setDisabled(this.disabled)
+        .onClick(() => {
+          rollLock = true;
+          setTimeout(reroll, rollIntervals[i]);
+          setTimeout(() => {
+            rollLock = false;
+          }, 320);
+        })
+    );
+    menu.addSeparator();
+    menu.addItem((item: SubMenuItem) => {
+      item.setTitle("Color");
+      const submenu = item.setSubmenu();
+      submenu.addItem((item: MenuItem) =>
+        item
+          .setTitle("Default")
+          .setChecked(this.color === "")
+          .onClick(() => {
+            this.color = "";
+            onChange?.();
+          })
+      );
+      for (const color of KNOWN_COLORS) {
+        submenu.addItem((item: MenuItem) =>
+          item
+            .setTitle(capitalize(color))
+            .setChecked(this.color === color)
+            .onClick(() => {
+              this.color = color;
+              onChange?.();
+            })
+        );
+      }
+    });
+    menu.addItem((item: SubMenuItem) => {
+      item.setTitle("Size");
+      const submenu = item.setSubmenu();
+      submenu.addItem((item: MenuItem) =>
+        item
+          .setTitle("Default")
+          .setChecked(this.size === SIZE_DEFAULT)
+          .onClick(() => {
+            this.size = SIZE_DEFAULT;
+            onChange?.();
+          })
+      );
+      submenu.addItem((item: MenuItem) =>
+        item
+          .setTitle("Small")
+          .setChecked(this.size === SIZE_SMALL)
+          .onClick(() => {
+            this.size = SIZE_SMALL;
+            onChange?.();
+          })
+      );
+      submenu.addItem((item: MenuItem) =>
+        item
+          .setTitle("Large")
+          .setChecked(this.size === SIZE_LARGE)
+          .onClick(() => {
+            this.size = SIZE_LARGE;
+            onChange?.();
+          })
+      );
+      submenu.addSeparator();
+      submenu.addItem((item: MenuItem) =>
+        item.setTitle("Increase").onClick(() => {
+          this.size += 8;
+          onChange?.();
+        })
+      );
+      submenu.addItem((item: MenuItem) =>
+        item.setTitle("Decrease").onClick(() => {
+          this.size -= 8;
+          onChange?.();
+        })
+      );
+    });
+    menu.addItem((item: MenuItem) =>
+      item
+        .setTitle("Lock")
+        .setChecked(this.disabled)
+        .onClick(() => {
+          this.toggleDisable();
+          onChange?.();
+          item.setChecked(this.disabled);
+        })
+    );
+    if (onFocus) {
+      menu.addSeparator();
+      menu.addItem((item: MenuItem) =>
+        item.setTitle("Edit").onClick(() => {
+          onFocus();
+        })
+      );
+    }
+
     let i = 0;
     const reroll = () => {
       this.roll();
@@ -214,7 +325,9 @@ export class DiceWidgetBase implements BaseWidget {
         rollLock = false;
       }
     };
-    this.valueEl.onclick = () => {
+    this.valueEl.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       if (this.disabled) return;
       if (rollLock) return;
       rollLock = true;
@@ -225,9 +338,9 @@ export class DiceWidgetBase implements BaseWidget {
     };
     this.valueEl.oncontextmenu = (event) => {
       event.preventDefault();
+      event.stopPropagation();
       if (rollLock) return;
-      this.toggleDisable();
-      onChange?.();
+      menu.showAtMouseEvent(event);
     };
   }
 }

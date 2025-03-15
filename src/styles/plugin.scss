@@ -77,6 +77,14 @@
   flex-shrink: 0;
   vertical-align: bottom;
 
+  .srt-clock-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    cursor: pointer;
+  }
+
   .srt-clock-svg {
     cursor: pointer;
 

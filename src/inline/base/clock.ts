@@ -20,6 +20,7 @@ export class ClockWidgetBase implements BaseWidget {
   size: number;
 
   el: HTMLElement;
+  btnEl: HTMLElement;
   svgEl: SVGElement;
 
   constructor(opts: { originalText: string; defaultSize: string }) {
@@ -63,7 +64,7 @@ export class ClockWidgetBase implements BaseWidget {
 
   private addValue(add: number) {
     this.value = Math.min(Math.max(MIN_VALUE, this.value + add), this.max);
-    setTooltip(this.el, this.value.toString());
+    setTooltip(this.el, this.value.toString(), { delay: 0 });
     this.generateSvg();
   }
 
@@ -135,9 +136,12 @@ export class ClockWidgetBase implements BaseWidget {
   generateDOM({ onChange }: DomOptions) {
     this.el = document.createElement("span");
     this.el.classList.add("srt-clock");
-    setTooltip(this.el, this.value.toString());
+    setTooltip(this.el, this.value.toString(), { delay: 0 });
 
-    this.svgEl = this.el.createSvg("svg", {
+    this.btnEl = this.el.createEl("button");
+    this.btnEl.classList.add("clickable-icon", "srt-clock-btn");
+
+    this.svgEl = this.btnEl.createSvg("svg", {
       cls: "srt-clock-svg",
       attr: {
         width: this.size || 50,
@@ -145,7 +149,11 @@ export class ClockWidgetBase implements BaseWidget {
       },
     });
 
-    this.svgEl.onclick = (event) => {
+    this.generateSvg();
+
+    this.btnEl.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       if (!event.shiftKey) {
         this.addValue(1);
       } else {
@@ -153,12 +161,11 @@ export class ClockWidgetBase implements BaseWidget {
       }
       onChange?.();
     };
-    this.svgEl.oncontextmenu = (event) => {
+    this.btnEl.oncontextmenu = (event) => {
       event.preventDefault();
+      event.stopPropagation();
       this.addValue(-1);
       onChange?.();
     };
-
-    this.generateSvg();
   }
 }
