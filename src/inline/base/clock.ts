@@ -4,9 +4,9 @@ import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const CLOCK_REGEX =
-  /^`(sm|lg|s|l)?(c|cl|clock)(\|#?[\w\d]+)*: ?[+-]?\d+\/\d+`$/;
+  /^`(sm|lg|s|l)?(c|cl|clock)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
 export const CLOCK_REGEX_G =
-  /`(sm|lg|s|l)?(c|cl|clock)(\|#?[\w\d]+)*: ?[+-]?\d+\/\d+`/g;
+  /`(sm|lg|s|l)?(c|cl|clock)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
@@ -66,8 +66,13 @@ export class ClockWidgetBase implements BaseWidget {
     }
 
     const split = parts[1].split("/");
-    this.value = parseInt(split[0].trim()) || 0;
-    this.max = parseInt(split[1].trim()) || 0;
+    if (split.length > 1) {
+      this.value = parseInt(split[0].trim()) || 0;
+      this.max = parseInt(split[1].trim()) || 0;
+    } else {
+      this.value = 0;
+      this.max = parseInt(split[0].trim()) || 0;
+    }
   }
 
   getText(wrap = ""): string {
@@ -84,6 +89,14 @@ export class ClockWidgetBase implements BaseWidget {
     ]
       .filter(identity)
       .join("");
+  }
+
+  private setValue(newValue: number) {
+    this.value = newValue;
+    if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
+    if (this.value > this.max) this.value = this.max;
+    setTooltip(this.el, this.value.toString(), { delay: 0 });
+    this.generateSvg();
   }
 
   private addValue(add: number) {
@@ -200,6 +213,21 @@ export class ClockWidgetBase implements BaseWidget {
         title: "Subtract",
         onClick: () => {
           this.addValue(-1);
+          onChange?.();
+        },
+      },
+      "-",
+      {
+        title: "Fill",
+        onClick: () => {
+          this.setValue(this.max);
+          onChange?.();
+        },
+      },
+      {
+        title: "Reset",
+        onClick: () => {
+          this.setValue(0);
           onChange?.();
         },
       },

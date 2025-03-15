@@ -23,6 +23,7 @@ export class DiceWidgetBase implements BaseWidget {
   value: number;
   color: string;
   size: number;
+  explicit: boolean;
 
   el: HTMLElement;
   svgEl: SVGElement;
@@ -42,6 +43,7 @@ export class DiceWidgetBase implements BaseWidget {
     this.quantity = 1;
     this.max = 20;
     this.value = 20;
+    this.explicit = false;
 
     const normalized = text.replace(/^`+|`+$/g, "");
 
@@ -78,6 +80,8 @@ export class DiceWidgetBase implements BaseWidget {
       for (const param of params) {
         if (param.match(/^\d+$/)) {
           this.size = parseInt(param) || this.size;
+        } else if (param.match(/^f(ull)?$/i)) {
+          this.explicit = true;
         } else {
           this.color = param;
         }
@@ -101,6 +105,10 @@ export class DiceWidgetBase implements BaseWidget {
     }
   }
 
+  private toggleExplicit() {
+    this.explicit = !this.explicit;
+  }
+
   getText(wrap = ""): string {
     return [
       wrap,
@@ -110,6 +118,7 @@ export class DiceWidgetBase implements BaseWidget {
       this.max,
       this.color ? `|${this.color}` : "",
       this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
+      this.explicit ? "|full" : "",
       ": ",
       this.value.toString(),
       wrap,
@@ -193,7 +202,22 @@ export class DiceWidgetBase implements BaseWidget {
     const sizeText = `${this.quantity > 1 ? this.quantity : ""}d${this.max}`;
     setTooltip(this.el, sizeText, { delay: 0 });
 
-    this.svgEl = this.el.createSvg("svg", {
+    if (this.explicit) {
+      const expEl = this.el.createEl("span");
+      expEl.classList.add("srt-dice-size");
+      expEl.innerText = `${sizeText} = `;
+
+      expEl.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onFocus?.();
+      };
+    }
+
+    const diceEl = this.el.createEl("span");
+    diceEl.classList.add("srt-dice-btn-container");
+
+    this.svgEl = diceEl.createSvg("svg", {
       cls: "srt-dice-svg",
       attr: {
         width: this.size || 26,
@@ -203,7 +227,7 @@ export class DiceWidgetBase implements BaseWidget {
 
     this.generateSvg();
 
-    this.valueEl = this.el.createEl("button");
+    this.valueEl = diceEl.createEl("button");
     this.valueEl.classList.add("clickable-icon", "srt-dice-btn");
     this.valueEl.innerText = this.value.toString();
 
@@ -286,13 +310,21 @@ export class DiceWidgetBase implements BaseWidget {
         ],
       },
       {
-        title: "Lock",
-        checked: this.disabled,
+        title: "Show dice",
+        checked: this.explicit,
         onClick: () => {
-          this.toggleDisable();
+          this.toggleExplicit();
           onChange?.();
         },
       },
+      // {
+      //   title: "Lock",
+      //   checked: this.disabled,
+      //   onClick: () => {
+      //     this.toggleDisable();
+      //     onChange?.();
+      //   },
+      // },
       onFocus ? "-" : undefined,
       onFocus
         ? {
@@ -328,7 +360,8 @@ export class DiceWidgetBase implements BaseWidget {
         rollLock = false;
       }, 320);
     };
-    this.valueEl.oncontextmenu = (event) => {
+
+    this.el.oncontextmenu = (event) => {
       event.preventDefault();
       event.stopPropagation();
       if (rollLock) return;

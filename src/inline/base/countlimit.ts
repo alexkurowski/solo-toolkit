@@ -1,10 +1,14 @@
 import { setIcon } from "obsidian";
+import { createMenu } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const COUNT_LIMIT_REGEX = /^`[+-]?\d+\/[+-]?\d+`$/;
 export const COUNT_LIMIT_REGEX_G = /`[+-]?\d+\/[+-]?\d+`/g;
 
+const NUMBERS = Array.from({ length: 10 }, (_, i: number) => i + 1);
+
 export class CountLimitWidgetBase implements BaseWidget {
+  prefix: string = "";
   value: number;
   max: number;
 
@@ -31,8 +35,20 @@ export class CountLimitWidgetBase implements BaseWidget {
     this.valueEl.innerText = `${this.value} / ${this.max}`;
   }
 
+  private setValue(newValue: number) {
+    this.value = newValue;
+    if (this.value > this.max) this.value = this.max;
+    this.valueEl.innerText = `${this.value} / ${this.max}`;
+  }
+
+  private addMax(add: number) {
+    this.max += add;
+    if (this.value > this.max) this.value = this.max;
+    this.valueEl.innerText = `${this.value} / ${this.max}`;
+  }
+
   getText(wrap = ""): string {
-    return `${wrap}${this.value}/${this.max}${wrap}`;
+    return `${wrap}${this.prefix}${this.value}/${this.max}${wrap}`;
   }
 
   generateDOM({ onFocus, onChange }: DomOptions) {
@@ -50,8 +66,95 @@ export class CountLimitWidgetBase implements BaseWidget {
     this.plusEl.classList.add("clickable-icon");
     setIcon(this.plusEl, "plus");
 
+    const menu = createMenu([
+      {
+        title: "Add value",
+        subMenu: NUMBERS.map((add: number) => ({
+          title: `+${add}`,
+          onClick: () => {
+            this.addValue(add);
+            onChange?.();
+          },
+        })),
+      },
+      {
+        title: "Subtract value",
+        subMenu: NUMBERS.map((add: number) => ({
+          title: `-${add}`,
+          onClick: () => {
+            this.addValue(-add);
+            onChange?.();
+          },
+        })),
+      },
+      {
+        title: "Add max",
+        subMenu: NUMBERS.map((add: number) => ({
+          title: `+${add}`,
+          onClick: () => {
+            this.addMax(add);
+            onChange?.();
+          },
+        })),
+      },
+      {
+        title: "Subtract max",
+        subMenu: NUMBERS.map((add: number) => ({
+          title: `-${add}`,
+          onClick: () => {
+            this.addMax(-add);
+            onChange?.();
+          },
+        })),
+      },
+      "-",
+      {
+        title: "Reset",
+        onClick: () => {
+          this.setValue(this.max);
+          onChange?.();
+        },
+      },
+      {
+        title: "Drain",
+        onClick: () => {
+          this.setValue(0);
+          onChange?.();
+        },
+      },
+      "-",
+      {
+        title: "Make clock",
+        onClick: () => {
+          this.prefix = "clock: ";
+          onChange?.();
+        },
+      },
+      {
+        title: "Make boxes",
+        onClick: () => {
+          this.prefix = "boxes: ";
+          onChange?.();
+        },
+      },
+      onFocus ? "-" : undefined,
+      onFocus
+        ? {
+            title: "Edit",
+            onClick: () => {
+              onFocus();
+            },
+          }
+        : undefined,
+    ]);
+
     this.valueEl.onclick = () => {
       onFocus?.();
+    };
+    this.valueEl.oncontextmenu = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      menu.showAtMouseEvent(event);
     };
 
     this.minusEl.onclick = (event) => {
@@ -67,7 +170,11 @@ export class CountLimitWidgetBase implements BaseWidget {
     this.minusEl.oncontextmenu = (event) => {
       event.preventDefault();
       event.stopPropagation();
-      this.addValue(-10);
+      if (event.shiftKey) {
+        this.addMax(-10);
+      } else {
+        this.addMax(-1);
+      }
       onChange?.();
     };
 
@@ -84,7 +191,11 @@ export class CountLimitWidgetBase implements BaseWidget {
     this.plusEl.oncontextmenu = (event) => {
       event.preventDefault();
       event.stopPropagation();
-      this.addValue(10);
+      if (event.shiftKey) {
+        this.addMax(-10);
+      } else {
+        this.addMax(-1);
+      }
       onChange?.();
     };
   }

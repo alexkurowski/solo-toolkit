@@ -4,9 +4,9 @@ import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const TRACK_REGEX =
-  /^`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?[+-]?\d+\/\d+`$/;
+  /^`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
 export const TRACK_REGEX_G =
-  /`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?[+-]?\d+\/\d+`/g;
+  /`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
@@ -62,8 +62,13 @@ export class TrackWidgetBase implements BaseWidget {
     }
 
     const split = parts[1].split("/");
-    this.value = parseInt(split[0].trim()) || 0;
-    this.max = parseInt(split[1].trim()) || 0;
+    if (split.length > 1) {
+      this.value = parseInt(split[0].trim()) || 0;
+      this.max = parseInt(split[1].trim()) || 0;
+    } else {
+      this.value = 0;
+      this.max = parseInt(split[0].trim()) || 0;
+    }
   }
 
   getText(wrap = ""): string {
@@ -90,6 +95,13 @@ export class TrackWidgetBase implements BaseWidget {
     } else {
       this.value = newValue + 1;
     }
+    if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
+    if (this.value > this.max) this.value = this.max;
+    this.updateButtons();
+  }
+
+  private setValueTo(newValue: number) {
+    this.value = newValue;
     if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
     if (this.value > this.max) this.value = this.max;
     this.updateButtons();
@@ -144,6 +156,21 @@ export class TrackWidgetBase implements BaseWidget {
         title: "Subtract",
         onClick: () => {
           this.addValue(-1);
+          onChange?.();
+        },
+      },
+      "-",
+      {
+        title: "Fill",
+        onClick: () => {
+          this.setValueTo(this.max);
+          onChange?.();
+        },
+      },
+      {
+        title: "Reset",
+        onClick: () => {
+          this.setValueTo(0);
           onChange?.();
         },
       },
@@ -236,14 +263,15 @@ export class TrackWidgetBase implements BaseWidget {
         this.setValue(i);
         onChange?.();
       };
-      btnEl.oncontextmenu = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        menu.showAtMouseEvent(event);
-      };
       setTooltip(btnEl, (i + 1).toString(), { delay: 0 });
       this.btnEls.push(btnEl);
     }
+
+    this.el.oncontextmenu = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      menu.showAtMouseEvent(event);
+    };
 
     this.updateButtons();
   }

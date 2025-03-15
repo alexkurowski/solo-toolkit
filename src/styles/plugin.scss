@@ -113,14 +113,24 @@
 }
 
 .srt-dice {
-  position: relative;
   display: inline-block;
-  line-height: 0;
   vertical-align: bottom;
 
   svg path {
     stroke: currentColor;
     fill: currentColor;
+  }
+
+  .srt-dice-size {
+    font-weight: 600;
+    vertical-align: middle;
+  }
+
+  .srt-dice-btn-container {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+    vertical-align: middle;
   }
 
   .srt-dice-btn {
@@ -137,13 +147,15 @@
   }
 
   &.srt-dice-disabled {
-    opacity: 0.7;
+    .srt-dice-btn-container {
+      opacity: 0.7;
+    }
   }
 
   &.srt-dice-d4 {
     svg {
       position: relative;
-      top: 2px;
+      top: 1px;
     }
   }
 }
