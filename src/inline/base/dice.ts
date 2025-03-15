@@ -4,9 +4,9 @@ import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const DICE_REGEX =
-  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*(( = |: )\d+)?`$/;
+  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)([+-]\d+)?(\|#?[\w\d]+)*(( = |: )\d+)?`$/;
 export const DICE_REGEX_G =
-  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*(( = |: )\d+)?`/g;
+  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)([+-]\d+)?(\|#?[\w\d]+)*(( = |: )\d+)?`/g;
 
 const MIN_VALUE = 1;
 const MIN_SIZE = 10;
@@ -20,6 +20,7 @@ export class DiceWidgetBase implements BaseWidget {
   disabled: boolean;
   quantity: number;
   max: number;
+  add: number;
   value: number;
   color: string;
   size: number;
@@ -54,11 +55,12 @@ export class DiceWidgetBase implements BaseWidget {
     const params: string[] = controlWithParams.split("|");
     const control: string = params.shift()!;
 
-    const cMatch = control.match(/(!)?(sm|lg|s|l)?(\d+)?d(\d+)/);
+    const cMatch = control.match(/(!)?(sm|lg|s|l)?(\d+)?d(\d+)([+-]\d+)?/);
     const cDisabled = !!cMatch?.[1];
     const cSize = cMatch?.[2] || "";
     const cQuantity = parseInt(cMatch?.[3] || "");
     const cMax = parseInt(cMatch?.[4] || "");
+    const cAdd = parseInt(cMatch?.[5] || "");
 
     this.disabled = cDisabled;
     this.quantity = cQuantity || 1;
@@ -75,24 +77,25 @@ export class DiceWidgetBase implements BaseWidget {
 
     this.quantity = cQuantity || 1;
     this.max = cMax || 20;
+    this.add = cAdd || 0;
+    this.value = parseInt(value || "") || this.quantity * this.max + this.add;
 
     if (params) {
       for (const param of params) {
         if (param.match(/^\d+$/)) {
           this.size = parseInt(param) || this.size;
-        } else if (param.match(/^f(ull)?$/i)) {
+        } else if (param === "show") {
           this.explicit = true;
         } else {
           this.color = param;
         }
       }
     }
-
-    this.value = parseInt(value || "") || this.max;
   }
 
   private roll() {
     this.value = nroll(this.quantity, this.max, this.value);
+    if (this.add) this.value += this.add;
     this.valueEl.innerText = this.value.toString();
   }
 
@@ -110,15 +113,17 @@ export class DiceWidgetBase implements BaseWidget {
   }
 
   getText(wrap = ""): string {
+    console.log(this)
     return [
       wrap,
       this.disabled ? "!" : "",
       this.quantity > 1 ? this.quantity : "",
       "d",
       this.max,
+      this.add ? (this.add > 0 ? `+${this.add}` : this.add) : "",
       this.color ? `|${this.color}` : "",
       this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
-      this.explicit ? "|full" : "",
+      this.explicit ? "|show" : "",
       ": ",
       this.value.toString(),
       wrap,
@@ -199,7 +204,14 @@ export class DiceWidgetBase implements BaseWidget {
       this.el.classList.add("srt-dice-disabled");
     }
 
-    const sizeText = `${this.quantity > 1 ? this.quantity : ""}d${this.max}`;
+    const sizeText = [
+      this.quantity > 1 ? this.quantity : "",
+      "d",
+      this.max,
+      this.add ? (this.add > 0 ? `+${this.add}` : this.add) : "",
+    ]
+      .filter(identity)
+      .join("");
     setTooltip(this.el, sizeText, { delay: 0 });
 
     if (this.explicit) {

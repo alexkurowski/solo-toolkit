@@ -57,6 +57,7 @@ export const parseFileContent = (
     if (readingProperties) {
       const templateKey = line.substring(0, line.indexOf(":"));
       const timesMatch = templateKey.match(/ x\d+$/);
+      const weightMatch = templateKey.match(/ \^\d+$/);
 
       let templateValue = line.substring(line.indexOf(":") + 1).trim();
       // Multiline value
@@ -83,6 +84,7 @@ export const parseFileContent = (
       templateValue = templateValue.replace(/\\"/g, '"').replace(/\\'/g, "'");
 
       let templateRepeat = 1;
+      let templateWeight = 0;
       let templateUpcase = false;
       let templateCapitalize = false;
 
@@ -101,6 +103,12 @@ export const parseFileContent = (
           value: parseInt(timesMatch[0].replace(" x", "")),
           min: 1,
           max: 20,
+        });
+      } else if (templateKey.length > 1 && weightMatch) {
+        templateWeight = clamp({
+          value: parseInt(weightMatch[0].replace(" ^", "")) - 1,
+          min: 0,
+          max: 999,
         });
       } else if (
         templateKey.length > 1 &&
@@ -122,6 +130,17 @@ export const parseFileContent = (
         upcase: templateUpcase,
         repeat: templateRepeat,
       });
+
+      if (templateWeight && templateWeight > 0) {
+        for (let i = 0; i < templateWeight; i++) {
+          templates.push({
+            value: templateValue,
+            capitalize: templateCapitalize,
+            upcase: templateUpcase,
+            repeat: templateRepeat,
+          });
+        }
+      }
 
       continue;
     }
