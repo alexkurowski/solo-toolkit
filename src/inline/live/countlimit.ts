@@ -1,18 +1,18 @@
 import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
-import { CountWidgetBase, COUNT_REGEX } from "../base";
+import { CountLimitWidgetBase, COUNT_LIMIT_REGEX } from "../base";
 import { focusOnNode } from "./shared";
 
-export { COUNT_REGEX };
+export { COUNT_LIMIT_REGEX };
 
-export class CountWidget extends WidgetType {
-  base: CountWidgetBase;
+export class CountLimitWidget extends WidgetType {
+  base: CountLimitWidgetBase;
   node: SyntaxNode;
 
   constructor(opts: { originalNode: SyntaxNode; originalText: string }) {
     super();
 
-    this.base = new CountWidgetBase(opts);
+    this.base = new CountLimitWidgetBase(opts);
     this.node = opts.originalNode;
   }
 

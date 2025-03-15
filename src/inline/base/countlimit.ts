@@ -1,11 +1,12 @@
 import { setIcon } from "obsidian";
 import { BaseWidget, DomOptions } from "./types";
 
-export const COUNT_REGEX = /^`[+-]?\d+`$/;
-export const COUNT_REGEX_G = /`[+-]?\d+`/g;
+export const COUNT_LIMIT_REGEX = /^`[+-]?\d+\/[+-]?\d+`$/;
+export const COUNT_LIMIT_REGEX_G = /`[+-]?\d+\/[+-]?\d+`/g;
 
-export class CountWidgetBase implements BaseWidget {
+export class CountLimitWidgetBase implements BaseWidget {
   value: number;
+  max: number;
 
   el: HTMLElement;
   minusEl: HTMLElement;
@@ -14,19 +15,24 @@ export class CountWidgetBase implements BaseWidget {
 
   constructor(opts: { originalText: string }) {
     this.parseValue(opts.originalText);
+
+    if (this.value > this.max) this.value = this.max;
   }
 
   private parseValue(text: string) {
-    this.value = parseInt(text.replace(/`/g, "")) || 0;
+    const split = text.replace(/`/g, "").split("/");
+    this.value = parseInt(split[0]) || 0;
+    this.max = parseInt(split[1]) || 0;
   }
 
   private addValue(add: number) {
     this.value += add;
-    this.valueEl.innerText = this.value.toString();
+    if (this.value > this.max) this.value = this.max;
+    this.valueEl.innerText = `${this.value} / ${this.max}`;
   }
 
   getText(wrap = ""): string {
-    return `${wrap}${this.value.toString()}${wrap}`;
+    return `${wrap}${this.value}/${this.max}${wrap}`;
   }
 
   generateDOM({ onFocus, onChange }: DomOptions) {
@@ -38,7 +44,7 @@ export class CountWidgetBase implements BaseWidget {
     setIcon(this.minusEl, "minus");
 
     this.valueEl = this.el.createEl("span");
-    this.valueEl.innerText = this.value.toString();
+    this.valueEl.innerText = `${this.value} / ${this.max}`;
 
     this.plusEl = this.el.createEl("button");
     this.plusEl.classList.add("clickable-icon");

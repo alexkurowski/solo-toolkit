@@ -1,18 +1,15 @@
 import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
-import { ClockWidgetBase, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "../base";
+import { ClockWidgetBase, CLOCK_REGEX } from "../base";
+import { focusOnNode } from "./shared";
 
-export { CLOCK_REGEX, EXPLICIT_CLOCK_REGEX };
+export { CLOCK_REGEX };
 
 export class ClockWidget extends WidgetType {
   base: ClockWidgetBase;
   node: SyntaxNode;
 
-  constructor(opts: {
-    originalNode: SyntaxNode;
-    originalText: string;
-    defaultSize: string;
-  }) {
+  constructor(opts: { originalNode: SyntaxNode; originalText: string }) {
     super();
 
     this.base = new ClockWidgetBase(opts);
@@ -33,6 +30,9 @@ export class ClockWidget extends WidgetType {
 
   toDOM(view: EditorView): HTMLElement {
     this.base.generateDOM({
+      onFocus: () => {
+        focusOnNode(view, this.node);
+      },
       onChange: () => this.updateDoc(view),
     });
 

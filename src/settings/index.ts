@@ -33,7 +33,7 @@ export interface SoloToolkitSettings {
   wordClipboardMode: WordClipboardMode;
   diceDeleteOnCopy: boolean;
   inlineCounters: boolean;
-  inlineProgressMode: ProgressMode;
+  inlineProgressMode: ProgressMode; // obsolete
   inlineDynamicEdit: boolean; // unused
   standardOracleBias: boolean;
   standardOracleEvents: boolean;
@@ -61,7 +61,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   wordClipboardMode: "plain",
   diceDeleteOnCopy: false,
   inlineCounters: false,
-  inlineProgressMode: "clock",
+  inlineProgressMode: "clock", // deprecated
   inlineDynamicEdit: true, // deprecated
   standardOracleBias: false,
   standardOracleEvents: false,
@@ -271,7 +271,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
       .setName("Enable inline elements")
       .setDesc(
         newDesc(
-          "Counter — `1`",
+          "Counter — `1`, `1/10`",
           "Progress boxes — `boxes: 1/5`, `b:1/5`",
           "Progress clock — `clock: 1/6`, `c:1/6`",
           "Dice — `d20`, `2d6`",
@@ -287,26 +287,26 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
-      .setName("Default progress trackers")
-      .setDesc(
-        newDesc(
-          "Default progress — `1/5`",
-          "Boxes can count up to 200, clocks up to 16"
-        )
-      )
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption("track", "Boxes")
-          .addOption("clock", "Clock")
-          .addOption("small_clock", "Clock (smaller)")
-          .addOption("big_clock", "Clock (larger)");
-        dropdown.setValue(this.plugin.settings.inlineProgressMode || "");
-        dropdown.onChange(async (value: ProgressMode) => {
-          this.plugin.settings.inlineProgressMode = value;
-          await this.plugin.saveSettings();
-        });
-      });
+    // new Setting(containerEl)
+    //   .setName("Default progress trackers")
+    //   .setDesc(
+    //     newDesc(
+    //       "Default progress — `1/5`",
+    //       "Boxes can count up to 200, clocks up to 16"
+    //     )
+    //   )
+    //   .addDropdown((dropdown) => {
+    //     dropdown
+    //       .addOption("track", "Boxes")
+    //       .addOption("clock", "Clock")
+    //       .addOption("small_clock", "Clock (smaller)")
+    //       .addOption("big_clock", "Clock (larger)");
+    //     dropdown.setValue(this.plugin.settings.inlineProgressMode || "");
+    //     dropdown.onChange(async (value: ProgressMode) => {
+    //       this.plugin.settings.inlineProgressMode = value;
+    //       await this.plugin.saveSettings();
+    //     });
+    //   });
   }
 }
 

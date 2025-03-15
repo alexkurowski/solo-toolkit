@@ -1,23 +1,15 @@
-import { Menu, MenuItem, setTooltip } from "obsidian";
+import { setTooltip } from "obsidian";
 import { capitalize, identity, nroll, rollIntervals } from "src/utils";
-import { BaseWidget, DomOptions, SubMenuItem } from "./types";
+import { createMenu, KNOWN_COLORS } from "./shared";
+import { BaseWidget, DomOptions } from "./types";
 
 export const DICE_REGEX =
-  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*( = \d+)?`$/;
+  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*(( = |: )\d+)?`$/;
 export const DICE_REGEX_G =
-  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*( = \d+)?`/g;
+  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100)(\|#?[\w\d]+)*(( = |: )\d+)?`/g;
 
-const KNOWN_COLORS = [
-  "red",
-  "orange",
-  "yellow",
-  "green",
-  "cyan",
-  "blue",
-  "purple",
-  "pink",
-];
-
+const MIN_VALUE = 1;
+const MIN_SIZE = 10;
 const SIZE_DEFAULT = 36;
 const SIZE_SMALL = 30;
 const SIZE_LARGE = 52;
@@ -39,21 +31,24 @@ export class DiceWidgetBase implements BaseWidget {
   constructor(opts: { originalText: string }) {
     this.parseValue(opts.originalText);
 
-    if (this.value < 1) this.value = 1;
-    if (this.size < 10) this.size = 10;
+    if (this.value < MIN_VALUE) this.value = MIN_VALUE;
+    if (this.size < MIN_SIZE) this.size = MIN_SIZE;
   }
 
   private parseValue(text: string) {
     this.disabled = false;
+    this.color = "";
+    this.size = SIZE_DEFAULT;
     this.quantity = 1;
     this.max = 20;
-    this.color = "";
     this.value = 20;
 
     const normalized = text.replace(/^`+|`+$/g, "");
 
     // Split text into parts
-    const [controlWithParams, value] = normalized.split(" = ");
+    const [controlWithParams, value] = normalized.split(
+      normalized.includes("=") ? " = " : ": "
+    );
     const params: string[] = controlWithParams.split("|");
     const control: string = params.shift()!;
 
@@ -66,6 +61,7 @@ export class DiceWidgetBase implements BaseWidget {
     this.disabled = cDisabled;
     this.quantity = cQuantity || 1;
 
+    // Legacy size
     this.size = SIZE_DEFAULT;
     if (cSize) {
       if (cSize.startsWith("s")) {
@@ -114,8 +110,8 @@ export class DiceWidgetBase implements BaseWidget {
       this.max,
       this.color ? `|${this.color}` : "",
       this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
-      " = ",
-      this.value,
+      ": ",
+      this.value.toString(),
       wrap,
     ]
       .filter(identity)
@@ -211,106 +207,102 @@ export class DiceWidgetBase implements BaseWidget {
     this.valueEl.classList.add("clickable-icon", "srt-dice-btn");
     this.valueEl.innerText = this.value.toString();
 
-    const menu = new Menu();
-    menu.addItem((item: MenuItem) =>
-      item
-        .setTitle("Roll")
-        .setDisabled(this.disabled)
-        .onClick(() => {
+    const menu = createMenu([
+      {
+        title: "Roll",
+        disabled: this.disabled,
+        onClick: () => {
           rollLock = true;
           setTimeout(reroll, rollIntervals[i]);
           setTimeout(() => {
             rollLock = false;
           }, 320);
-        })
-    );
-    menu.addSeparator();
-    menu.addItem((item: SubMenuItem) => {
-      item.setTitle("Color");
-      const submenu = item.setSubmenu();
-      submenu.addItem((item: MenuItem) =>
-        item
-          .setTitle("Default")
-          .setChecked(this.color === "")
-          .onClick(() => {
-            this.color = "";
-            onChange?.();
-          })
-      );
-      for (const color of KNOWN_COLORS) {
-        submenu.addItem((item: MenuItem) =>
-          item
-            .setTitle(capitalize(color))
-            .setChecked(this.color === color)
-            .onClick(() => {
+        },
+      },
+      "-",
+      {
+        title: "Color",
+        subMenu: [
+          {
+            title: "Default",
+            checked: this.color === "",
+            onClick: () => {
+              this.color = "";
+              onChange?.();
+            },
+          },
+          ...KNOWN_COLORS.map((color) => ({
+            title: capitalize(color),
+            checked: this.color === color,
+            onClick: () => {
               this.color = color;
               onChange?.();
-            })
-        );
-      }
-    });
-    menu.addItem((item: SubMenuItem) => {
-      item.setTitle("Size");
-      const submenu = item.setSubmenu();
-      submenu.addItem((item: MenuItem) =>
-        item
-          .setTitle("Default")
-          .setChecked(this.size === SIZE_DEFAULT)
-          .onClick(() => {
-            this.size = SIZE_DEFAULT;
-            onChange?.();
-          })
-      );
-      submenu.addItem((item: MenuItem) =>
-        item
-          .setTitle("Small")
-          .setChecked(this.size === SIZE_SMALL)
-          .onClick(() => {
-            this.size = SIZE_SMALL;
-            onChange?.();
-          })
-      );
-      submenu.addItem((item: MenuItem) =>
-        item
-          .setTitle("Large")
-          .setChecked(this.size === SIZE_LARGE)
-          .onClick(() => {
-            this.size = SIZE_LARGE;
-            onChange?.();
-          })
-      );
-      submenu.addSeparator();
-      submenu.addItem((item: MenuItem) =>
-        item.setTitle("Increase").onClick(() => {
-          this.size += 8;
-          onChange?.();
-        })
-      );
-      submenu.addItem((item: MenuItem) =>
-        item.setTitle("Decrease").onClick(() => {
-          this.size -= 8;
-          onChange?.();
-        })
-      );
-    });
-    menu.addItem((item: MenuItem) =>
-      item
-        .setTitle("Lock")
-        .setChecked(this.disabled)
-        .onClick(() => {
+            },
+          })),
+        ],
+      },
+      {
+        title: "Size",
+        subMenu: [
+          {
+            title: "Default",
+            checked: this.size === SIZE_DEFAULT,
+            onClick: () => {
+              this.size = SIZE_DEFAULT;
+              onChange?.();
+            },
+          },
+          {
+            title: "Small",
+            checked: this.size === SIZE_SMALL,
+            onClick: () => {
+              this.size = SIZE_SMALL;
+              onChange?.();
+            },
+          },
+          {
+            title: "Large",
+            checked: this.size === SIZE_LARGE,
+            onClick: () => {
+              this.size = SIZE_LARGE;
+              onChange?.();
+            },
+          },
+          "-",
+          {
+            title: "Increase",
+            onClick: () => {
+              this.size += 8;
+              onChange?.();
+            },
+          },
+          {
+            title: "Decrease",
+            onClick: () => {
+              this.size -= 8;
+              onChange?.();
+            },
+          },
+        ],
+      },
+      {
+        title: "Lock",
+        checked: this.disabled,
+        onClick: () => {
           this.toggleDisable();
           onChange?.();
-          item.setChecked(this.disabled);
-        })
-    );
-    if (onFocus) {
-      menu.addSeparator();
-      menu.addItem((item: MenuItem) =>
-        item.setTitle("Edit").onClick(() => {
-          onFocus();
-        })
-      );
-    }
+        },
+      },
+      onFocus ? "-" : undefined,
+      onFocus
+        ? {
+            title: "Edit",
+            onClick: () => {
+              onFocus();
+            },
+          }
+        : undefined,
+    ]);
 
     let i = 0;
     const reroll = () => {

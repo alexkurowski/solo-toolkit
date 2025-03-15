@@ -1,14 +1,8 @@
 import { App, TFile } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
-import {
-  TrackWidgetBase,
-  TRACK_REGEX,
-  EXPLICIT_TRACK_REGEX,
-  TRACK_REGEX_G,
-  EXPLICIT_TRACK_REGEX_G,
-} from "../base";
+import { TrackWidgetBase, TRACK_REGEX, TRACK_REGEX_G } from "../base";
 
-export { TRACK_REGEX, EXPLICIT_TRACK_REGEX };
+export { TRACK_REGEX };
 
 export class TrackWidget {
   base: TrackWidgetBase;
@@ -39,7 +33,7 @@ export class TrackWidget {
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
-      regex: this.base.prefix ? EXPLICIT_TRACK_REGEX_G : TRACK_REGEX_G,
+      regex: TRACK_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
       newValue: this.base.getText("`"),

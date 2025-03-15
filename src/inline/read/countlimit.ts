@@ -1,11 +1,11 @@
 import { TFile, App } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
-import { ClockWidgetBase, CLOCK_REGEX, CLOCK_REGEX_G } from "../base";
+import { CountLimitWidgetBase, COUNT_LIMIT_REGEX, COUNT_REGEX_G } from "../base";
 
-export { CLOCK_REGEX };
+export { COUNT_LIMIT_REGEX };
 
-export class ClockWidget {
-  base: ClockWidgetBase;
+export class CountLimitWidget {
+  base: CountLimitWidgetBase;
   app: App;
   file: TFile;
   lineStart: number;
@@ -20,7 +20,7 @@ export class ClockWidget {
     index: number;
     originalText: string;
   }) {
-    this.base = new ClockWidgetBase(opts);
+    this.base = new CountLimitWidgetBase(opts);
 
     this.app = opts.app;
     this.file = opts.file;
@@ -33,7 +33,7 @@ export class ClockWidget {
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
-      regex: CLOCK_REGEX_G,
+      regex: COUNT_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
       newValue: this.base.getText("`"),

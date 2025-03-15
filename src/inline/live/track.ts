@@ -1,8 +1,9 @@
 import { SyntaxNode } from "@lezer/common";
 import { EditorView, WidgetType } from "@codemirror/view";
-import { TrackWidgetBase, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "../base";
+import { TrackWidgetBase, TRACK_REGEX } from "../base";
+import { focusOnNode } from "./shared";
 
-export { TRACK_REGEX, EXPLICIT_TRACK_REGEX };
+export { TRACK_REGEX };
 
 export class TrackWidget extends WidgetType {
   base: TrackWidgetBase;
@@ -13,21 +14,6 @@ export class TrackWidget extends WidgetType {
 
     this.base = new TrackWidgetBase(opts);
     this.node = opts.originalNode;
-  }
-
-  focusOnNode(view: EditorView) {
-    const pos = this.node.to;
-    view.dispatch({
-      selection: { anchor: pos, head: pos },
-    });
-    // FIXME: for some reason this.node.to results in: `1/10`|
-    //        while this.node.to - 1 results in: `1/1|0`
-    //        thus a timeout fix :(
-    setTimeout(() => {
-      view.dispatch({
-        selection: { anchor: pos, head: pos },
-      });
-    }, 33);
   }
 
   updateDoc(view: EditorView) {
@@ -44,6 +30,9 @@ export class TrackWidget extends WidgetType {
 
   toDOM(view: EditorView): HTMLElement {
     this.base.generateDOM({
+      onFocus: () => {
+        focusOnNode(view, this.node);
+      },
       onChange: () => this.updateDoc(view),
     });
 

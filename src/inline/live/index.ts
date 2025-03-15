@@ -15,8 +15,9 @@ import {
 } from "@codemirror/view";
 import { editorLivePreviewField } from "obsidian";
 import { CountWidget, COUNT_REGEX } from "./count";
-import { TrackWidget, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "./track";
-import { ClockWidget, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "./clock";
+import { CountLimitWidget, COUNT_LIMIT_REGEX } from "./countlimit";
+import { TrackWidget, TRACK_REGEX } from "./track";
+import { ClockWidget, CLOCK_REGEX } from "./clock";
 import { DiceWidget, DICE_REGEX } from "./dice";
 import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../../main";
@@ -28,7 +29,6 @@ let pluginRef: Plugin;
 // Live preview mode inline elements
 class TrackPlugin implements PluginValue {
   decorations: DecorationSet;
-  considerNextSelectionChange: boolean = false;
   previousBuildMeta: BuildMeta[] = [];
   spaceStore: Record<BuildMeta, number> = {};
   spaceStoreIndex: Record<number, number> = {};
@@ -43,16 +43,11 @@ class TrackPlugin implements PluginValue {
       !pluginRef?.settings?.inlineCounters || !isLivePreview;
     const shouldUpdate =
       update.docChanged || update.viewportChanged || update.selectionSet;
-    const shouldUpdateButton =
-      this.considerNextSelectionChange && update.selectionSet;
 
     if (shouldDisable) {
       this.decorations = Decoration.none;
       this.previousBuildMeta = [];
     } else if (shouldUpdate) {
-      this.buildDecorations(update.view);
-    } else if (shouldUpdateButton) {
-      this.considerNextSelectionChange = false;
       this.buildDecorations(update.view);
     }
   }
@@ -67,8 +62,6 @@ class TrackPlugin implements PluginValue {
     // For tabstop widget
     let widgetIndex = 0;
 
-    const dirty = () => (this.considerNextSelectionChange = true);
-
     for (const { from, to } of view.visibleRanges) {
       syntaxTree(view.state).iterate({
         from,
@@ -80,28 +73,11 @@ class TrackPlugin implements PluginValue {
           const to = node.to + 1;
 
           if (this.isRangeSelected(from, to, selection)) {
-            this.considerNextSelectionChange = true;
             return;
           }
 
           const text = view.state.doc.sliceString(from, to).trim();
           const meta = `${from}:${to}:${text}`;
-
-          // `3`
-          if (COUNT_REGEX.test(text)) {
-            buildMeta.push(meta);
-            builder.add(
-              from,
-              to,
-              Decoration.replace({
-                widget: new CountWidget({
-                  originalNode: node.node,
-                  originalText: text,
-                  dirty,
-                }),
-              })
-            );
-          }
 
           // `d20`
           if (DICE_REGEX.test(text)) {
@@ -113,46 +89,43 @@ class TrackPlugin implements PluginValue {
                 widget: new DiceWidget({
                   originalNode: node.node,
                   originalText: text,
-                  dirty,
+                }),
+              })
+            );
+          }
+
+          // `3`
+          if (COUNT_REGEX.test(text)) {
+            buildMeta.push(meta);
+            builder.add(
+              from,
+              to,
+              Decoration.replace({
+                widget: new CountWidget({
+                  originalNode: node.node,
+                  originalText: text,
                 }),
               })
             );
           }
 
           // `1/6`
-          if (pluginRef?.settings?.inlineProgressMode === "track") {
-            if (TRACK_REGEX.test(text)) {
-              buildMeta.push(meta);
-              builder.add(
-                from,
-                to,
-                Decoration.replace({
-                  widget: new TrackWidget({
-                    originalNode: node.node,
-                    originalText: text,
-                  }),
-                })
-              );
-            }
-          } else {
-            if (CLOCK_REGEX.test(text)) {
-              buildMeta.push(meta);
-              builder.add(
-                from,
-                to,
-                Decoration.replace({
-                  widget: new ClockWidget({
-                    originalNode: node.node,
-                    originalText: text,
-                    defaultSize: pluginRef?.settings?.inlineProgressMode || "",
-                  }),
-                })
-              );
-            }
+          if (COUNT_LIMIT_REGEX.test(text)) {
+            buildMeta.push(meta);
+            builder.add(
+              from,
+              to,
+              Decoration.replace({
+                widget: new CountLimitWidget({
+                  originalNode: node.node,
+                  originalText: text,
+                }),
+              })
+            );
           }
 
           // `boxes:1/10`
-          if (EXPLICIT_TRACK_REGEX.test(text)) {
+          if (TRACK_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
               from,
@@ -167,7 +140,7 @@ class TrackPlugin implements PluginValue {
           }
 
           // `clock:1/6` / `smclock: 1/6`
-          if (EXPLICIT_CLOCK_REGEX.test(text)) {
+          if (CLOCK_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
               from,
@@ -176,7 +149,6 @@ class TrackPlugin implements PluginValue {
                 widget: new ClockWidget({
                   originalNode: node.node,
                   originalText: text,
-                  defaultSize: pluginRef?.settings?.inlineProgressMode || "",
                 }),
               })
             );
@@ -201,7 +173,6 @@ class TrackPlugin implements PluginValue {
                     this.spaceStore[meta] = width;
                     this.spaceStoreIndex[thisWidgetIndex] = width;
                   },
-                  dirty,
                 }),
               })
             );

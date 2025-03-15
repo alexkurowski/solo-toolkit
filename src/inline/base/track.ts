@@ -1,19 +1,26 @@
 import { setTooltip } from "obsidian";
+import { capitalize, identity } from "src/utils";
+import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
-export const TRACK_REGEX = /^`[+-]?\d+\/\d+`$/;
-export const TRACK_REGEX_G = /`[+-]?\d+\/\d+`/g;
-export const EXPLICIT_TRACK_REGEX = /^`(s|l)?(b:|boxes:) ?[+-]?\d+\/\d+`$/;
-export const EXPLICIT_TRACK_REGEX_G = /`(s|l)?(b:|boxes:) ?[+-]?\d+\/\d+`/g;
+export const TRACK_REGEX =
+  /^`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?[+-]?\d+\/\d+`$/;
+export const TRACK_REGEX_G =
+  /`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?[+-]?\d+\/\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
 const MAX_MAX = 200;
 
+const MIN_SIZE = 10;
+const SIZE_DEFAULT = 22;
+const SIZE_SMALL = 16;
+const SIZE_LARGE = 38;
+
 export class TrackWidgetBase implements BaseWidget {
-  prefix: string;
   value: number;
   max: number;
+  color: string;
   size: number;
 
   el: HTMLElement;
@@ -26,36 +33,53 @@ export class TrackWidgetBase implements BaseWidget {
     if (this.max > MAX_MAX) this.max = MAX_MAX;
     if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
     if (this.value > this.max) this.value = this.max;
-
-    if (this.prefix.startsWith("s")) {
-      this.size = 16;
-    } else if (this.prefix.startsWith("l")) {
-      this.size = 38;
-    } else {
-      this.size = 22;
-    }
+    if (this.size < MIN_SIZE) this.size = MIN_SIZE;
   }
 
   private parseValue(text: string) {
-    this.prefix = "";
     this.value = 0;
     this.max = 0;
 
-    const split = text.replace(/`/g, "").split("/");
-    if (split[0].includes(":")) {
-      const match = split[0].match(/\d/);
-      if (match) {
-        this.prefix = split[0].substring(0, match.index);
-        split[0] = split[0].replace(this.prefix, "");
+    const parts = text.replace(/^`+|`+$/g, "").split(":");
+
+    const params = parts[0].split("|");
+    params.shift();
+
+    // Legacy size
+    this.size = SIZE_DEFAULT;
+    if (parts[0].startsWith("s")) {
+      this.size = SIZE_SMALL;
+    } else if (parts[0].startsWith("l")) {
+      this.size = SIZE_LARGE;
+    }
+
+    for (const param of params) {
+      if (param.match(/^\d+$/)) {
+        this.size = parseInt(param) || this.size;
+      } else {
+        this.color = param;
       }
     }
 
-    this.value = parseInt(split[0]) || 0;
-    this.max = parseInt(split[1]) || 0;
+    const split = parts[1].split("/");
+    this.value = parseInt(split[0].trim()) || 0;
+    this.max = parseInt(split[1].trim()) || 0;
   }
 
   getText(wrap = ""): string {
-    return `${wrap}${this.prefix}${this.value}/${this.max}${wrap}`;
+    return [
+      wrap,
+      "boxes",
+      this.color ? `|${this.color}` : "",
+      this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
+      ": ",
+      this.value.toString(),
+      "/",
+      this.max.toString(),
+      wrap,
+    ]
+      .filter(identity)
+      .join("");
   }
 
   private setValue(newValue: number) {
@@ -66,23 +90,139 @@ export class TrackWidgetBase implements BaseWidget {
     } else {
       this.value = newValue + 1;
     }
-    this.updateButtonClasses();
+    if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
+    if (this.value > this.max) this.value = this.max;
+    this.updateButtons();
   }
 
-  private updateButtonClasses() {
+  private addValue(add: number) {
+    this.value += add;
+    if (this.value <= MIN_VALUE) this.value = MIN_VALUE;
+    if (this.value > this.max) this.value = this.max;
+    this.updateButtons();
+  }
+
+  private updateButtons() {
+    let cssFill = "";
+    if (this.color) {
+      if (KNOWN_COLORS.includes(this.color)) {
+        cssFill = `var(--color-${this.color})`;
+      } else {
+        cssFill = this.color;
+      }
+    }
+
     for (const i in this.btnEls) {
       const btnEl = this.btnEls[i];
       if (parseInt(i) < this.value) {
         btnEl.classList.add("active");
+        if (cssFill) {
+          btnEl.style.borderColor = cssFill;
+          btnEl.style.backgroundColor = cssFill;
+        }
       } else {
         btnEl.classList.remove("active");
+        btnEl.style.borderColor = "";
+        btnEl.style.backgroundColor = "";
       }
     }
   }
 
-  generateDOM({ onChange }: DomOptions) {
+  generateDOM({ onFocus, onChange }: DomOptions) {
     this.el = document.createElement("span");
     this.el.classList.add("srt-track");
+
+    const menu = createMenu([
+      {
+        title: "Advance",
+        onClick: () => {
+          this.addValue(1);
+          onChange?.();
+        },
+      },
+      {
+        title: "Subtract",
+        onClick: () => {
+          this.addValue(-1);
+          onChange?.();
+        },
+      },
+      "-",
+      {
+        title: "Color",
+        subMenu: [
+          {
+            title: "Default",
+            checked: this.color === "",
+            onClick: () => {
+              this.color = "";
+              onChange?.();
+            },
+          },
+          ...KNOWN_COLORS.map((color) => ({
+            title: capitalize(color),
+            checked: this.color === color,
+            onClick: () => {
+              this.color = color;
+              onChange?.();
+            },
+          })),
+        ],
+      },
+      {
+        title: "Size",
+        subMenu: [
+          {
+            title: "Default",
+            checked: this.size === SIZE_DEFAULT,
+            onClick: () => {
+              this.size = SIZE_DEFAULT;
+              onChange?.();
+            },
+          },
+          {
+            title: "Small",
+            checked: this.size === SIZE_SMALL,
+            onClick: () => {
+              this.size = SIZE_SMALL;
+              onChange?.();
+            },
+          },
+          {
+            title: "Large",
+            checked: this.size === SIZE_LARGE,
+            onClick: () => {
+              this.size = SIZE_LARGE;
+              onChange?.();
+            },
+          },
+          "-",
+          {
+            title: "Increase",
+            onClick: () => {
+              this.size += 8;
+              onChange?.();
+            },
+          },
+          {
+            title: "Decrease",
+            onClick: () => {
+              this.size -= 8;
+              onChange?.();
+            },
+          },
+        ],
+      },
+      onFocus ? "-" : undefined,
+      onFocus
+        ? {
+            title: "Edit",
+            onClick: () => {
+              onFocus();
+            },
+          }
+        : undefined,
+    ]);
 
     this.btnEls = [];
     for (let i = 0; i < this.max; i++) {
@@ -92,13 +232,19 @@ export class TrackWidgetBase implements BaseWidget {
       btnEl.classList.add("clickable-icon", "srt-track-btn");
       btnEl.onclick = (event) => {
         event.preventDefault();
+        event.stopPropagation();
         this.setValue(i);
         onChange?.();
+      };
+      btnEl.oncontextmenu = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        menu.showAtMouseEvent(event);
       };
       setTooltip(btnEl, (i + 1).toString(), { delay: 0 });
       this.btnEls.push(btnEl);
     }
 
-    this.updateButtonClasses();
+    this.updateButtons();
   }
 }

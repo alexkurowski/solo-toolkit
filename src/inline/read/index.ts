@@ -1,7 +1,8 @@
 import { MarkdownPostProcessorContext, TFile } from "obsidian";
 import { CountWidget, COUNT_REGEX } from "./count";
-import { TrackWidget, TRACK_REGEX, EXPLICIT_TRACK_REGEX } from "./track";
-import { ClockWidget, CLOCK_REGEX, EXPLICIT_CLOCK_REGEX } from "./clock";
+import { CountLimitWidget, COUNT_LIMIT_REGEX } from "./countlimit";
+import { TrackWidget, TRACK_REGEX } from "./track";
+import { ClockWidget, CLOCK_REGEX } from "./clock";
 import { DiceWidget, DICE_REGEX } from "./dice";
 import { SpaceWidget, SPACE_REGEX } from "./space";
 import Plugin from "../../main";
@@ -22,58 +23,18 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
 
     const lineStart = section.lineStart;
     const lineEnd = section.lineEnd;
-    let countMatchIndex = 0;
-    let trackMatchIndex = 0;
-    let expTrackMatchIndex = 0;
-    let clockMatchIndex = 0;
-    let expClockMatchIndex = 0;
-    let diceMatchIndex = 0;
-    let spaceMatchIndex = 0;
+    const indexMap = {
+      count: 0,
+      countLimit: 0,
+      clock: 0,
+      track: 0,
+      dice: 0,
+      space: 0,
+    };
 
     for (let i = 0; i < nodeList.length; i++) {
       const node = nodeList[i];
       const mdText = `\`${node.innerText}\``;
-
-      // `3`
-      if (COUNT_REGEX.test(mdText)) {
-        const widget = new CountWidget({
-          app: plugin.app,
-          file,
-          lineStart,
-          lineEnd,
-          index: countMatchIndex++,
-          originalText: mdText,
-        });
-        node.replaceWith(widget.toDOM());
-      }
-
-      // `1/6`
-      if (plugin.settings.inlineProgressMode === "track") {
-        if (TRACK_REGEX.test(mdText)) {
-          const widget = new TrackWidget({
-            app: plugin.app,
-            file,
-            lineStart,
-            lineEnd,
-            index: trackMatchIndex++,
-            originalText: mdText,
-          });
-          node.replaceWith(widget.toDOM());
-        }
-      } else {
-        if (CLOCK_REGEX.test(mdText)) {
-          const widget = new ClockWidget({
-            app: plugin.app,
-            file,
-            lineStart,
-            lineEnd,
-            index: clockMatchIndex++,
-            originalText: mdText,
-            defaultSize: plugin?.settings?.inlineProgressMode || "",
-          });
-          node.replaceWith(widget.toDOM());
-        }
-      }
 
       // `d20`
       if (DICE_REGEX.test(mdText)) {
@@ -82,35 +43,60 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
           file,
           lineStart,
           lineEnd,
-          index: diceMatchIndex++,
+          index: indexMap.dice++,
+          originalText: mdText,
+        });
+        node.replaceWith(widget.toDOM());
+      }
+
+      // `3`
+      if (COUNT_REGEX.test(mdText)) {
+        const widget = new CountWidget({
+          app: plugin.app,
+          file,
+          lineStart,
+          lineEnd,
+          index: indexMap.count++,
+          originalText: mdText,
+        });
+        node.replaceWith(widget.toDOM());
+      }
+
+      // `1/6`
+      if (COUNT_LIMIT_REGEX.test(mdText)) {
+        const widget = new CountLimitWidget({
+          app: plugin.app,
+          file,
+          lineStart,
+          lineEnd,
+          index: indexMap.countLimit++,
           originalText: mdText,
         });
         node.replaceWith(widget.toDOM());
       }
 
       // `boxes:1/10`
-      if (EXPLICIT_TRACK_REGEX.test(mdText)) {
+      if (TRACK_REGEX.test(mdText)) {
         const widget = new TrackWidget({
           app: plugin.app,
           file,
           lineStart,
           lineEnd,
-          index: expTrackMatchIndex++,
+          index: indexMap.track++,
           originalText: mdText,
         });
         node.replaceWith(widget.toDOM());
       }
 
       // `clock:1/6` / `smclock: 1/6`
-      if (EXPLICIT_CLOCK_REGEX.test(mdText)) {
+      if (CLOCK_REGEX.test(mdText)) {
         const widget = new ClockWidget({
           app: plugin.app,
           file,
           lineStart,
           lineEnd,
-          index: expClockMatchIndex++,
+          index: indexMap.clock++,
           originalText: mdText,
-          defaultSize: plugin?.settings?.inlineProgressMode || "",
         });
         node.replaceWith(widget.toDOM());
       }
@@ -119,7 +105,7 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
       if (SPACE_REGEX.test(mdText)) {
         const thisWidgetIndex = `${
           ctx.sourcePath
-        }.${lineStart}.${lineEnd}.${spaceMatchIndex++}`;
+        }.${lineStart}.${lineEnd}.${indexMap.space++}`;
         const widget = new SpaceWidget({
           originalText: mdText,
           initialWidth: spaceStore[thisWidgetIndex] || 0,
