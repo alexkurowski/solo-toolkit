@@ -113,7 +113,6 @@ export class DiceWidgetBase implements BaseWidget {
   }
 
   getText(wrap = ""): string {
-    console.log(this)
     return [
       wrap,
       this.disabled ? "!" : "",
@@ -329,14 +328,14 @@ export class DiceWidgetBase implements BaseWidget {
           onChange?.();
         },
       },
-      // {
-      //   title: "Lock",
-      //   checked: this.disabled,
-      //   onClick: () => {
-      //     this.toggleDisable();
-      //     onChange?.();
-      //   },
-      // },
+      {
+        title: "Lock",
+        checked: this.disabled,
+        onClick: () => {
+          this.toggleDisable();
+          onChange?.();
+        },
+      },
       onFocus ? "-" : undefined,
       onFocus
         ? {
