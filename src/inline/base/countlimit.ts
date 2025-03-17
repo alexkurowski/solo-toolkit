@@ -192,9 +192,9 @@ export class CountLimitWidgetBase implements BaseWidget {
       event.preventDefault();
       event.stopPropagation();
       if (event.shiftKey) {
-        this.addMax(-10);
+        this.addMax(10);
       } else {
-        this.addMax(-1);
+        this.addMax(1);
       }
       onChange?.();
     };
