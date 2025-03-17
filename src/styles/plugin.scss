@@ -144,6 +144,10 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+
+    &:hover {
+      color: var(--background-primary-alt);
+    }
   }
 
   &.srt-dice-disabled {
@@ -156,6 +160,12 @@
     svg {
       position: relative;
       top: 1px;
+    }
+  }
+
+  &.srt-dice-fudge {
+    .srt-dice-btn {
+      font-size: 16px;
     }
   }
 }

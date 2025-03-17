@@ -15,6 +15,7 @@
 
       .clickable-icon {
         padding: var(--size-4-1);
+        cursor: pointer;
 
         svg {
           width: 28px;
@@ -65,6 +66,11 @@
       }
       &.dice-color-8 {
         color: var(--color-purple);
+      }
+
+      &.dice-fudge-0 {
+        opacity: 0.3;
+        font-weight: 200;
       }
 
       &:hover {
