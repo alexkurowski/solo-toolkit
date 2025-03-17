@@ -105,7 +105,7 @@ export class DiceWidgetBase implements BaseWidget {
   private roll() {
     this.value = nrandom(this.quantity, this.min, this.max, this.value);
     if (this.add) this.value += this.add;
-    this.valueEl.innerText = this.formatValue();
+    this.updateValue();
   }
 
   private toggleDisable() {
@@ -121,16 +121,27 @@ export class DiceWidgetBase implements BaseWidget {
     this.explicit = !this.explicit;
   }
 
-  private formatValue(): string {
+  private updateValue() {
+    let value = this.value.toString();
+
     if (this.type === "fudge") {
-      if (this.value === -1) return "-";
-      if (this.value === 1) return "+";
-      if (this.value < 0) return this.value.toString();
-      if (this.value > 0) return `+${this.value}`;
-      return " ";
+      this.valueEl.classList.remove("srt-dice-fudge-single");
+      if (this.value === -1) {
+        value = "-";
+        this.valueEl.classList.add("srt-dice-fudge-single");
+      } else if (this.value === 1) {
+        value = "+";
+        this.valueEl.classList.add("srt-dice-fudge-single");
+      } else if (this.value < 0) {
+        value = this.value.toString();
+      } else if (this.value > 0) {
+        value = `+${this.value}`;
+      } else {
+        value = " ";
+      }
     }
 
-    return this.value.toString();
+    this.valueEl.innerText = value;
   }
 
   getText(wrap = ""): string {
@@ -265,7 +276,7 @@ export class DiceWidgetBase implements BaseWidget {
 
     this.valueEl = diceEl.createEl("button");
     this.valueEl.classList.add("clickable-icon", "srt-dice-btn");
-    this.valueEl.innerText = this.formatValue();
+    this.updateValue();
 
     const menu = createMenu([
       {
