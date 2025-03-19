@@ -1,6 +1,10 @@
 import { TFile, App } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
-import { CountLimitWidgetBase, COUNT_LIMIT_REGEX, COUNT_REGEX_G } from "../base";
+import {
+  CountLimitWidgetBase,
+  COUNT_LIMIT_REGEX,
+  COUNT_LIMIT_REGEX_G,
+} from "../base";
 
 export { COUNT_LIMIT_REGEX };
 
@@ -33,7 +37,7 @@ export class CountLimitWidget {
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
-      regex: COUNT_REGEX_G,
+      regex: COUNT_LIMIT_REGEX_G,
       lineStart: this.lineStart,
       lineEnd: this.lineEnd,
       newValue: this.base.getText("`"),
