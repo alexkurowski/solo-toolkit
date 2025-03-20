@@ -73,6 +73,14 @@
       &:not(:hover) {
         color: var(--text-normal);
       }
+
+      p {
+        margin: 0;
+      }
+
+      strong {
+        font-weight: bold;
+      }
     }
 
     .word-result-type {

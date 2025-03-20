@@ -13,6 +13,7 @@ import {
   clickToCopy,
   capitalize,
   trim,
+  renderMarkdown,
 } from "../../utils";
 import { TabSelect } from "../shared/tabselect";
 import {
@@ -154,12 +155,7 @@ export class WordView {
     typeEl.setText(type);
 
     const valueEl = el.createSpan("word-result-value");
-
-    const lines = value.split("\n");
-    for (const line of lines) {
-      const lineEl = valueEl.createDiv();
-      lineEl.setText(line);
-    }
+    renderMarkdown(value, valueEl);
   }
 
   createWordBtn(tabName: string, type: string) {

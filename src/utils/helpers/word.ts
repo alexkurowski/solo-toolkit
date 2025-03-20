@@ -1,3 +1,4 @@
+import { Component, MarkdownRenderer } from "obsidian";
 import { vowels } from "../word";
 
 export const compareWords = (
@@ -51,3 +52,8 @@ export const an = (nextWord: string): "a" | "an" => {
 };
 
 export const trim = (value: string): string => value.trim();
+
+const markdownRenderComponent = new Component();
+export const renderMarkdown = async (md: string, el: HTMLElement) => {
+  await MarkdownRenderer.renderMarkdown(md, el, "", markdownRenderComponent);
+};
