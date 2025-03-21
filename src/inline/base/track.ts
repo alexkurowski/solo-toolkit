@@ -4,20 +4,21 @@ import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const TRACK_REGEX =
-  /^`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
+  /^`(sm|lg|s|l)?(b|box|boxes|circle|circles)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
 export const TRACK_REGEX_G =
-  /`(sm|lg|s|l)?(b|box|boxes)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
+  /`(sm|lg|s|l)?(b|box|boxes|circle|circles)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
 const MAX_MAX = 200;
 
-const MIN_SIZE = 10;
+const MIN_SIZE = 16;
 const SIZE_DEFAULT = 22;
 const SIZE_SMALL = 16;
 const SIZE_LARGE = 38;
 
 export class TrackWidgetBase implements BaseWidget {
+  shape: "boxes" | "circles";
   value: number;
   max: number;
   color: string;
@@ -43,7 +44,13 @@ export class TrackWidgetBase implements BaseWidget {
     const parts = text.replace(/^`+|`+$/g, "").split(":");
 
     const params = parts[0].split("|");
-    params.shift();
+    const shape = params.shift();
+
+    if ((shape || "").startsWith("c")) {
+      this.shape = "circles";
+    } else {
+      this.shape = "boxes";
+    }
 
     // Legacy size
     this.size = SIZE_DEFAULT;
@@ -74,7 +81,7 @@ export class TrackWidgetBase implements BaseWidget {
   getText(wrap = ""): string {
     return [
       wrap,
-      "boxes",
+      this.shape,
       this.color ? `|${this.color}` : "",
       this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
       ": ",
@@ -240,6 +247,27 @@ export class TrackWidgetBase implements BaseWidget {
           },
         ],
       },
+      {
+        title: "Shape",
+        subMenu: [
+          {
+            title: "Box",
+            checked: this.shape === "boxes",
+            onClick: () => {
+              this.shape = "boxes";
+              onChange?.();
+            },
+          },
+          {
+            title: "Circle",
+            checked: this.shape === "circles",
+            onClick: () => {
+              this.shape = "circles";
+              onChange?.();
+            },
+          },
+        ],
+      },
       onFocus ? "-" : undefined,
       onFocus
         ? {
@@ -256,7 +284,11 @@ export class TrackWidgetBase implements BaseWidget {
       const btnEl = this.el.createEl("button");
       btnEl.style.width = `${this.size}px`;
       btnEl.style.height = `${this.size}px`;
-      btnEl.classList.add("clickable-icon", "srt-track-btn");
+      btnEl.classList.add(
+        "clickable-icon",
+        "srt-track-btn",
+        `srt-track-${this.shape}`
+      );
       btnEl.onclick = (event) => {
         event.preventDefault();
         event.stopPropagation();
