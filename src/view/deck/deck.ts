@@ -1,5 +1,5 @@
 import { Vault, TFile, TFolder, arrayBufferToBase64 } from "obsidian";
-import { Card } from "./types";
+import { DeckCard, DrawnCard } from "./types";
 import { SoloToolkitView as View } from "../index";
 import { trim, identity, randomFrom, shuffle } from "../../utils";
 
@@ -7,8 +7,8 @@ export class Deck {
   view: View;
   vault: Vault;
   type: string;
-  cards: (TFile | string)[];
-  deckCards: (TFile | string)[];
+  cards: DeckCard[];
+  deckCards: DeckCard[];
   cardsLength: number = 0;
   flip: number[] = [0];
   initialShuffleDone: boolean = false;
@@ -55,7 +55,9 @@ export class Deck {
     for (const child of folder.children) {
       if (child instanceof TFile) {
         if (this.supportedExtensions.includes(child.extension)) {
-          this.deckCards.push(child);
+          this.deckCards.push({
+            face: child,
+          });
         } else if (child.extension === "md") {
           const content = await this.vault.cachedRead(child);
           if (!content) continue;
@@ -79,7 +81,9 @@ export class Deck {
             }
 
             if (line.startsWith("http")) {
-              this.deckCards.push(line);
+              this.deckCards.push({
+                face: line,
+              });
             }
           }
         }
@@ -101,42 +105,90 @@ export class Deck {
         return true;
       });
     }
+
+    // Arrange card backs
+    for (let faceIdx = 0; faceIdx < this.deckCards.length; faceIdx++) {
+      const faceCard = this.deckCards[faceIdx];
+      if (!faceCard || !faceCard.face || faceCard.back) continue;
+
+      const faceName =
+        faceCard.face instanceof TFile ? faceCard.face.path : faceCard.face;
+
+      if (faceName.includes("_back.")) continue;
+
+      const backIdx = this.deckCards.findIndex((backCard) => {
+        if (!backCard || !backCard.face || backCard.back) return false;
+
+        const backName =
+          backCard.face instanceof TFile ? backCard.face.path : backCard.face;
+
+        if (!backName.includes("_back.")) return false;
+
+        return faceName.startsWith(backName.replace(/_back\..*$/, ""));
+      });
+
+      if (backIdx === -1) continue;
+
+      this.deckCards[faceIdx].back = this.deckCards[backIdx].face;
+      this.deckCards.splice(backIdx, 1);
+    }
   }
 
-  async draw(): Promise<Card> {
+  async draw(): Promise<DrawnCard> {
     if (!this.cards.length) this.shuffle();
     const card = this.cards.pop();
 
-    if (typeof card === "string") {
-      return {
-        original: card,
-        image: card,
-        flip: randomFrom(this.flip),
-        url: card,
-      };
+    if (!card) throw "No cards";
+
+    const drawnCard: DrawnCard = {
+      card,
+      faceImage: "",
+      backImage: "",
+      flip: randomFrom(this.flip),
+    };
+
+    if (typeof card.face === "string") {
+      drawnCard.faceImage = card.face;
+      drawnCard.url = card.face;
     } else {
       try {
-        if (!card) throw "No cards";
-        const bytes = await this.vault.readBinary(card);
+        const bytes = await this.vault.readBinary(card.face);
         const contentType =
           "image/" +
-          card.extension.replace("jpg", "jpeg").replace("svg", "svg+xml");
+          card.face.extension.replace("jpg", "jpeg").replace("svg", "svg+xml");
         const image =
           `data:${contentType};base64,` + arrayBufferToBase64(bytes);
-        return {
-          original: card,
-          image,
-          flip: randomFrom(this.flip),
-          file: card,
-        };
+        drawnCard.faceImage = image;
+        drawnCard.file = card.face;
       } catch (error) {
-        return {
-          original: "",
-          image: "",
-          flip: 0,
-        };
+        drawnCard.card = null;
+        drawnCard.faceImage = "";
+        drawnCard.flip = 0;
+        return drawnCard;
       }
     }
+
+    if (card.back) {
+      if (typeof card.back === "string") {
+        drawnCard.backImage = card.back;
+      } else {
+        try {
+          const bytes = await this.vault.readBinary(card.back);
+          const contentType =
+            "image/" +
+            card.back.extension
+              .replace("jpg", "jpeg")
+              .replace("svg", "svg+xml");
+          const image =
+            `data:${contentType};base64,` + arrayBufferToBase64(bytes);
+          drawnCard.backImage = image;
+        } catch (error) {
+          return drawnCard;
+        }
+      }
+    }
+
+    return drawnCard;
   }
 
   shuffle() {
@@ -145,7 +197,7 @@ export class Deck {
     this.cardsLength = this.cards.length;
   }
 
-  shuffleIn(card: TFile | string) {
+  shuffleIn(card: DeckCard) {
     if (card && this.cards.indexOf(card) === -1) {
       this.cards.push(card);
       shuffle(this.cards);

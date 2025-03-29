@@ -1,17 +1,14 @@
-import { ButtonComponent, setTooltip, TFile, TFolder } from "obsidian";
+import { ButtonComponent, setTooltip, TFolder } from "obsidian";
 import { SoloToolkitView as View } from "../index";
 import { clickToCopyImage, clickToCopy, exportDeck } from "../../utils";
 import { defaultDeckImages } from "../../icons";
 import { TabSelect } from "../shared/tabselect";
 import { Deck } from "./deck";
-import { Card } from "./types";
+import { DrawType, DrawnCard } from "./types";
 
 const MAX_REMEMBER_SIZE = 100;
 const BLANK_CARD =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-
-type DrawType = string;
-type DrawnCard = Card;
 
 export class DeckView {
   view: View;
@@ -116,8 +113,8 @@ export class DeckView {
     this.updateCount();
   }
 
-  addResult(type: DrawType, card: DrawnCard, immediate = false) {
-    const { original, image, flip, file, path, url } = card;
+  addResult(type: DrawType, drawnCard: DrawnCard, immediate = false) {
+    const { card, faceImage, backImage, flip, file, path, url } = drawnCard;
 
     const parentElClass = ["deck-result", "image-result-content"];
     if (flip) parentElClass.push(`deck-flip${flip}`);
@@ -128,10 +125,10 @@ export class DeckView {
       this.resultsEl.insertAfter(parentEl, null);
     }
 
-    if (!image) return;
+    if (!faceImage) return;
 
     const imgEl = parentEl.createEl("img");
-    imgEl.setAttr("src", image);
+    imgEl.setAttr("src", faceImage);
     imgEl.onerror = () => {
       imgEl.setAttr("src", BLANK_CARD);
       if (file) {
@@ -144,11 +141,22 @@ export class DeckView {
     };
 
     const zoomEl = parentEl.createDiv("image-result-zoom");
-    const zoomImgEl = zoomEl.createEl("img");
-    zoomImgEl.setAttr("src", image);
-    zoomImgEl.onerror = () => {
+    if (backImage) {
+      zoomEl.classList.add("with-back");
+    }
+
+    const zoomFaceImgEl = zoomEl.createEl("img");
+    zoomFaceImgEl.setAttr("src", faceImage);
+    zoomFaceImgEl.onerror = () => {
       zoomEl.remove();
     };
+    if (backImage) {
+      const zoomBackImgEl = zoomEl.createEl("img");
+      zoomBackImgEl.setAttr("src", backImage);
+      zoomBackImgEl.onerror = () => {
+        zoomBackImgEl.remove();
+      };
+    }
     zoomEl.onmousedown = (event) => {
       event.stopPropagation();
       zoomEl.removeClass("shown");
@@ -161,16 +169,14 @@ export class DeckView {
       if (event.button === 2) {
         this.drawn.splice(
           this.drawn.findLastIndex(
-            (drawn) => drawn[0] === type && drawn[1] === card
+            (drawn) => drawn[0] === type && drawn[1] === drawnCard
           ),
           1
         );
         parentEl.remove();
         const deck = this.decks[type];
-        if (typeof original === "string") {
-          deck.shuffleIn(original);
-        } else if (original instanceof TFile && deck instanceof Deck) {
-          deck.shuffleIn(original);
+        if (card && deck instanceof Deck) {
+          deck.shuffleIn(card);
         }
         this.updateCount();
       } else {
@@ -209,7 +215,7 @@ export class DeckView {
             return;
           case "png":
             if (file || path) {
-              clickToCopyImage(image, flip || 0)(event);
+              clickToCopyImage(faceImage, flip || 0)(event);
             }
             return;
         }
