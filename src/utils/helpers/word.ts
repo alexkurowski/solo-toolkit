@@ -53,6 +53,20 @@ export const an = (nextWord: string): "a" | "an" => {
 
 export const trim = (value: string): string => value.trim();
 
+export const replaceAsync = async (
+  value: string,
+  regex: RegExp,
+  callback: (match: string) => Promise<string>
+): Promise<string> => {
+  const callbacks: Promise<string>[] = [];
+  value.replace(regex, (match) => {
+    callbacks.push(callback(match));
+    return match;
+  });
+  const results: string[] = await Promise.all(callbacks);
+  return value.replace(regex, () => results.shift() || "");
+};
+
 const markdownRenderComponent = new Component();
 export const renderMarkdown = async (md: string, el: HTMLElement) => {
   await MarkdownRenderer.renderMarkdown(md, el, "", markdownRenderComponent);

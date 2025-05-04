@@ -178,10 +178,8 @@ export class WordView {
 
   createCustomWordBtns(folder: TFolder, path: string[] = []) {
     for (const child of folder.children) {
-      if (child instanceof TFile) {
-        if (child.extension === "md") {
-          this.createCustomWordBtn(folder, child, path);
-        }
+      if (child instanceof TFile && child.extension === "md") {
+        this.createCustomWordBtn(folder, child, path);
       }
       if (child instanceof TFolder) {
         this.createCustomWordBtns(child, [...path, child.name]);
@@ -219,8 +217,8 @@ export class WordView {
     new ButtonComponent(this.tabContentEls[tabName])
       .setButtonText(type)
       .setTooltip(`Generate ${type.toLowerCase()}`)
-      .onClick(() => {
-        const values = this.dicts[dictKey].generateWord();
+      .onClick(async () => {
+        const values = await this.dicts[dictKey].generateWord();
         if (values.every((value) => !value)) return;
         for (let value of values) {
           if (value === `{${DEFAULT}}`) continue;

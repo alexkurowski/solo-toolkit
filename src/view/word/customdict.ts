@@ -10,6 +10,7 @@ import {
   sum,
   getDefaultDictionary,
   curveValues,
+  replaceAsync,
 } from "../../utils";
 import { DEFAULT } from "./constants";
 import { parseFileContent, parseKeyWithCurve } from "./parser";
@@ -59,7 +60,7 @@ export class CustomDict {
     });
   }
 
-  generateWord(): string[] {
+  async generateWord(): Promise<string[]> {
     if (this.mode === "default") {
       if (this.templates.length) {
         const template = randomFrom(this.templates);
@@ -79,7 +80,8 @@ export class CustomDict {
           }
           // Replace all keys with actual words
           for (let i = 0; i < 5; i++) {
-            const newResult = result.replace(
+            const newResult = await replaceAsync(
+              result,
               /{+ ?<? ?[^}]+ ?}+/g,
               this.replaceKeyWithWord(previousSubs)
             );
@@ -259,8 +261,8 @@ export class CustomDict {
     return { values: [], curve: 1 };
   }
 
-  private getValuesForKeys(key: string): string[] {
-    const keys = key.split("|").map(trim);
+  private getValuesForKeys(keysStr: string): string[] {
+    const keys = keysStr.split("|").map(trim);
     const result = keys
       .map((key) => this.getValuesForKey(key))
       .map(curveValues)
@@ -268,19 +270,104 @@ export class CustomDict {
     if (result?.length) {
       return result;
     } else {
-      return [`{${key}}`];
+      return [`{${keysStr}}`];
+    }
+  }
+
+  private async getValuesForPath(wrappedKey: string): Promise<string[]> {
+    const vault = this.view.view.app.vault;
+
+    const key = wrappedKey.replace(/{|}/g, "").trim();
+    let path = key.replace(/^\//, "");
+    if (path.endsWith("/*")) path = path.replace(/\/\*$/, "");
+    if (path.endsWith("/!")) path = path.replace(/\/!$/, "");
+    if (path.endsWith("/")) path = path.replace(/\/$/, "");
+
+    const values: string[] = [];
+    if (key.endsWith("/*")) {
+      // File names in folder
+      const folder = vault.getFolderByPath(path);
+      if (folder?.children?.length) {
+        for (const child of folder.children) {
+          if (child instanceof TFile && child.extension === "md") {
+            values.push(child.basename);
+          }
+        }
+      }
+    } else if (key.endsWith("/!")) {
+      // File contents in folder
+      const folder = vault.getFolderByPath(path);
+      if (folder?.children?.length) {
+        for (const child of folder.children) {
+          if (child instanceof TFile && child.extension === "md") {
+            const fileContent = parseFileContent(await vault.cachedRead(child));
+            values.push(fileContent.values[DEFAULT].join("\n"));
+          }
+        }
+      }
+    } else {
+      // Random line form file
+      let file: TFile | null = null;
+      let section: string | undefined;
+      // Random file in folder
+      const folder = vault.getFolderByPath(path);
+      if (folder?.children?.length) {
+        const files: TFile[] = [];
+        for (const child of folder.children) {
+          if (child instanceof TFile && child.extension === "md") {
+            files.push(child);
+          }
+        }
+        file = randomFrom(files);
+      }
+      // Specific file, entire content
+      if (!file) {
+        file = vault.getFileByPath(path + ".md");
+      }
+      // Specific file, specific section
+      if (!file) {
+        const pathSplit = path.split("/");
+        section = pathSplit.pop();
+        path = pathSplit.join("/");
+        file = vault.getFileByPath(path + ".md");
+      }
+      if (file instanceof TFile && file.extension === "md") {
+        const fileContent = parseFileContent(await vault.cachedRead(file));
+        if (section) {
+          section = findWordKey(fileContent.values, section);
+        }
+        if (section && fileContent.values[section]?.length) {
+          values.push(...fileContent.values[section]);
+        } else {
+          values.push(...fileContent.values[DEFAULT]);
+        }
+      }
+    }
+
+    if (values.length) {
+      return values;
+    } else {
+      return [wrappedKey];
     }
   }
 
   private replaceKeyWithWord(lastSubs: Record<string, string>) {
-    return (wrapperKey: string): string => {
-      let key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
+    return async (wrappedKey: string): Promise<string> => {
+      let key = wrappedKey.replace(/{|}/g, "").trim().toLowerCase();
       if (!key) return "";
       if (key.startsWith("<")) {
+        // Repeat the same value
         key = key.replace("<", "").trim();
         if (lastSubs[key]) {
           return lastSubs[key];
         }
+      }
+      if (key.startsWith("/")) {
+        // Process key as path
+        return (lastSubs[key] = randomFrom(
+          await this.getValuesForPath(wrappedKey),
+          lastSubs[key] || null
+        ));
       }
       return (lastSubs[key] = randomFrom(
         this.getValuesForKeys(key),
@@ -289,9 +376,11 @@ export class CustomDict {
     };
   }
 
-  private replaceKeyWithTemplate(wrapperKey: string): string {
-    const key = wrapperKey.replace(/{|}/g, "").trim().toLowerCase();
+  private replaceKeyWithTemplate(wrappedKey: string): string {
+    const key = wrappedKey.replace(/{|}/g, "").trim().toLowerCase();
     if (!key) return "";
+    // Keep path keys case-sensitive
+    if (key.startsWith("/")) return wrappedKey;
     // Find files from another custom folder
     const tables = this.view.customTables.filter(
       // category/[any-filename]

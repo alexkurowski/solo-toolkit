@@ -70,13 +70,15 @@ a little
 #### Other keyword options:
 
 - Refer to other notes by specifying the note name and/or note section: `{note_name/section_title}`, or `{folder_name/note_name/section_title}`, or simply `{note_name}` if there are no sections.
+- Refer to any note in the vault by its full path: `{/folder_name/subfolder_name/note_name}`.
 - Refer to all sections in all notes from a specific folder: `{folder_name}`.
 - Refer to multiple sections by listing them separately: `{name|food}`.
 - Get a random note title inside a subfolder: `{folder_name/*}`. In order to display note's content instead of its name: `{folder_name/!}`.
 - Repeat the same word multiple times: `{noun} and {<noun}`.
 - Utilize built-in dictionaries by using any of the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`, `{a}`.
 - Add bell curve probability by adding Xd at the end of note name or section (e.g. `Clues 2d.md` or `# Food 3d`).
-- Add weight to specific line of a note by adding a number at the end: `pizza ^10`
+- Add weight to specific template by adding a value to its name: `loves ^10: loves {food}`
+- Add weight to specific line of a note by adding a value at the end: `pizza ^10`
 - Template key can be capitalized (e.g. `Loves: {food}`) if you'd like to ensure sentence capitalization.
 - You can hide a subfolder from dropdown menu by adding a dot at the end of folder's name: `/Items.`, they can still be referenced with a keyword: `{item}`.
 
