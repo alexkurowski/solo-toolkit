@@ -4,9 +4,9 @@ import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const DICE_REGEX =
-  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)([+-]\d+)?(\|#?[\w\d]+)*(( = |: )[+-]?\d+)?`$/;
+  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)([+-]\d+)?([|,]#?[\w\d]+)*(( = |: )[+-]?\d+)?`$/;
 export const DICE_REGEX_G =
-  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)([+-]\d+)?(\|#?[\w\d]+)*(( = |: )[+-]?\d+)?`/g;
+  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)([+-]\d+)?([|,]#?[\w\d]+)*(( = |: )[+-]?\d+)?`/g;
 
 const MIN_SIZE = 10;
 const SIZE_DEFAULT = 36;
@@ -54,7 +54,8 @@ export class DiceWidgetBase implements BaseWidget {
     const [controlWithParams, value] = normalized.split(
       normalized.includes("=") ? " = " : ": "
     );
-    const params: string[] = controlWithParams.split("|");
+    const separator = controlWithParams.includes("|") ? "|" : ",";
+    const params: string[] = controlWithParams.split(separator);
     const control: string = params.shift()!;
 
     const cMatch = control.match(/(!)?(sm|lg|s|l)?(\d+)?d(\d+|F)([+-]\d+)?/);
@@ -152,9 +153,9 @@ export class DiceWidgetBase implements BaseWidget {
       "d",
       this.type === "fudge" ? "F" : this.max,
       this.add ? (this.add > 0 ? `+${this.add}` : this.add) : "",
-      this.color ? `|${this.color}` : "",
-      this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
-      this.explicit ? "|show" : "",
+      this.color ? `,${this.color}` : "",
+      this.size !== SIZE_DEFAULT ? `,${this.size}` : "",
+      this.explicit ? ",show" : "",
       ": ",
       this.value.toString(),
       wrap,
@@ -223,7 +224,7 @@ export class DiceWidgetBase implements BaseWidget {
     });
 
     if (this.color) {
-      let cssValue = this.color.replace("|", "");
+      let cssValue = this.color.replace(/[|,]/, "");
       if (KNOWN_COLORS.includes(cssValue)) {
         cssValue = `var(--color-${cssValue})`;
       }

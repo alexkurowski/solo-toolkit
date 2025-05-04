@@ -109,7 +109,7 @@ To use specific tracker style:
 
 Code block with dice notation (e.g. `` `d6` `` or `` `2d8` ``) will be rendered as a dice button that can be rolled by clicking on it.
 
-To change a die color — `` `d6|red` `` or `` `d6|#fb464c` ``
+To change a die color — `` `d6,red` `` or `` `d6,#fb464c` ``
 
 #### Tab stops
 

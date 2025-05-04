@@ -4,9 +4,9 @@ import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const CLOCK_REGEX =
-  /^`(sm|lg|s|l)?(c|cl|clock)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
+  /^`(sm|lg|s|l)?(c|cl|clock)([|,]#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
 export const CLOCK_REGEX_G =
-  /`(sm|lg|s|l)?(c|cl|clock)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
+  /`(sm|lg|s|l)?(c|cl|clock)([|,]#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
@@ -46,7 +46,8 @@ export class ClockWidgetBase implements BaseWidget {
 
     const parts = text.replace(/^`+|`+$/g, "").split(":");
 
-    const params = parts[0].split("|");
+    const separator = parts[0].includes("|") ? "|" : ",";
+    const params = parts[0].split(separator);
     params.shift();
 
     // Legacy size
@@ -79,8 +80,8 @@ export class ClockWidgetBase implements BaseWidget {
     return [
       wrap,
       "clock",
-      this.color ? `|${this.color}` : "",
-      this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
+      this.color ? `,${this.color}` : "",
+      this.size !== SIZE_DEFAULT ? `,${this.size}` : "",
       ": ",
       this.value.toString(),
       "/",

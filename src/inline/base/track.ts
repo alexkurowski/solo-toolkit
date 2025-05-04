@@ -4,9 +4,9 @@ import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
 export const TRACK_REGEX =
-  /^`(sm|lg|s|l)?(b|box|boxes|circle|circles)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
+  /^`(sm|lg|s|l)?(b|box|boxes|circle|circles)([|,]#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`$/;
 export const TRACK_REGEX_G =
-  /`(sm|lg|s|l)?(b|box|boxes|circle|circles)(\|#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
+  /`(sm|lg|s|l)?(b|box|boxes|circle|circles)([|,]#?[\w\d]+)*: ?([+-]?\d+\/)?\d+`/g;
 
 const MIN_VALUE = 0;
 const MIN_MAX = 1;
@@ -43,7 +43,8 @@ export class TrackWidgetBase implements BaseWidget {
 
     const parts = text.replace(/^`+|`+$/g, "").split(":");
 
-    const params = parts[0].split("|");
+    const separator = parts[0].includes("|") ? "|" : ",";
+    const params = parts[0].split(separator);
     const shape = params.shift();
 
     if ((shape || "").startsWith("c")) {
@@ -82,8 +83,8 @@ export class TrackWidgetBase implements BaseWidget {
     return [
       wrap,
       this.shape,
-      this.color ? `|${this.color}` : "",
-      this.size !== SIZE_DEFAULT ? `|${this.size}` : "",
+      this.color ? `,${this.color}` : "",
+      this.size !== SIZE_DEFAULT ? `,${this.size}` : "",
       ": ",
       this.value.toString(),
       "/",
