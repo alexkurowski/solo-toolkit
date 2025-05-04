@@ -76,6 +76,7 @@ a little
 - Repeat the same word multiple times: `{noun} and {<noun}`.
 - Utilize built-in dictionaries by using any of the following keywords: `{noun}`, `{verb}`, `{adjective}`, `{adverb}`, `{job}`, `{aspect}`, `{town name}`, `{a}`.
 - Add bell curve probability by adding Xd at the end of note name or section (e.g. `Clues 2d.md` or `# Food 3d`).
+- Add weight to specific line of a note by adding a number at the end: `pizza ^10`
 - Template key can be capitalized (e.g. `Loves: {food}`) if you'd like to ensure sentence capitalization.
 - You can hide a subfolder from dropdown menu by adding a dot at the end of folder's name: `/Items.`, they can still be referenced with a keyword: `{item}`.
 
