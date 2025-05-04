@@ -212,7 +212,11 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .setPlaceholder("Tables")
           .setValue(this.plugin.settings.customTableRoot)
           .onChange(async (value) => {
-            this.plugin.settings.customTableRoot = normalizePath(value || "");
+            if (value === "/") {
+              this.plugin.settings.customTableRoot = value;
+            } else {
+              this.plugin.settings.customTableRoot = normalizePath(value || "");
+            }
             await this.plugin.saveSettings();
           })
       );
