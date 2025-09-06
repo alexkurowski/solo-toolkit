@@ -4,6 +4,7 @@ import {
   identity,
   normalizeTemplateValue,
   clamp,
+  removeBy,
 } from "../../utils";
 import { DEFAULT } from "./constants";
 import {
@@ -12,9 +13,11 @@ import {
   CustomTable,
   CustomTableCurves,
 } from "./types";
+import { SoloToolkitSettings } from "../../settings/index";
 
 export const parseFileContent = (
-  content: string
+  content: string,
+  settings: SoloToolkitSettings
 ): {
   mode: CustomTableMode;
   templates: CustomTableTemplate[];
@@ -125,6 +128,7 @@ export const parseFileContent = (
       }
 
       templates.push({
+        key: templateKey,
         value: templateValue,
         capitalize: templateCapitalize,
         upcase: templateUpcase,
@@ -134,6 +138,7 @@ export const parseFileContent = (
       if (templateWeight && templateWeight > 0) {
         for (let i = 0; i < templateWeight; i++) {
           templates.push({
+            key: templateKey,
             value: templateValue,
             capitalize: templateCapitalize,
             upcase: templateUpcase,
@@ -168,6 +173,22 @@ export const parseFileContent = (
           .split(/ +/)
           .map((word) => word.replace(/[^\w\d']/g, "").trim())
           .filter(Boolean)
+      );
+    }
+  }
+
+  // Remove template based on prefix
+  if (templates.length && settings.templatePrefix) {
+    const templatesWithPrefix = templates.filter((template) =>
+      template.key.startsWith(settings.templatePrefix)
+    ).length;
+    const templatesWithoutPrefix = templates.filter(
+      (template) => !template.key.startsWith(settings.templatePrefix)
+    ).length;
+    if (templatesWithPrefix && templatesWithoutPrefix) {
+      removeBy(
+        templates,
+        (template) => !template.key.startsWith(settings.templatePrefix)
       );
     }
   }

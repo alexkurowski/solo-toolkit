@@ -3,6 +3,7 @@ export interface CustomTable {
 }
 
 export interface CustomTableTemplate {
+  key: string;
   value: string;
   capitalize?: boolean;
   upcase?: boolean;

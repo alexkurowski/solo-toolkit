@@ -256,9 +256,9 @@ export class DeckView {
         .setText(`'${this.deckRoot}/${tabName}' not found`);
 
       new ButtonComponent(missingEl)
-        .setButtonText("Create")
+        .setButtonText("Fix now")
         .setTooltip(
-          `Create folder '${this.deckRoot}/${tabName}' and populate it with default card images\n\nYou can change folder location in plugin settings`,
+          `This action will create folder '${this.deckRoot}/${tabName}' and populate it with default card images\n\nYou can change folder location in plugin settings`,
           {
             delay: 0,
           }

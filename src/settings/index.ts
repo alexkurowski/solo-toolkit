@@ -38,6 +38,7 @@ export interface SoloToolkitSettings {
   standardOracleBias: boolean;
   standardOracleEvents: boolean;
   oracleLanguage: string;
+  templatePrefix: string;
 
   wordTab: string;
   oracleTab: string;
@@ -66,6 +67,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   standardOracleBias: false,
   standardOracleEvents: false,
   oracleLanguage: "en",
+  templatePrefix: "template",
 
   wordTab: "",
   oracleTab: "",
@@ -217,6 +219,19 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
             } else {
               this.plugin.settings.customTableRoot = normalizePath(value || "");
             }
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Custom table template prefix")
+      .setDesc("Allows to ignore personal frontmatter properties (optional)")
+      .addText((text) =>
+        text
+          .setPlaceholder("template")
+          .setValue(this.plugin.settings.templatePrefix)
+          .onChange(async (value) => {
+            this.plugin.settings.templatePrefix = value;
             await this.plugin.saveSettings();
           })
       );

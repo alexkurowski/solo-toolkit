@@ -36,3 +36,15 @@ export function isHead<T>(a: T[], b: T[]): boolean {
   }
   return true;
 }
+
+export function removeBy<T>(arr: T[], fn: (item: T) => boolean): T[] {
+  let i = 0;
+  while (i < arr.length) {
+    if (fn(arr[i])) {
+      arr.splice(i, 1);
+    } else {
+      i++;
+    }
+  }
+  return arr;
+}

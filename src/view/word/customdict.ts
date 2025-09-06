@@ -40,7 +40,7 @@ export class CustomDict {
   ) {
     const [_, defaultCurve] = parseKeyWithCurve(file.basename);
     this.view.view.app.vault.cachedRead(file).then((content: string) => {
-      const parsed = parseFileContent(content);
+      const parsed = parseFileContent(content, this.view.view.settings);
       this.mode = parsed.mode;
       this.templates = parsed.templates;
       this.values = parsed.values;
@@ -300,7 +300,10 @@ export class CustomDict {
       if (folder?.children?.length) {
         for (const child of folder.children) {
           if (child instanceof TFile && child.extension === "md") {
-            const fileContent = parseFileContent(await vault.cachedRead(child));
+            const fileContent = parseFileContent(
+              await vault.cachedRead(child),
+              this.view.view.settings
+            );
             values.push(fileContent.values[DEFAULT].join("\n"));
           }
         }
@@ -332,7 +335,10 @@ export class CustomDict {
         file = vault.getFileByPath(path + ".md");
       }
       if (file instanceof TFile && file.extension === "md") {
-        const fileContent = parseFileContent(await vault.cachedRead(file));
+        const fileContent = parseFileContent(
+          await vault.cachedRead(file),
+          this.view.view.settings
+        );
         if (section) {
           section = findWordKey(fileContent.values, section);
         }
