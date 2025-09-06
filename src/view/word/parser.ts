@@ -81,6 +81,15 @@ export const parseFileContent = (
       // Remove wrapping quotation marks
       templateValue = normalizeTemplateValue(templateValue);
 
+      // Save blank template if it starts with correct prefix
+      if (
+        !templateValue &&
+        settings.templatePrefix &&
+        templateKey.startsWith(settings.templatePrefix)
+      ) {
+        templateValue = "{DEFAULT}";
+      }
+
       // Ignore blank templates
       if (!templateValue) continue;
 
