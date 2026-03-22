@@ -19,10 +19,10 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
     const file = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
     if (!(file instanceof TFile)) return;
     const section = ctx.getSectionInfo(element);
-    if (!section) return;
+    // if (!section) return;
 
-    const lineStart = section.lineStart;
-    const lineEnd = section.lineEnd;
+    const lineStart = section?.lineStart || -1;
+    const lineEnd = section?.lineEnd || -1;
     const indexMap = {
       count: 0,
       countLimit: 0,

@@ -56,7 +56,7 @@ export class CountWidgetBase implements BaseWidget {
       } else {
         this.addValue(-1);
       }
-      onChange?.();
+      onChange?.(event);
     };
     this.minusEl.oncontextmenu = (event) => {
       event.preventDefault();
@@ -73,7 +73,7 @@ export class CountWidgetBase implements BaseWidget {
       } else {
         this.addValue(1);
       }
-      onChange?.();
+      onChange?.(event);
     };
     this.plusEl.oncontextmenu = (event) => {
       event.preventDefault();
