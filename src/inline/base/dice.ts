@@ -52,7 +52,7 @@ export class DiceWidgetBase implements BaseWidget {
 
     // Split text into parts
     const [controlWithParams, value] = normalized.split(
-      normalized.includes("=") ? " = " : ": "
+      normalized.includes("=") ? " = " : ": ",
     );
     const separator = controlWithParams.includes("|") ? "|" : ",";
     const params: string[] = controlWithParams.split(separator);
@@ -298,17 +298,17 @@ export class DiceWidgetBase implements BaseWidget {
           {
             title: "Default",
             checked: this.color === "",
-            onClick: () => {
+            onClick: (event) => {
               this.color = "";
-              onChange?.();
+              onChange?.(event);
             },
           },
           ...KNOWN_COLORS.map((color) => ({
             title: capitalize(color),
             checked: this.color === color,
-            onClick: () => {
+            onClick: (event: MouseEvent) => {
               this.color = color;
-              onChange?.();
+              onChange?.(event);
             },
           })),
         ],
@@ -319,40 +319,40 @@ export class DiceWidgetBase implements BaseWidget {
           {
             title: "Default",
             checked: this.size === SIZE_DEFAULT,
-            onClick: () => {
+            onClick: (event) => {
               this.size = SIZE_DEFAULT;
-              onChange?.();
+              onChange?.(event);
             },
           },
           {
             title: "Small",
             checked: this.size === SIZE_SMALL,
-            onClick: () => {
+            onClick: (event) => {
               this.size = SIZE_SMALL;
-              onChange?.();
+              onChange?.(event);
             },
           },
           {
             title: "Large",
             checked: this.size === SIZE_LARGE,
-            onClick: () => {
+            onClick: (event) => {
               this.size = SIZE_LARGE;
-              onChange?.();
+              onChange?.(event);
             },
           },
           "-",
           {
             title: "Increase",
-            onClick: () => {
+            onClick: (event) => {
               this.size += 8;
-              onChange?.();
+              onChange?.(event);
             },
           },
           {
             title: "Decrease",
-            onClick: () => {
+            onClick: (event) => {
               this.size -= 8;
-              onChange?.();
+              onChange?.(event);
             },
           },
         ],
@@ -360,17 +360,17 @@ export class DiceWidgetBase implements BaseWidget {
       {
         title: "Show dice",
         checked: this.explicit,
-        onClick: () => {
+        onClick: (event) => {
           this.toggleExplicit();
-          onChange?.();
+          onChange?.(event);
         },
       },
       {
         title: "Lock",
         checked: this.disabled,
-        onClick: () => {
+        onClick: (event) => {
           this.toggleDisable();
-          onChange?.();
+          onChange?.(event);
         },
       },
       onFocus ? "-" : undefined,
@@ -385,15 +385,15 @@ export class DiceWidgetBase implements BaseWidget {
     ]);
 
     let i = 0;
-    const reroll = () => {
+    const reroll = (event: MouseEvent) => {
       this.roll();
 
       i++;
       if (rollIntervals[i]) {
-        setTimeout(reroll, rollIntervals[i] * 0.5);
+        setTimeout(() => reroll(event), rollIntervals[i] * 0.5);
       } else {
         i = 0;
-        onChange?.();
+        onChange?.(event);
         rollLock = false;
       }
     };
@@ -403,7 +403,7 @@ export class DiceWidgetBase implements BaseWidget {
       if (this.disabled) return;
       if (rollLock) return;
       rollLock = true;
-      setTimeout(reroll, rollIntervals[i]);
+      setTimeout(() => reroll(event), rollIntervals[i]);
       setTimeout(() => {
         rollLock = false;
       }, 320);

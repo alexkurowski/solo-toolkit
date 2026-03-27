@@ -62,7 +62,7 @@ export class CountWidgetBase implements BaseWidget {
       event.preventDefault();
       event.stopPropagation();
       this.addValue(-10);
-      onChange?.();
+      onChange?.(event);
     };
 
     this.plusEl.onclick = (event) => {
@@ -79,7 +79,7 @@ export class CountWidgetBase implements BaseWidget {
       event.preventDefault();
       event.stopPropagation();
       this.addValue(10);
-      onChange?.();
+      onChange?.(event);
     };
   }
 }

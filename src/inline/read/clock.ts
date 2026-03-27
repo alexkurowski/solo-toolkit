@@ -1,6 +1,11 @@
 import { TFile, App } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
-import { ClockWidgetBase, CLOCK_REGEX, CLOCK_REGEX_G } from "../base";
+import {
+  ClockWidgetBase,
+  CLOCK_REGEX,
+  CLOCK_REGEX_G,
+  getWidgetLines,
+} from "../base";
 
 export { CLOCK_REGEX };
 
@@ -29,13 +34,15 @@ export class ClockWidget {
     this.index = opts.index;
   }
 
-  updateDoc() {
+  updateDoc(event: MouseEvent) {
+    const [lineStart, lineEnd] = getWidgetLines(this, event);
+
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
       regex: CLOCK_REGEX_G,
-      lineStart: this.lineStart,
-      lineEnd: this.lineEnd,
+      lineStart,
+      lineEnd,
       newValue: this.base.getText("`"),
       replaceIndex: this.index,
     });
@@ -43,7 +50,7 @@ export class ClockWidget {
 
   toDOM(): HTMLElement {
     this.base.generateDOM({
-      onChange: () => this.updateDoc(),
+      onChange: (event: MouseEvent) => this.updateDoc(event),
     });
 
     return this.base.el;

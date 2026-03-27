@@ -71,9 +71,9 @@ export class CountLimitWidgetBase implements BaseWidget {
         title: "Add value",
         subMenu: NUMBERS.map((add: number) => ({
           title: `+${add}`,
-          onClick: () => {
+          onClick: (event) => {
             this.addValue(add);
-            onChange?.();
+            onChange?.(event);
           },
         })),
       },
@@ -81,9 +81,9 @@ export class CountLimitWidgetBase implements BaseWidget {
         title: "Subtract value",
         subMenu: NUMBERS.map((add: number) => ({
           title: `-${add}`,
-          onClick: () => {
+          onClick: (event) => {
             this.addValue(-add);
-            onChange?.();
+            onChange?.(event);
           },
         })),
       },
@@ -91,9 +91,9 @@ export class CountLimitWidgetBase implements BaseWidget {
         title: "Add max",
         subMenu: NUMBERS.map((add: number) => ({
           title: `+${add}`,
-          onClick: () => {
+          onClick: (event) => {
             this.addMax(add);
-            onChange?.();
+            onChange?.(event);
           },
         })),
       },
@@ -101,40 +101,40 @@ export class CountLimitWidgetBase implements BaseWidget {
         title: "Subtract max",
         subMenu: NUMBERS.map((add: number) => ({
           title: `-${add}`,
-          onClick: () => {
+          onClick: (event) => {
             this.addMax(-add);
-            onChange?.();
+            onChange?.(event);
           },
         })),
       },
       "-",
       {
         title: "Reset",
-        onClick: () => {
+        onClick: (event) => {
           this.setValue(this.max);
-          onChange?.();
+          onChange?.(event);
         },
       },
       {
         title: "Drain",
-        onClick: () => {
+        onClick: (event) => {
           this.setValue(0);
-          onChange?.();
+          onChange?.(event);
         },
       },
       "-",
       {
         title: "Make clock",
-        onClick: () => {
+        onClick: (event) => {
           this.prefix = "clock: ";
-          onChange?.();
+          onChange?.(event);
         },
       },
       {
         title: "Make boxes",
-        onClick: () => {
+        onClick: (event) => {
           this.prefix = "boxes: ";
-          onChange?.();
+          onChange?.(event);
         },
       },
       onFocus ? "-" : undefined,
@@ -165,7 +165,7 @@ export class CountLimitWidgetBase implements BaseWidget {
       } else {
         this.addValue(-1);
       }
-      onChange?.();
+      onChange?.(event);
     };
     this.minusEl.oncontextmenu = (event) => {
       event.preventDefault();
@@ -175,7 +175,7 @@ export class CountLimitWidgetBase implements BaseWidget {
       } else {
         this.addMax(-1);
       }
-      onChange?.();
+      onChange?.(event);
     };
 
     this.plusEl.onclick = (event) => {
@@ -186,7 +186,7 @@ export class CountLimitWidgetBase implements BaseWidget {
       } else {
         this.addValue(1);
       }
-      onChange?.();
+      onChange?.(event);
     };
     this.plusEl.oncontextmenu = (event) => {
       event.preventDefault();
@@ -196,7 +196,7 @@ export class CountLimitWidgetBase implements BaseWidget {
       } else {
         this.addMax(1);
       }
-      onChange?.();
+      onChange?.(event);
     };
   }
 }

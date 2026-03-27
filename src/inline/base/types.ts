@@ -2,7 +2,7 @@ import { Menu, MenuItem } from "obsidian";
 
 export type DomOptions = {
   onFocus?: () => void;
-  onChange?: (event?: any) => void;
+  onChange?: (event?: MouseEvent) => void;
 };
 
 export interface BaseWidget {

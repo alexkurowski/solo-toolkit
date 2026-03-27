@@ -4,6 +4,7 @@ import {
   CountLimitWidgetBase,
   COUNT_LIMIT_REGEX,
   COUNT_LIMIT_REGEX_G,
+  getWidgetLines,
 } from "../base";
 
 export { COUNT_LIMIT_REGEX };
@@ -33,13 +34,15 @@ export class CountLimitWidget {
     this.index = opts.index;
   }
 
-  updateDoc() {
+  updateDoc(event: MouseEvent) {
+    const [lineStart, lineEnd] = getWidgetLines(this, event);
+
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
       regex: COUNT_LIMIT_REGEX_G,
-      lineStart: this.lineStart,
-      lineEnd: this.lineEnd,
+      lineStart,
+      lineEnd,
       newValue: this.base.getText("`"),
       replaceIndex: this.index,
     });
@@ -47,7 +50,7 @@ export class CountLimitWidget {
 
   toDOM(): HTMLElement {
     this.base.generateDOM({
-      onChange: () => this.updateDoc(),
+      onChange: (event: MouseEvent) => this.updateDoc(event),
     });
 
     return this.base.el;
