@@ -24,6 +24,7 @@ export class TrackWidget {
     lineEnd: number;
     index: number;
     originalText: string;
+    highlight: boolean;
   }) {
     this.base = new TrackWidgetBase(opts);
 

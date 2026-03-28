@@ -84,6 +84,7 @@ export const soloToolkitPostprocessor = (plugin: Plugin) => {
           lineEnd,
           index: indexMap.track++,
           originalText: mdText,
+          highlight: plugin.settings.inlineProgressHighlight ?? true,
         });
         node.replaceWith(widget.toDOM());
       }

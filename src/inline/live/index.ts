@@ -134,6 +134,8 @@ class TrackPlugin implements PluginValue {
                 widget: new TrackWidget({
                   originalNode: node.node,
                   originalText: text,
+                  highlight:
+                    pluginRef?.settings?.inlineProgressHighlight ?? true,
                 }),
               }),
             );

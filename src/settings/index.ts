@@ -34,6 +34,7 @@ export interface SoloToolkitSettings {
   diceDeleteOnCopy: boolean;
   inlineCounters: boolean;
   inlineProgressMode: ProgressMode; // obsolete
+  inlineProgressHighlight: boolean;
   inlineDynamicEdit: boolean; // unused
   standardOracleBias: boolean;
   standardOracleEvents: boolean;
@@ -63,6 +64,7 @@ export const DEFAULT_SETTINGS: SoloToolkitSettings = {
   diceDeleteOnCopy: false,
   inlineCounters: false,
   inlineProgressMode: "clock", // deprecated
+  inlineProgressHighlight: true,
   inlineDynamicEdit: true, // deprecated
   standardOracleBias: false,
   standardOracleEvents: false,
@@ -134,7 +136,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Remove dice roll on copy")
       .setDesc(
-        "Right click (long press on mobile) to copy and remove all rolls"
+        "Right click (long press on mobile) to copy and remove all rolls",
       )
       .addToggle((toggle) =>
         toggle
@@ -142,7 +144,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.diceDeleteOnCopy = value;
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     // Sidebar decks
@@ -158,7 +160,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.customDeckRoot = normalizePath(value);
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     new Setting(containerEl)
@@ -186,7 +188,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.deckJokers = value;
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     new Setting(containerEl)
@@ -198,7 +200,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.deckFlip = value;
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     // Sidebar oracle and ideas
@@ -220,7 +222,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
               this.plugin.settings.customTableRoot = normalizePath(value || "");
             }
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     new Setting(containerEl)
@@ -233,13 +235,13 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.templatePrefix = value;
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     new Setting(containerEl)
       .setName("Hide default random generators")
       .setDesc(
-        "Make sure to add your own custom tables to the folder specified in the above option"
+        "Make sure to add your own custom tables to the folder specified in the above option",
       )
       .addToggle((toggle) =>
         toggle
@@ -247,7 +249,7 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.disableDefaultWords = value;
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     new Setting(containerEl)
@@ -294,8 +296,8 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           "Progress boxes — `boxes: 1/5`, `b:1/5`",
           "Progress clock — `clock: 1/6`, `c:1/6`",
           "Dice — `d20`, `2d6`",
-          "Tab stop — ` `"
-        )
+          "Tab stop — ` `",
+        ),
       )
       .addToggle((toggle) =>
         toggle
@@ -303,29 +305,19 @@ export class SoloToolkitSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.inlineCounters = value;
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
-    // new Setting(containerEl)
-    //   .setName("Default progress trackers")
-    //   .setDesc(
-    //     newDesc(
-    //       "Default progress — `1/5`",
-    //       "Boxes can count up to 200, clocks up to 16"
-    //     )
-    //   )
-    //   .addDropdown((dropdown) => {
-    //     dropdown
-    //       .addOption("track", "Boxes")
-    //       .addOption("clock", "Clock")
-    //       .addOption("small_clock", "Clock (smaller)")
-    //       .addOption("big_clock", "Clock (larger)");
-    //     dropdown.setValue(this.plugin.settings.inlineProgressMode || "");
-    //     dropdown.onChange(async (value: ProgressMode) => {
-    //       this.plugin.settings.inlineProgressMode = value;
-    //       await this.plugin.saveSettings();
-    //     });
-    //   });
+    new Setting(containerEl)
+      .setName("Mark every 5th progress box")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.inlineProgressHighlight)
+          .onChange(async (value) => {
+            this.plugin.settings.inlineProgressHighlight = value;
+            await this.plugin.saveSettings();
+          }),
+      );
   }
 }
 

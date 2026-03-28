@@ -40,19 +40,26 @@
 
     &:hover {
       border-color: var(--interactive-accent);
-
-      &:nth-child(5n) {
-        border-color: var(--interactive-accent-hover);
-      }
     }
 
     &.active {
       border-color: var(--interactive-accent);
       background-color: var(--interactive-accent);
+    }
+  }
 
-      &:nth-child(5n) {
-        border-color: var(--interactive-accent-hover);
-        background-color: var(--interactive-accent-hover);
+  &.srt-track-highlight {
+    .srt-track-btn {
+      &:hover {
+        &:nth-child(5n) {
+          border-color: var(--interactive-accent-hover);
+        }
+      }
+      &.active {
+        &:nth-child(5n) {
+          border-color: var(--interactive-accent-hover);
+          background-color: var(--interactive-accent-hover);
+        }
       }
     }
   }

@@ -9,7 +9,11 @@ export class TrackWidget extends WidgetType {
   base: TrackWidgetBase;
   node: SyntaxNode;
 
-  constructor(opts: { originalNode: SyntaxNode; originalText: string }) {
+  constructor(opts: {
+    originalNode: SyntaxNode;
+    originalText: string;
+    highlight: boolean;
+  }) {
     super();
 
     this.base = new TrackWidgetBase(opts);

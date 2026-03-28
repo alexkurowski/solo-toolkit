@@ -23,11 +23,14 @@ export class TrackWidgetBase implements BaseWidget {
   max: number;
   color: string;
   size: number;
+  highlight: boolean;
 
   el: HTMLElement;
   btnEls: HTMLElement[];
 
-  constructor(opts: { originalText: string }) {
+  constructor(opts: { originalText: string; highlight: boolean }) {
+    this.highlight = opts.highlight;
+
     this.parseValue(opts.originalText);
 
     if (this.max < MIN_MAX) this.max = MIN_MAX;
@@ -151,6 +154,9 @@ export class TrackWidgetBase implements BaseWidget {
   generateDOM({ onFocus, onChange }: DomOptions) {
     this.el = document.createElement("span");
     this.el.classList.add("srt-track");
+    if (this.highlight) {
+      this.el.classList.add("srt-track-highlight");
+    }
 
     const menu = createMenu([
       {
