@@ -1,10 +1,12 @@
 import { setTooltip } from "obsidian";
-import { capitalize, identity, nrandom, nrollDetails, rollIntervals } from "src/utils";
+import { capitalize, identity, nrollDetails, rollIntervals } from "src/utils";
 import { createMenu, KNOWN_COLORS } from "./shared";
 import { BaseWidget, DomOptions } from "./types";
 
-export const DICE_REGEX = /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)(\/[ad])?([+-]\d+)?([|,]#?[\w\d]+)*(( = |: )[^`]+)?`$/;
-export const DICE_REGEX_G = /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)(\/[ad])?([+-]\d+)?([|,]#?[\w\d]+)*(( = |: )[^`]+)?`/g;
+export const DICE_REGEX =
+  /^`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)(\/[ad])?([+-]\d+)?([|,]#?[\w\d]+)*(( = |: )[^`]+)?`$/;
+export const DICE_REGEX_G =
+  /`!?(sm|lg|s|l)?(\d+)?d(4|6|8|10|12|20|100|F)(\/[ad])?([+-]\d+)?([|,]#?[\w\d]+)*(( = |: )[^`]+)?`/g;
 
 const MIN_SIZE = 10;
 const SIZE_DEFAULT = 36;
@@ -25,7 +27,7 @@ export class DiceWidgetBase implements BaseWidget {
   color: string;
   size: number;
   explicit: boolean;
-  advantage: 'a' | 'd' | null;
+  advantage: "a" | "d" | null;
   rolls: number[] = [];
 
   el: HTMLElement;
@@ -60,7 +62,9 @@ export class DiceWidgetBase implements BaseWidget {
     const params: string[] = controlWithParams.split(separator);
     const control: string = params.shift()!;
 
-    const cMatch = control.match(/(!)?(sm|lg|s|l)?(\d+)?d(\d+|F)(\/[ad])?([+-]\d+)?/);
+    const cMatch = control.match(
+      /(!)?(sm|lg|s|l)?(\d+)?d(\d+|F)(\/[ad])?([+-]\d+)?/,
+    );
     const cDisabled = !!cMatch?.[1];
     const cSize = cMatch?.[2] || "";
     const cQuantity = parseInt(cMatch?.[3] || "");
@@ -69,7 +73,8 @@ export class DiceWidgetBase implements BaseWidget {
     const cAdd = parseInt(cMatch?.[6] || "");
 
     this.disabled = cDisabled;
-    this.advantage = cAdvantage === "/a" ? "a" : cAdvantage === "/d" ? "d" : null;
+    this.advantage =
+      cAdvantage === "/a" ? "a" : cAdvantage === "/d" ? "d" : null;
     this.quantity = cQuantity || 1;
 
     // Legacy size
@@ -118,7 +123,12 @@ export class DiceWidgetBase implements BaseWidget {
   }
 
   private roll() {
-    const { sum, rolls } = nrollDetails(this.quantity, this.min, this.max, this.value);
+    const { sum, rolls } = nrollDetails(
+      this.quantity,
+      this.min,
+      this.max,
+      this.value,
+    );
 
     if (this.advantage === "a") {
       this.value = Math.max(...rolls);
@@ -294,8 +304,8 @@ export class DiceWidgetBase implements BaseWidget {
       this.add ? (this.add > 0 ? `+${this.add}` : this.add) : "",
     ]
       .filter(identity)
-      .join("");    
-  
+      .join("");
+
     setTooltip(this.el, sizeText, { delay: 0 });
 
     if (this.explicit) {
