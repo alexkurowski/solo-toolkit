@@ -26,8 +26,24 @@ export const nrandom = (
   return result;
 };
 
-export const nroll = (quantity: number, max: number, not = -1): number =>
+export const nroll = (quantity: number, max: number, not = -1): number => 
   nrandom(quantity, 1, max, not);
+
+export const nrollDetails = (quantity: number, min: number, max: number, not = NaN): { sum: number; rolls: number[] } => {
+  let sum = not;
+  let rolls: number[] = [];
+
+  while (sum === not || Number.isNaN(sum)) {
+    sum = 0;
+    rolls = [];
+    for (let i = 0; i < quantity; i++) {
+      const val = nrandom(1, min, max, not);
+      rolls.push(val);
+      sum += val;
+    }
+  }
+  return { sum, rolls };
+};
 
 export const randomFrom = <T>(values: T[], not: T | null = null): T => {
   if (!values?.length) {

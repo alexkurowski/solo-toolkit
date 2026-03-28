@@ -114,6 +114,8 @@ Code block with dice notation (e.g. `` `d6` `` or `` `2d8` ``) will be rendered 
 
 To change a die color — `` `d6,red` `` or `` `d6,#fb464c` ``
 
+Possibility to roll with advantage (roll multiple dice and take the higest) and disadvantage (roll multiple dice and take the lowest) `` `2d6/a` `` or `` `2d6/d` ``
+
 #### Tab stops
 
 Code blocks with only spaces (e.g. `` ` ` ``) will be rendered as a blank space with a set width. Useful when you need a table-like formatting without an actual table.
