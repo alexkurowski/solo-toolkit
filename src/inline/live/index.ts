@@ -72,7 +72,7 @@ class TrackPlugin implements PluginValue {
           const from = node.from - 1;
           const to = node.to + 1;
 
-          if (this.isRangeSelected(from, to, selection)) {
+          if (this.isRangeSelected(from + 1, to - 1, selection)) {
             return;
           }
 
@@ -90,7 +90,7 @@ class TrackPlugin implements PluginValue {
                   originalNode: node.node,
                   originalText: text,
                 }),
-              })
+              }),
             );
           }
 
@@ -105,7 +105,7 @@ class TrackPlugin implements PluginValue {
                   originalNode: node.node,
                   originalText: text,
                 }),
-              })
+              }),
             );
           }
 
@@ -120,7 +120,7 @@ class TrackPlugin implements PluginValue {
                   originalNode: node.node,
                   originalText: text,
                 }),
-              })
+              }),
             );
           }
 
@@ -135,7 +135,7 @@ class TrackPlugin implements PluginValue {
                   originalNode: node.node,
                   originalText: text,
                 }),
-              })
+              }),
             );
           }
 
@@ -150,7 +150,7 @@ class TrackPlugin implements PluginValue {
                   originalNode: node.node,
                   originalText: text,
                 }),
-              })
+              }),
             );
           }
 
@@ -174,7 +174,7 @@ class TrackPlugin implements PluginValue {
                     this.spaceStoreIndex[thisWidgetIndex] = width;
                   },
                 }),
-              })
+              }),
             );
             widgetIndex++;
           }
@@ -191,10 +191,10 @@ class TrackPlugin implements PluginValue {
   isRangeSelected(
     from: number,
     to: number,
-    selection: EditorSelection
+    selection: EditorSelection,
   ): boolean {
     return !!selection.ranges.find(
-      (range: SelectionRange) => range.from <= to && range.to >= from
+      (range: SelectionRange) => range.from <= to && range.to >= from,
     );
   }
 

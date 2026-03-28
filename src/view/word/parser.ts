@@ -186,7 +186,7 @@ export const parseFileContent = (
     }
   }
 
-  // Remove template based on prefix
+  // Remove templates based on prefix
   if (templates.length && settings.templatePrefix) {
     const templatesWithPrefix = templates.filter((template) =>
       template.key.startsWith(settings.templatePrefix)

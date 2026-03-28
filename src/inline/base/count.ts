@@ -56,13 +56,13 @@ export class CountWidgetBase implements BaseWidget {
       } else {
         this.addValue(-1);
       }
-      onChange?.();
+      onChange?.(event);
     };
     this.minusEl.oncontextmenu = (event) => {
       event.preventDefault();
       event.stopPropagation();
       this.addValue(-10);
-      onChange?.();
+      onChange?.(event);
     };
 
     this.plusEl.onclick = (event) => {
@@ -73,13 +73,13 @@ export class CountWidgetBase implements BaseWidget {
       } else {
         this.addValue(1);
       }
-      onChange?.();
+      onChange?.(event);
     };
     this.plusEl.oncontextmenu = (event) => {
       event.preventDefault();
       event.stopPropagation();
       this.addValue(10);
-      onChange?.();
+      onChange?.(event);
     };
   }
 }

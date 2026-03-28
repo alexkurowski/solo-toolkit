@@ -5,7 +5,7 @@ type MenuItemOption = {
   title: string;
   checked?: boolean;
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent) => void;
   subMenu?: MenuItemBlueprint[];
 };
 

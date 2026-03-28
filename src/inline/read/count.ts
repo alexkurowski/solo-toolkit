@@ -1,6 +1,11 @@
 import { TFile, App } from "obsidian";
 import { replaceInFile } from "src/utils/plugin";
-import { CountWidgetBase, COUNT_REGEX, COUNT_REGEX_G } from "../base";
+import {
+  CountWidgetBase,
+  COUNT_REGEX,
+  COUNT_REGEX_G,
+  getWidgetLines,
+} from "../base";
 
 export { COUNT_REGEX };
 
@@ -29,13 +34,15 @@ export class CountWidget {
     this.index = opts.index;
   }
 
-  updateDoc() {
+  updateDoc(event: MouseEvent) {
+    const [lineStart, lineEnd] = getWidgetLines(this, event);
+
     replaceInFile({
       vault: this.app.vault,
       file: this.file,
       regex: COUNT_REGEX_G,
-      lineStart: this.lineStart,
-      lineEnd: this.lineEnd,
+      lineStart,
+      lineEnd,
       newValue: this.base.getText("`"),
       replaceIndex: this.index,
     });
@@ -43,7 +50,7 @@ export class CountWidget {
 
   toDOM(): HTMLElement {
     this.base.generateDOM({
-      onChange: () => this.updateDoc(),
+      onChange: (event: MouseEvent) => this.updateDoc(event),
     });
 
     return this.base.el;

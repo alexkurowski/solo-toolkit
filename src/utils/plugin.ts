@@ -9,9 +9,10 @@ export const replaceInFile = (opts: {
   newValue: string;
   replaceIndex: number;
 }) => {
+  if (opts.lineStart === -1 || opts.lineEnd === -1) return;
+
   opts.vault.process(opts.file, (content: string): string => {
     const lines = content.split("\n");
-
     const regex = new RegExp(opts.regex, "g");
     let matchIndex = 0;
 
@@ -33,8 +34,6 @@ export const replaceInFile = (opts: {
           }
         }
       }
-
-      // console.error("Match index not found")
     }
 
     return lines.join("\n");
