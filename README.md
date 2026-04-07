@@ -80,7 +80,7 @@ a little
 - Add weight to specific template by adding a value to its name: `loves ^10: loves {food}`
 - Add weight to specific line of a note by adding a value at the end: `pizza ^10`
 - Template key can be capitalized (e.g. `Loves: {food}`) if you'd like to ensure sentence capitalization.
-- You can hide a subfolder from dropdown menu by adding a dot at the end of folder's name: `/Items.`, they can still be referenced with a keyword: `{item}`.
+- You can hide a subfolder from dropdown menu by adding a dot or an underscore at the end of folder's name: `/Items.` or `/Items_`, they can still be referenced with a keyword: `{item}`.
 
 #### Cut-up method mode
 

@@ -36,7 +36,7 @@ export class CustomDict {
       path: string[];
       tabName: string;
       fileName: string;
-    }
+    },
   ) {
     const [_, defaultCurve] = parseKeyWithCurve(file.basename);
     this.view.view.app.vault.cachedRead(file).then((content: string) => {
@@ -73,7 +73,7 @@ export class CustomDict {
           // Import keys from other folders
           for (let i = 0; i < 5; i++) {
             const newResult = result.replace(/{+ ?[^}]+ ?}+/g, (v) =>
-              this.replaceKeyWithTemplate(v)
+              this.replaceKeyWithTemplate(v),
             );
             if (newResult === result) break;
             result = newResult;
@@ -83,7 +83,7 @@ export class CustomDict {
             const newResult = await replaceAsync(
               result,
               /{+ ?<? ?[^}]+ ?}+/g,
-              this.replaceKeyWithWord(previousSubs)
+              this.replaceKeyWithWord(previousSubs),
             );
             if (newResult === result) break;
             result = newResult;
@@ -98,7 +98,7 @@ export class CustomDict {
               } else {
                 return key;
               }
-            }
+            },
           );
           result = result.trim();
 
@@ -128,7 +128,7 @@ export class CustomDict {
       let nextWords: string[] = [];
       for (let i = 0; i < length; i++) {
         nextWords = words.filter((_word, index, arr) =>
-          compareWords(arr[index - 1], result[i])
+          compareWords(arr[index - 1], result[i]),
         );
         if (nextWords.length) {
           result.push(randomFrom(nextWords));
@@ -165,17 +165,17 @@ export class CustomDict {
         // category/filename
         (customTable) =>
           compareWords(customTable.tabName, keyParts[0]) &&
-          compareWords(customTable.fileName, keyParts[1])
+          compareWords(customTable.fileName, keyParts[1]),
       ) ||
       this.view.customTables.find(
         // [same-category]/filename
         (customTable) =>
           compareWords(customTable.tabName, this.tabName) &&
-          compareWords(customTable.fileName, keyParts[0])
+          compareWords(customTable.fileName, keyParts[0]),
       ) ||
       this.view.customTables.find(
         // [any-category]/filename
-        (customTable) => compareWords(customTable.fileName, keyParts[0])
+        (customTable) => compareWords(customTable.fileName, keyParts[0]),
       );
     if (otherCustomTable) {
       // Return all values if there are no sections present or specified
@@ -198,7 +198,7 @@ export class CustomDict {
 
         const otherTableMatchedSectionKey = findWordKey(
           otherCustomTable.values,
-          otherTableKey
+          otherTableKey,
         );
 
         if (otherTableMatchedSectionKey) {
@@ -214,13 +214,13 @@ export class CustomDict {
     // Files in other custom subfolder
     const otherCustomTables = this.view.customTables.filter(
       // category/[any-filename]
-      (customTable) => compareWords(customTable.tabName, key)
+      (customTable) => compareWords(customTable.tabName, key),
     );
     if (otherCustomTables?.length) {
       result = otherCustomTables.map((table) => table.values[DEFAULT]).flat();
       if (result?.length) {
         const curveSum = sum(
-          otherCustomTables.map((table) => table.curves[DEFAULT])
+          otherCustomTables.map((table) => table.curves[DEFAULT]),
         );
         curve = Math.round(curveSum / otherCustomTables.length) || 1;
         return {
@@ -234,14 +234,14 @@ export class CustomDict {
     if (keyParts.length === 2 && (keyParts[1] === "*" || keyParts[1] === "!")) {
       const otherCustomTables = this.view.customTables.filter(
         // category/[any-filename]
-        (customTable) => compareWords(customTable.tabName, keyParts[0])
+        (customTable) => compareWords(customTable.tabName, keyParts[0]),
       );
       if (otherCustomTables?.length) {
         if (keyParts[1] === "*") {
           result = otherCustomTables.map((table) => table.fileName);
         } else if (keyParts[1] === "!") {
           result = otherCustomTables.map((table) =>
-            table.values[DEFAULT].join("\n")
+            table.values[DEFAULT].join("\n"),
           );
         }
         if (result?.length) {
@@ -302,7 +302,7 @@ export class CustomDict {
           if (child instanceof TFile && child.extension === "md") {
             const fileContent = parseFileContent(
               await vault.cachedRead(child),
-              this.view.view.settings
+              this.view.view.settings,
             );
             values.push(fileContent.values[DEFAULT].join("\n"));
           }
@@ -337,7 +337,7 @@ export class CustomDict {
       if (file instanceof TFile && file.extension === "md") {
         const fileContent = parseFileContent(
           await vault.cachedRead(file),
-          this.view.view.settings
+          this.view.view.settings,
         );
         if (section) {
           section = findWordKey(fileContent.values, section);
@@ -372,12 +372,12 @@ export class CustomDict {
         // Process key as path
         return (lastSubs[key] = randomFrom(
           await this.getValuesForPath(wrappedKey),
-          lastSubs[key] || null
+          lastSubs[key] || null,
         ));
       }
       return (lastSubs[key] = randomFrom(
         this.getValuesForKeys(key),
-        lastSubs[key] || null
+        lastSubs[key] || null,
       ));
     };
   }
@@ -388,16 +388,34 @@ export class CustomDict {
     // Keep path keys case-sensitive
     if (key.startsWith("/")) return wrappedKey;
     // Find files from another custom folder
-    const tables = this.view.customTables.filter(
+    let wantedTemplateKey = "";
+    let tables = this.view.customTables.filter(
       // category/[any-filename]
-      (customTable) => compareWords(customTable.tabName, key)
+      (customTable) => compareWords(customTable.tabName, key),
     );
+    if (!tables.length && key.includes("/")) {
+      // category/[any-filename]/template
+      const lastSlashIndex = key.lastIndexOf("/");
+      const keyWithoutLastSlash = key.slice(0, lastSlashIndex);
+      wantedTemplateKey = key.slice(lastSlashIndex + 1);
+      tables = this.view.customTables.filter((customTable) =>
+        compareWords(customTable.tabName, keyWithoutLastSlash),
+      );
+    }
     if (tables.length) {
       // Take random file from folder
       const table = randomFrom(tables);
       if (table.templates?.length) {
         // Take random foreign template
         let template = randomFrom(table.templates).value;
+        if (wantedTemplateKey) {
+          const wantedTemplate = table.templates.find((template) =>
+            compareWords(wantedTemplateKey, template.key),
+          );
+          if (wantedTemplate) {
+            template = wantedTemplate.value;
+          }
+        }
         // Provide folder and file context for each foreign subkey
         template = template.replace(
           /{+ ?[^}]+ ?}+/g,
@@ -420,7 +438,7 @@ export class CustomDict {
               // Key is not a section in that table
               return `{${subKey}}`;
             }
-          }
+          },
         );
         if (template) {
           return template;

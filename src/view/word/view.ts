@@ -51,12 +51,12 @@ export class WordView {
     } else {
       this.tabSelect = new TabSelect(
         this.view.tabViewEl,
-        this.setTab.bind(this)
+        this.setTab.bind(this),
       );
     }
 
     this.tabContainerEl = this.view.tabViewEl.createDiv(
-      "word-buttons-container"
+      "word-buttons-container",
     );
     this.tabContentEls = {};
 
@@ -65,7 +65,7 @@ export class WordView {
     } else {
       this.tabSelect = new TabSelect(
         this.view.tabViewEl,
-        this.setTab.bind(this)
+        this.setTab.bind(this),
       );
     }
 
@@ -88,7 +88,7 @@ export class WordView {
 
     if (this.view.settings.customTableRoot) {
       const folder = this.view.app.vault.getFolderByPath(
-        this.view.settings.customTableRoot
+        this.view.settings.customTableRoot,
       );
       if (folder) {
         this.createCustomWordBtns(folder);
@@ -106,13 +106,13 @@ export class WordView {
 
     if (tabElsCount === 0) {
       this.tabContentEls["blank"] = this.tabContainerEl.createDiv(
-        "word-buttons shown blank"
+        "word-buttons shown blank",
       );
       this.tabContentEls["blank"].createDiv().setText(`No random tables found`);
       this.tabContentEls["blank"]
         .createDiv()
         .setText(
-          `(enable default random tables or add your own in '${this.view.settings.customTableRoot}' folder)`
+          `(enable default random tables or add your own in '${this.view.settings.customTableRoot}' folder)`,
         );
       this.tabSelect.hide();
     }
@@ -204,7 +204,9 @@ export class WordView {
     // Skip creating tab/button for hidden folder
     if (
       folder.name.endsWith(".") ||
-      path.some((folderName) => folderName.endsWith("."))
+      folder.name.endsWith("_") ||
+      path.some((folderName) => folderName.endsWith(".")) ||
+      path.some((folderName) => folderName.endsWith("_"))
     )
       return;
 
@@ -243,7 +245,7 @@ export class WordView {
     input.onChange(
       debounce((newValue: string) => {
         this.view.setSettings({ wordQuickValue: newValue });
-      }, 1000)
+      }, 1000),
     );
     new ResizeObserver(() => {
       this.view.setSettings({ wordQuickHeight: input.inputEl.offsetHeight });
