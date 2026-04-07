@@ -91,8 +91,15 @@ export class DiceWidgetBase implements BaseWidget {
     this.max = cMax || 20;
     this.add = cAdd || 0;
 
+    if (cMatch?.[4] === "F") {
+      this.type = "fudge";
+      this.min = -1;
+      this.max = 1;
+      this.value = parseInt(value || "") || 0;
+    }
+
     const valStr = value ? value.trim() : "";
-    const detailMatch = valStr.match(/^((?:-?\d+, )*-?\d+) \((\d+)\)$/);
+    const detailMatch = valStr.match(/^((?:-?\d+, )*-?\d+) \((-?\d+)\)$/);
 
     if (detailMatch) {
       this.rolls = detailMatch[1].split(", ").map((n) => parseInt(n));
@@ -100,13 +107,6 @@ export class DiceWidgetBase implements BaseWidget {
     } else {
       const maxVal = this.advantage ? this.max : this.quantity * this.max;
       this.value = parseInt(valStr) || maxVal + this.add;
-    }
-
-    if (cMatch?.[4] === "F") {
-      this.type = "fudge";
-      this.min = -1;
-      this.max = 1;
-      this.value = parseInt(value || "") || 0;
     }
 
     if (params) {
