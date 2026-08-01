@@ -177,7 +177,11 @@ export class WordView {
   }
 
   createCustomWordBtns(folder: TFolder, path: string[] = []) {
-    for (const child of folder.children) {
+    const sortedChildren = folder.children
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const child of sortedChildren) {
       if (child instanceof TFile && child.extension === "md") {
         this.createCustomWordBtn(folder, child, path);
       }
