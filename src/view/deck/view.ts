@@ -285,7 +285,11 @@ export class DeckView {
   }
 
   createCustomDecks(folder: TFolder) {
-    for (const child of folder.children) {
+    const sortedChildren = folder.children
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const child of sortedChildren) {
       if (
         child instanceof TFolder &&
         child.name !== "Standard" &&
