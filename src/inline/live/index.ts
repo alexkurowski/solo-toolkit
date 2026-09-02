@@ -72,7 +72,7 @@ class TrackPlugin implements PluginValue {
           const from = node.from - 1;
           const to = node.to + 1;
 
-          if (this.isRangeSelected(from + 1, to - 1, selection)) {
+          if (this.isRangeSelected(from, to, selection)) {
             return;
           }
 
@@ -83,8 +83,8 @@ class TrackPlugin implements PluginValue {
           if (DICE_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
-              from,
-              to,
+              node.from,
+              node.to,
               Decoration.replace({
                 widget: new DiceWidget({
                   originalNode: node.node,
@@ -98,8 +98,8 @@ class TrackPlugin implements PluginValue {
           if (COUNT_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
-              from,
-              to,
+              node.from,
+              node.to,
               Decoration.replace({
                 widget: new CountWidget({
                   originalNode: node.node,
@@ -113,8 +113,8 @@ class TrackPlugin implements PluginValue {
           if (COUNT_LIMIT_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
-              from,
-              to,
+              node.from,
+              node.to,
               Decoration.replace({
                 widget: new CountLimitWidget({
                   originalNode: node.node,
@@ -128,8 +128,8 @@ class TrackPlugin implements PluginValue {
           if (TRACK_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
-              from,
-              to,
+              node.from,
+              node.to,
               Decoration.replace({
                 widget: new TrackWidget({
                   originalNode: node.node,
@@ -145,8 +145,8 @@ class TrackPlugin implements PluginValue {
           if (CLOCK_REGEX.test(text)) {
             buildMeta.push(meta);
             builder.add(
-              from,
-              to,
+              node.from,
+              node.to,
               Decoration.replace({
                 widget: new ClockWidget({
                   originalNode: node.node,
@@ -161,8 +161,8 @@ class TrackPlugin implements PluginValue {
             const thisWidgetIndex = widgetIndex;
             buildMeta.push(meta);
             builder.add(
-              from,
-              to,
+              node.from,
+              node.to,
               Decoration.replace({
                 widget: new SpaceWidget({
                   originalNode: node.node,
